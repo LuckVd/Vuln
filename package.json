@@ -1,0 +1,26 @@
+{
+  "name": "vuln-management-system",
+  "version": "1.0.0",
+  "description": "漏洞管理系统",
+  "scripts": {
+    "build": "umi build",
+    "dev": "umi dev",
+    "format": "prettier --write \"**/*.{js,jsx,ts,tsx,css,less,scss,json,md}\"",
+    "postinstall": "umi setup",
+    "setup": "umi setup",
+    "start": "umi dev"
+  },
+  "dependencies": {
+    "@ant-design/icons": "^5.0.0",
+    "antd": "^5.0.0",
+    "react": "^18.0.0",
+    "react-dom": "^18.0.0"
+  },
+  "devDependencies": {
+    "@types/react": "^18.0.0",
+    "@types/react-dom": "^18.0.0",
+    "prettier": "^2.8.0",
+    "typescript": "^5.0.0",
+    "umi": "^4.0.0"
+  }
+}
