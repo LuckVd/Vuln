@@ -1,9 +1,73 @@
 import React, { useState, useEffect } from 'react';
-import { Table, Card, Tag, Button, Space, message } from 'antd';
-import { ReloadOutlined, EyeOutlined } from '@ant-design/icons';
+import { Table, Card, Tag, Button, Space, message, Tooltip } from 'antd';
+import { ReloadOutlined, EyeOutlined, WarningOutlined } from '@ant-design/icons';
 import { Link } from 'umi';
 import type { ColumnsType } from 'antd/es/table';
 import { Approval } from '@/types';
+
+// 漏洞统计组件
+const VulnerabilityStats: React.FC<{ approvalId: string }> = ({ approvalId }) => {
+  const [stats, setStats] = useState<any>(null);
+  const [loading, setLoading] = useState(false);
+
+  useEffect(() => {
+    const fetchStats = async () => {
+      setLoading(true);
+      try {
+        const response = await fetch(`/api/vuln/approval/${approvalId}`);
+        const result = await response.json();
+
+        if (result.code === 200) {
+          const vulns = result.data;
+          const newStats = {
+            total: vulns.length,
+            critical: vulns.filter((v: any) => v.riskLevel === 'critical').length,
+            high: vulns.filter((v: any) => v.riskLevel === 'high').length,
+            medium: vulns.filter((v: any) => v.riskLevel === 'medium').length,
+            low: vulns.filter((v: any) => v.riskLevel === 'low').length,
+          };
+          setStats(newStats);
+        }
+      } catch (error) {
+        console.error('获取漏洞统计失败:', error);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchStats();
+  }, [approvalId]);
+
+  if (loading) {
+    return <Tag color="default">加载中...</Tag>;
+  }
+
+  if (!stats || stats.total === 0) {
+    return <Tag color="default">无漏洞</Tag>;
+  }
+
+  const riskTags = [];
+  if (stats.critical > 0) {
+    riskTags.push(<Tag key="critical" color="red">{stats.critical}严重</Tag>);
+  }
+  if (stats.high > 0) {
+    riskTags.push(<Tag key="high" color="orange">{stats.high}高危</Tag>);
+  }
+  if (stats.medium > 0) {
+    riskTags.push(<Tag key="medium" color="gold">{stats.medium}中危</Tag>);
+  }
+  if (stats.low > 0) {
+    riskTags.push(<Tag key="low" color="green">{stats.low}低危</Tag>);
+  }
+
+  return (
+    <Tooltip title={`总计 ${stats.total} 个漏洞`}>
+      <Space size="small" wrap>
+        {riskTags}
+      </Space>
+    </Tooltip>
+  );
+};
 
 const ApprovalList: React.FC = () => {
   const [approvals, setApprovals] = useState<Approval[]>([]);
@@ -59,6 +123,7 @@ const ApprovalList: React.FC = () => {
     return <Tag color={color}>{text}</Tag>;
   };
 
+  
   const columns: ColumnsType<Approval> = [
     {
       title: '审批单号',
@@ -90,6 +155,14 @@ const ApprovalList: React.FC = () => {
       key: 'status',
       width: 100,
       render: () => <Tag color="green">已完成</Tag>,
+    },
+    {
+      title: '漏洞统计',
+      key: 'vulnerabilityStats',
+      width: 200,
+      render: (_, record: Approval) => (
+        <VulnerabilityStats approvalId={record.id} />
+      ),
     },
     {
       title: '审批人',

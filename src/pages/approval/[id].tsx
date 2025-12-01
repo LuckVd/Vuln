@@ -1,9 +1,19 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, history } from 'umi';
-import { Card, Descriptions, Tag, Button, Space, Spin, Alert, Timeline, Table } from 'antd';
-import { ArrowLeftOutlined, ClockCircleOutlined, CheckCircleOutlined } from '@ant-design/icons';
+import {
+  Card, Descriptions, Tag, Button, Space, Spin, Alert, Timeline, Table, Collapse,
+  Select, Input, Form, DatePicker, message, Modal
+} from 'antd';
+import {
+  ArrowLeftOutlined, ClockCircleOutlined, CheckCircleOutlined, BarChartOutlined,
+  SendOutlined, UserOutlined, CommentOutlined, CalendarOutlined
+} from '@ant-design/icons';
 import type { ColumnsType } from 'antd/es/table';
 import { Approval, ApprovalHistory, Vulnerability } from '@/types';
+
+const { Panel } = Collapse;
+const { Option } = Select;
+const { TextArea } = Input;
 
 const ApprovalDetail: React.FC = () => {
   const { id } = useParams<{ id: string }>();
@@ -11,6 +21,28 @@ const ApprovalDetail: React.FC = () => {
   const [history, setHistory] = useState<ApprovalHistory[]>([]);
   const [vulnerabilities, setVulnerabilities] = useState<Vulnerability[]>([]);
   const [loading, setLoading] = useState(true);
+
+  // 管理三个部分的折叠状态
+  const [activeKeys, setActiveKeys] = useState<string[]>(['1', '2', '3']);
+  // 分页状态
+  const [vulnCurrent, setVulnCurrent] = useState(1);
+  const [vulnPageSize, setVulnPageSize] = useState(10);
+  // 审批表单状态
+  const [submitLoading, setSubmitLoading] = useState(false);
+  const [form] = Form.useForm();
+
+  // 获取审批单历史记录
+  const fetchApprovalHistory = async (approvalId: string) => {
+    try {
+      const response = await fetch(`/api/approval/${approvalId}/history`);
+      const result = await response.json();
+      if (result.code === 200) {
+        setHistory(result.data);
+      }
+    } catch (error) {
+      console.error('获取审批历史失败:', error);
+    }
+  };
 
   // 获取审批单详情
   const fetchApprovalDetail = async (approvalId: string) => {
@@ -173,6 +205,124 @@ const ApprovalDetail: React.FC = () => {
     return <Tag color={color}>{text}</Tag>;
   };
 
+  // 生成统计信息（简化版，仅显示风险等级分布）
+  const getStatisticsContent = () => {
+    return (
+      <div style={{ display: 'flex', justifyContent: 'space-around', padding: '16px' }}>
+        <div style={{ textAlign: 'center' }}>
+          <div style={{ fontSize: '20px', fontWeight: 'bold', color: '#ff4d4f' }}>
+            {vulnerabilities.filter(v => v.riskLevel === 'critical').length}
+          </div>
+          <div style={{ color: '#666', fontSize: '12px' }}>严重</div>
+        </div>
+        <div style={{ textAlign: 'center' }}>
+          <div style={{ fontSize: '20px', fontWeight: 'bold', color: '#ff7a45' }}>
+            {vulnerabilities.filter(v => v.riskLevel === 'high').length}
+          </div>
+          <div style={{ color: '#666', fontSize: '12px' }}>高危</div>
+        </div>
+        <div style={{ textAlign: 'center' }}>
+          <div style={{ fontSize: '20px', fontWeight: 'bold', color: '#ffa940' }}>
+            {vulnerabilities.filter(v => v.riskLevel === 'medium').length}
+          </div>
+          <div style={{ color: '#666', fontSize: '12px' }}>中危</div>
+        </div>
+        <div style={{ textAlign: 'center' }}>
+          <div style={{ fontSize: '20px', fontWeight: 'bold', color: '#52c41a' }}>
+            {vulnerabilities.filter(v => v.riskLevel === 'low').length}
+          </div>
+          <div style={{ color: '#666', fontSize: '12px' }}>低危</div>
+        </div>
+      </div>
+    );
+  };
+
+  // 提交审批
+  const submitApproval = async (values: any) => {
+    setSubmitLoading(true);
+    try {
+      const response = await fetch(`/api/approval/${id}/submit`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          approvalId: id,
+          result: values.result,
+          assignTo: values.assignTo,
+          comment: values.comment,
+          dueDate: values.dueDate?.format('YYYY-MM-DD HH:mm:ss'),
+        }),
+      });
+
+      const result = await response.json();
+
+      if (result.code === 200) {
+        message.success('审批提交成功');
+        form.resetFields();
+        // 重新获取审批历史
+        fetchApprovalDetail(id!);
+      } else {
+        message.error(result.message || '审批提交失败');
+      }
+    } catch (error) {
+      console.error('提交审批失败:', error);
+      message.error('网络错误，请重试');
+    } finally {
+      setSubmitLoading(false);
+    }
+  };
+
+  // 移除漏洞
+  const removeVulnerability = async (vulnId: string) => {
+    try {
+      const response = await fetch(`/api/approval/${id}/remove-vuln`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          approvalId: id,
+          vulnerabilityId: vulnId,
+        }),
+      });
+
+      const result = await response.json();
+
+      if (result.code === 200) {
+        message.success('漏洞移除成功');
+
+        // 检查审批单是否被自动关闭
+        if (result.data.approvalClosed) {
+          message.info('该审批单的所有漏洞已处理完毕，审批单已自动关闭');
+        }
+
+        // 因为后端已真正同步数据，这里需要刷新整个审批详情
+        // 短暂延迟确保后端数据已完全更新
+        setTimeout(() => {
+          fetchApprovalDetail(id!);
+        }, 300);
+      } else {
+        message.error(result.message || '漏洞移除失败');
+      }
+    } catch (error) {
+      console.error('移除漏洞失败:', error);
+      message.error('网络错误，请重试');
+    }
+  };
+
+  // 确认移除漏洞
+  const confirmRemoveVulnerability = (vulnId: string, vulnName: string) => {
+    Modal.confirm({
+      title: '确认移除漏洞',
+      content: `确定要将漏洞 ${vulnName} 从此审批单中移除吗？`,
+      okText: '确认移除',
+      cancelText: '取消',
+      okType: 'danger',
+      onOk: () => removeVulnerability(vulnId),
+    });
+  };
+
   const vulnColumns: ColumnsType<Vulnerability> = [
     {
       title: '漏洞编号',
@@ -230,6 +380,21 @@ const ApprovalDetail: React.FC = () => {
         return <Tag color={color}>{text}</Tag>;
       },
     },
+    {
+      title: '操作',
+      key: 'action',
+      width: 100,
+      render: (text: string, record: Vulnerability) => (
+        <Button
+          type="link"
+          danger
+          size="small"
+          onClick={() => confirmRemoveVulnerability(record.id, record.name)}
+        >
+          移除
+        </Button>
+      ),
+    },
   ];
 
   if (loading) {
@@ -267,103 +432,223 @@ const ApprovalDetail: React.FC = () => {
         </Button>
       </Space>
 
-      {/* 基本信息 */}
-      <Card title="审批单信息" style={{ marginBottom: 16 }}>
-        <Descriptions column={2} bordered>
-          <Descriptions.Item label="审批单号">{approval.id}</Descriptions.Item>
-          <Descriptions.Item label="审批标题">{approval.title}</Descriptions.Item>
-          <Descriptions.Item label="优先级">{getPriorityTag(approval.priority)}</Descriptions.Item>
-          <Descriptions.Item label="状态">
-            <Tag color="green" icon={<CheckCircleOutlined />}>已完成</Tag>
-          </Descriptions.Item>
-          <Descriptions.Item label="审批人">{approval.approver}</Descriptions.Item>
-          <Descriptions.Item label="所属部门">{approval.department || '未指定'}</Descriptions.Item>
-          <Descriptions.Item label="创建时间">{approval.createTime}</Descriptions.Item>
-          <Descriptions.Item label="更新时间">{approval.updateTime}</Descriptions.Item>
-          <Descriptions.Item label="备注说明" span={2}>
-            {approval.comments || '无'}
-          </Descriptions.Item>
-        </Descriptions>
-      </Card>
-
       <div style={{ display: 'flex', gap: '16px' }}>
-        {/* 审批流程 */}
-        <Card title="审批流程" style={{ flex: 1, marginBottom: 16 }}>
-          <Timeline
-            mode="left"
-            items={history.map((item) => ({
-              dot: <ClockCircleOutlined style={{ color: '#1890ff' }} />,
-              children: (
-                <div>
-                  <div style={{ fontWeight: 'bold', marginBottom: '4px' }}>
-                    {item.step} - {item.operator}
+        <div style={{ flex: 1, minWidth: 0 }}>
+          <Collapse
+            activeKey={activeKeys}
+            onChange={(keys) => setActiveKeys(keys as string[])}
+            style={{ marginBottom: 16 }}
+          >
+            {/* 审批单信息部分 */}
+            <Panel
+              header={
+                <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                  <CheckCircleOutlined />
+                  <span>审批单信息</span>
+                </div>
+              }
+              key="1"
+            >
+              <Descriptions column={2} bordered>
+                <Descriptions.Item label="审批单号">{approval.id}</Descriptions.Item>
+                <Descriptions.Item label="审批标题">{approval.title}</Descriptions.Item>
+                <Descriptions.Item label="优先级">{getPriorityTag(approval.priority)}</Descriptions.Item>
+                <Descriptions.Item label="状态">
+                  <Tag color="green" icon={<CheckCircleOutlined />}>已完成</Tag>
+                </Descriptions.Item>
+                <Descriptions.Item label="审批人">{approval.approver}</Descriptions.Item>
+                <Descriptions.Item label="所属部门">{approval.department || '未指定'}</Descriptions.Item>
+                <Descriptions.Item label="创建时间">{approval.createTime}</Descriptions.Item>
+                <Descriptions.Item label="更新时间">{approval.updateTime}</Descriptions.Item>
+                <Descriptions.Item label="备注说明" span={2}>
+                  {approval.comments || '无'}
+                </Descriptions.Item>
+              </Descriptions>
+            </Panel>
+
+            {/* 相关漏洞部分（简化统计信息） */}
+            <Panel
+              header={
+                <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                  <BarChartOutlined />
+                  <span>相关漏洞 ({vulnerabilities.length})</span>
+                  <div style={{ marginLeft: 'auto', display: 'flex', gap: '8px' }}>
+                    <Tag color="red">严重: {vulnerabilities.filter(v => v.riskLevel === 'critical').length}</Tag>
+                    <Tag color="orange">高危: {vulnerabilities.filter(v => v.riskLevel === 'high').length}</Tag>
+                    <Tag color="gold">中危: {vulnerabilities.filter(v => v.riskLevel === 'medium').length}</Tag>
+                    <Tag color="green">低危: {vulnerabilities.filter(v => v.riskLevel === 'low').length}</Tag>
                   </div>
-                  <div style={{ color: '#666', fontSize: '12px', marginBottom: '4px' }}>
-                    {item.time}
-                  </div>
-                  <div style={{ color: '#1890ff' }}>
-                    {item.operation}
-                  </div>
-                  {item.comments && (
-                    <div style={{ color: '#666', marginTop: '4px', fontSize: '13px' }}>
-                      {item.comments}
+                </div>
+              }
+              key="2"
+            >
+              <div style={{ marginBottom: '16px' }}>
+                {getStatisticsContent()}
+              </div>
+              <Table
+                columns={vulnColumns}
+                dataSource={vulnerabilities.slice(
+                  (vulnCurrent - 1) * vulnPageSize,
+                  vulnCurrent * vulnPageSize
+                )}
+                rowKey="id"
+                pagination={{
+                  current: vulnCurrent,
+                  pageSize: vulnPageSize,
+                  total: vulnerabilities.length,
+                  showSizeChanger: true,
+                  showQuickJumper: true,
+                  showTotal: (total, range) => `第 ${range[0]}-${range[1]} 条，共 ${total} 条`,
+                  pageSizeOptions: ['5', '10', '20', '50'],
+                  onChange: (page, pageSize) => {
+                    setVulnCurrent(page);
+                    setVulnPageSize(pageSize || 10);
+                  },
+                }}
+                scroll={{ x: 1000 }}
+              />
+            </Panel>
+
+            {/* 本次审批部分 - 修改为输入表单 */}
+            <Panel
+              header={
+                <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                  <SendOutlined />
+                  <span>提交审批</span>
+                </div>
+              }
+              key="3"
+            >
+              <Form
+                form={form}
+                layout="vertical"
+                onFinish={submitApproval}
+                style={{ maxWidth: '600px' }}
+              >
+                <Form.Item
+                  name="result"
+                  label="审批结果"
+                  rules={[{ required: true, message: '请选择审批结果' }]}
+                >
+                  <Select
+                    placeholder="请选择审批结果"
+                    size="large"
+                    prefix={<CheckCircleOutlined />}
+                  >
+                    <Option value="approved">
+                      <Tag color="green">通过</Tag>
+                    </Option>
+                    <Option value="rejected">
+                      <Tag color="red">拒绝</Tag>
+                    </Option>
+                    <Option value="returned">
+                      <Tag color="orange">退回修改</Tag>
+                    </Option>
+                  </Select>
+                </Form.Item>
+
+                <Form.Item
+                  name="assignTo"
+                  label="转派给"
+                  rules={[{ required: true, message: '请选择转派对象' }]}
+                >
+                  <Select
+                    placeholder="请选择转派对象"
+                    size="large"
+                    prefix={<UserOutlined />}
+                  >
+                    <Option value="张三">张三 - 安全工程师</Option>
+                    <Option value="李四">李四 - 高级开发工程师</Option>
+                    <Option value="王五">王五 - 测试工程师</Option>
+                    <Option value="赵六">赵六 - 运维工程师</Option>
+                    <Option value="钱七">钱七 - 产品经理</Option>
+                  </Select>
+                </Form.Item>
+
+                <Form.Item
+                  name="dueDate"
+                  label="截止日期"
+                  rules={[{ required: true, message: '请选择截止日期' }]}
+                >
+                  <DatePicker
+                    showTime
+                    size="large"
+                    style={{ width: '100%' }}
+                    placeholder="请选择完成截止日期"
+                    prefix={<CalendarOutlined />}
+                  />
+                </Form.Item>
+
+                <Form.Item
+                  name="comment"
+                  label="审批意见"
+                  rules={[{ required: true, message: '请填写审批意见' }]}
+                >
+                  <TextArea
+                    rows={4}
+                    placeholder="请详细说明审批意见、处理建议或其他相关信息..."
+                    size="large"
+                    prefix={<CommentOutlined />}
+                  />
+                </Form.Item>
+
+                <Form.Item>
+                  <Space size="large">
+                    <Button
+                      type="primary"
+                      htmlType="submit"
+                      size="large"
+                      icon={<SendOutlined />}
+                      loading={submitLoading}
+                    >
+                      提交审批
+                    </Button>
+                    <Button
+                      size="large"
+                      onClick={() => form.resetFields()}
+                    >
+                      重置表单
+                    </Button>
+                  </Space>
+                </Form.Item>
+              </Form>
+            </Panel>
+          </Collapse>
+        </div>
+
+        {/* 右侧：审批流程 - 设置最小宽度 */}
+        <div style={{ minWidth: '320px', width: '320px' }}>
+          <Card title="审批流程" style={{ position: 'sticky', top: '16px' }}>
+            <Timeline
+              mode="left"
+              items={history.map((item) => ({
+                dot: <ClockCircleOutlined style={{ color: '#1890ff' }} />,
+                children: (
+                  <div>
+                    <div style={{ fontWeight: 'bold', marginBottom: '4px', fontSize: '14px' }}>
+                      {item.step}
                     </div>
-                  )}
-                </div>
-              ),
-            }))}
-          />
-        </Card>
-
-        {/* 统计信息 */}
-        <Card title="统计信息" style={{ width: '300px', marginBottom: 16 }}>
-          <div style={{ textAlign: 'center' }}>
-            <div style={{ marginBottom: '16px' }}>
-              <div style={{ fontSize: '24px', fontWeight: 'bold', color: '#1890ff' }}>
-                {vulnerabilities.length}
-              </div>
-              <div style={{ color: '#666' }}>涉及漏洞数量</div>
-            </div>
-            <div style={{ display: 'flex', justifyContent: 'space-around' }}>
-              <div>
-                <div style={{ fontSize: '16px', fontWeight: 'bold', color: '#ff4d4f' }}>
-                  {vulnerabilities.filter(v => v.riskLevel === 'critical').length}
-                </div>
-                <div style={{ color: '#666', fontSize: '12px' }}>严重</div>
-              </div>
-              <div>
-                <div style={{ fontSize: '16px', fontWeight: 'bold', color: '#ff7a45' }}>
-                  {vulnerabilities.filter(v => v.riskLevel === 'high').length}
-                </div>
-                <div style={{ color: '#666', fontSize: '12px' }}>高危</div>
-              </div>
-              <div>
-                <div style={{ fontSize: '16px', fontWeight: 'bold', color: '#ffa940' }}>
-                  {vulnerabilities.filter(v => v.riskLevel === 'medium').length}
-                </div>
-                <div style={{ color: '#666', fontSize: '12px' }}>中危</div>
-              </div>
-              <div>
-                <div style={{ fontSize: '16px', fontWeight: 'bold', color: '#52c41a' }}>
-                  {vulnerabilities.filter(v => v.riskLevel === 'low').length}
-                </div>
-                <div style={{ color: '#666', fontSize: '12px' }}>低危</div>
-              </div>
-            </div>
-          </div>
-        </Card>
+                    <div style={{ color: '#666', fontSize: '12px', marginBottom: '4px' }}>
+                      {item.operator}
+                    </div>
+                    <div style={{ color: '#666', fontSize: '12px', marginBottom: '4px' }}>
+                      {item.time}
+                    </div>
+                    <div style={{ color: '#1890ff', fontSize: '12px' }}>
+                      {item.operation}
+                    </div>
+                    {item.comments && (
+                      <div style={{ color: '#666', marginTop: '4px', fontSize: '12px' }}>
+                        {item.comments}
+                      </div>
+                    )}
+                  </div>
+                ),
+              }))}
+            />
+          </Card>
+        </div>
       </div>
-
-      {/* 相关漏洞 */}
-      <Card title={`相关漏洞 (${vulnerabilities.length})`}>
-        <Table
-          columns={vulnColumns}
-          dataSource={vulnerabilities}
-          rowKey="id"
-          pagination={false}
-          scroll={{ x: 1000 }}
-        />
-      </Card>
     </div>
   );
 };

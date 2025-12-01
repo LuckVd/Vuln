@@ -6,12 +6,12 @@ export interface Vulnerability {
   riskLevel: 'critical' | 'high' | 'medium' | 'low';
   discoveryTime: string;
   expectedBlockTime: string;
-  status: 'pending' | 'approved' | 'rejected' | 'processing';
+  status: 'pending' | 'approved' | 'rejected' | 'processing' | 'unassigned';
   description?: string;
   severity?: string;
   affectedComponent?: string;
   recommendation?: string;
-  approvalId?: string;
+  approvalId?: string; // 关联的审批单ID，可选
 }
 
 // 审批单数据类型

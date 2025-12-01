@@ -1,7 +1,7 @@
 import { Vulnerability } from '@/types';
 
 // Mock 漏洞数据
-const mockVulnerabilities: Vulnerability[] = [
+let mockVulnerabilities: Vulnerability[] = [
   {
     id: 'VUL-2024-001',
     name: 'SQL注入漏洞',
@@ -113,14 +113,102 @@ const mockVulnerabilities: Vulnerability[] = [
     affectedComponent: 'logging',
     recommendation: '立即升级Log4j到安全版本，移除JNDI Lookup功能',
     approvalId: 'APP-2024-007'
+  },
+  // 添加没有审批单关联的漏洞
+  {
+    id: 'VUL-2024-009',
+    name: '目录遍历漏洞',
+    source: 'IAST',
+    riskLevel: 'high',
+    discoveryTime: '2024-01-23 09:30:00',
+    expectedBlockTime: '2024-01-30 00:00:00',
+    status: 'unassigned',
+    description: '文件下载功能存在目录遍历漏洞，攻击者可能访问系统敏感文件',
+    severity: '高危',
+    affectedComponent: 'api/file/download',
+    recommendation: '严格校验文件路径，使用白名单限制可访问目录'
+  },
+  {
+    id: 'VUL-2024-010',
+    name: '命令注入漏洞',
+    source: 'DAST',
+    riskLevel: 'critical',
+    discoveryTime: '2024-01-23 14:15:00',
+    expectedBlockTime: '2024-01-30 00:00:00',
+    status: 'unassigned',
+    description: '系统命令执行接口未对用户输入进行过滤，可能导致任意命令执行',
+    severity: '严重',
+    affectedComponent: 'api/system/exec',
+    recommendation: '避免直接执行用户输入，使用白名单验证输入参数'
+  },
+  {
+    id: 'VUL-2024-011',
+    name: '服务端请求伪造(SSRF)',
+    source: 'IAST',
+    riskLevel: 'medium',
+    discoveryTime: '2024-01-24 11:20:00',
+    expectedBlockTime: '2024-01-31 00:00:00',
+    status: 'unassigned',
+    description: '图片处理功能允许攻击者构造内网请求，可能访问内网敏感资源',
+    severity: '中危',
+    affectedComponent: 'api/image/process',
+    recommendation: '限制可请求的目标地址范围，使用URL白名单'
+  },
+  {
+    id: 'VUL-2024-012',
+    name: '反序列化漏洞',
+    source: 'SCA',
+    riskLevel: 'critical',
+    discoveryTime: '2024-01-24 16:45:00',
+    expectedBlockTime: '2024-01-31 00:00:00',
+    status: 'unassigned',
+    description: '使用不安全的反序列化库，可能导致远程代码执行',
+    severity: '严重',
+    affectedComponent: 'data/serializer',
+    recommendation: '升级序列化库到安全版本，实施输入验证和签名'
+  },
+  {
+    id: 'VUL-2024-013',
+    name: 'XML外部实体注入(XXE)',
+    source: 'DAST',
+    riskLevel: 'high',
+    discoveryTime: '2024-01-25 10:10:00',
+    expectedBlockTime: '2024-02-01 00:00:00',
+    status: 'unassigned',
+    description: 'XML解析器未禁用外部实体，可能导致敏感信息泄露或服务器请求伪造',
+    severity: '高危',
+    affectedComponent: 'api/xml/parser',
+    recommendation: '禁用XML外部实体解析，使用安全的JSON替代XML'
+  },
+  {
+    id: 'VUL-2024-014',
+    name: '权限绕过漏洞',
+    source: 'IAST',
+    riskLevel: 'medium',
+    discoveryTime: '2024-01-25 15:30:00',
+    expectedBlockTime: '2024-02-01 00:00:00',
+    status: 'unassigned',
+    description: '用户权限检查逻辑存在缺陷，普通用户可访问管理员功能',
+    severity: '中危',
+    affectedComponent: 'api/admin/users',
+    recommendation: '完善权限检查机制，确保所有接口都有正确的权限验证'
   }
 ];
 
+// 用于生成新的审批单ID
+let nextApprovalId = 8;
+
+// 导出漏洞数据供其他模块使用
+export const __mockVulnerabilities = mockVulnerabilities;
+
 // API 模拟
 export default {
+  // 导出漏洞数据访问器
+  __mockVulnerabilities,
+
   // 获取漏洞列表
   'GET /api/vuln': (req: any, res: any) => {
-    const { page = 1, pageSize = 10, search } = req.query;
+    const { page = 1, pageSize = 10, search, riskLevel, status } = req.query;
 
     let filteredData = mockVulnerabilities;
 
@@ -131,6 +219,16 @@ export default {
         item.id.includes(search) ||
         item.source.includes(search)
       );
+    }
+
+    // 风险等级过滤
+    if (riskLevel) {
+      filteredData = filteredData.filter(item => item.riskLevel === riskLevel);
+    }
+
+    // 状态过滤
+    if (status) {
+      filteredData = filteredData.filter(item => item.status === status);
     }
 
     // 分页
@@ -173,6 +271,59 @@ export default {
     res.json({
       code: 200,
       data: vulnerabilities
+    });
+  },
+
+  // 创建审批单
+  'POST /api/approval/create': (req: any, res: any) => {
+    const { title, priority, department, comments, dueDate, vulnerabilityIds } = req.body;
+
+    // 验证漏洞是否有效且无审批单
+    const selectedVulns = mockVulnerabilities.filter(v => vulnerabilityIds.includes(v.id));
+    const hasApprovalId = selectedVulns.some(v => v.approvalId);
+    const sources = [...new Set(selectedVulns.map(v => v.source))];
+
+    if (hasApprovalId) {
+      return res.json({
+        code: 400,
+        message: '选择的漏洞中包含已关联审批单的漏洞'
+      });
+    }
+
+    if (sources.length > 1) {
+      return res.json({
+        code: 400,
+        message: '只能选择相同来源的漏洞创建审批单'
+      });
+    }
+
+    // 生成新的审批单ID
+    const newApprovalId = `APP-2024-${String(nextApprovalId).padStart(3, '0')}`;
+    nextApprovalId++;
+
+    // 获取当前时间
+    const now = new Date();
+    const timeStr = now.toISOString().replace('T', ' ').substring(0, 19);
+
+    // 更新漏洞的审批单ID和状态
+    selectedVulns.forEach(vuln => {
+      vuln.approvalId = newApprovalId;
+      vuln.status = 'pending';
+    });
+
+    res.json({
+      code: 200,
+      message: '审批单创建成功',
+      data: {
+        approvalId: newApprovalId,
+        title,
+        priority,
+        department,
+        comments,
+        dueDate,
+        vulnerabilityIds,
+        vulnerabilityCount: vulnerabilityIds.length
+      }
     });
   }
 };
