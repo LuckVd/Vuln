@@ -1,12 +1,5 @@
 import { Approval, ApprovalHistory } from '@/types';
-import vulnApi, { __mockVulnerabilities } from './vuln';
-
-// 初始化审批单漏洞关联关系
-const initializeApprovalVulnerabilityMap = () => {
-  mockApprovals.forEach(approval => {
-    approvalVulnerabilityMap.set(approval.id, []);
-  });
-};
+import { __mockVulnerabilities } from './vuln';
 
 // Mock 审批单数据
 const mockApprovals: Approval[] = [
@@ -20,7 +13,7 @@ const mockApprovals: Approval[] = [
     priority: 'urgent',
     department: '安全部',
     comments: '本次漏洞涉及SQL注入和CSRF两个高危漏洞，需要紧急处理',
-    vulnerabilities: [] // 会在API调用时动态填充
+    vulnerabilities: __mockVulnerabilities.filter(v => v.approvalId === 'APP-2024-001')
   },
   {
     id: 'APP-2024-002',
@@ -32,7 +25,7 @@ const mockApprovals: Approval[] = [
     priority: 'normal',
     department: '开发部',
     comments: '评论功能XSS漏洞，需要尽快修复',
-    vulnerabilities: []
+    vulnerabilities: __mockVulnerabilities.filter(v => v.approvalId === 'APP-2024-002')
   },
   {
     id: 'APP-2024-003',
@@ -44,7 +37,7 @@ const mockApprovals: Approval[] = [
     priority: 'normal',
     department: '产品部',
     comments: 'API接口敏感信息泄露问题',
-    vulnerabilities: []
+    vulnerabilities: __mockVulnerabilities.filter(v => v.approvalId === 'APP-2024-003')
   },
   {
     id: 'APP-2024-004',
@@ -56,7 +49,7 @@ const mockApprovals: Approval[] = [
     priority: 'low',
     department: '运维部',
     comments: '用户密码策略需要加强',
-    vulnerabilities: []
+    vulnerabilities: __mockVulnerabilities.filter(v => v.approvalId === 'APP-2024-004')
   },
   {
     id: 'APP-2024-005',
@@ -68,7 +61,7 @@ const mockApprovals: Approval[] = [
     priority: 'urgent',
     department: '安全部',
     comments: '头像上传功能存在严重安全隐患',
-    vulnerabilities: []
+    vulnerabilities: __mockVulnerabilities.filter(v => v.approvalId === 'APP-2024-005')
   },
   {
     id: 'APP-2024-006',
@@ -80,7 +73,7 @@ const mockApprovals: Approval[] = [
     priority: 'normal',
     department: '开发部',
     comments: '订单详情接口存在越权访问问题',
-    vulnerabilities: []
+    vulnerabilities: __mockVulnerabilities.filter(v => v.approvalId === 'APP-2024-006')
   },
   {
     id: 'APP-2024-007',
@@ -92,7 +85,7 @@ const mockApprovals: Approval[] = [
     priority: 'urgent',
     department: '运维部',
     comments: 'Log4j远程代码执行漏洞，需要立即处理',
-    vulnerabilities: []
+    vulnerabilities: __mockVulnerabilities.filter(v => v.approvalId === 'APP-2024-007')
   }
 ];
 

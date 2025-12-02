@@ -26,7 +26,10 @@
       "Bash(chcp:*)",
       "Bash(npx ts-node:*)",
       "Bash(mysql:*)",
-      "Bash(node:*)"
+      "Bash(node:*)",
+      "Bash(git checkout:*)",
+      "Bash(timeout 10 npm run dev:*)",
+      "Bash(timeout:*)"
     ],
     "deny": [],
     "ask": []

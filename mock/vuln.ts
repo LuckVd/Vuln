@@ -195,10 +195,36 @@ let mockVulnerabilities: Vulnerability[] = [
   }
 ];
 
-// 用于生成新的审批单ID
-let nextApprovalId = 8;
+// 用于生成新的审批单ID（避免与其他模块冲突）
+let nextVulnApprovalId = 8;
 
-// 导出漏洞数据供其他模块使用
+// 计算预期阻断时间
+function calculateExpectedBlockTime(riskLevel: string): string {
+  const now = new Date();
+  let daysToAdd = 0;
+
+  switch (riskLevel) {
+    case 'critical':
+      daysToAdd = 3;
+      break;
+    case 'high':
+      daysToAdd = 7;
+      break;
+    case 'medium':
+      daysToAdd = 14;
+      break;
+    case 'low':
+      daysToAdd = 30;
+      break;
+    default:
+      daysToAdd = 7;
+  }
+
+  const expectedDate = new Date(now.getTime() + daysToAdd * 24 * 60 * 60 * 1000);
+  return expectedDate.toISOString().replace('T', ' ').substring(0, 19);
+}
+
+// 导出漏洞数据供其他模块使用（避免API冲突）
 export const __mockVulnerabilities = mockVulnerabilities;
 
 // API 模拟
@@ -274,6 +300,152 @@ export default {
     });
   },
 
+  // 获取未分配的漏洞
+  'GET /api/vuln/unassigned': (req: any, res: any) => {
+    const { page = 1, pageSize = 10, search, riskLevel } = req.query;
+
+    let filteredData = mockVulnerabilities.filter(item => !item.approvalId && item.status === 'unassigned');
+
+    // 搜索过滤
+    if (search) {
+      filteredData = filteredData.filter(item =>
+        item.name.includes(search) ||
+        item.id.includes(search) ||
+        item.source.includes(search)
+      );
+    }
+
+    // 风险等级过滤
+    if (riskLevel) {
+      filteredData = filteredData.filter(item => item.riskLevel === riskLevel);
+    }
+
+    // 分页
+    const startIndex = (page - 1) * pageSize;
+    const endIndex = startIndex + parseInt(pageSize);
+    const paginatedData = filteredData.slice(startIndex, endIndex);
+
+    res.json({
+      code: 200,
+      data: paginatedData,
+      total: filteredData.length,
+      page: parseInt(page),
+      pageSize: parseInt(pageSize)
+    });
+  },
+
+  // 创建漏洞
+  'POST /api/vuln': (req: any, res: any) => {
+    const { name, source, riskLevel, description, severity, affectedComponent, recommendation } = req.body;
+
+    // 生成新的漏洞ID
+    const nextId = mockVulnerabilities.length + 1;
+    const newVulnId = `VUL-2024-${String(nextId).padStart(3, '0')}`;
+
+    // 获取当前时间
+    const now = new Date();
+    const timeStr = now.toISOString().replace('T', ' ').substring(0, 19);
+
+    // 计算预期阻断时间（根据风险等级）
+    const expectedBlockTime = calculateExpectedBlockTime(riskLevel);
+
+    // 创建新漏洞
+    const newVulnerability: Vulnerability = {
+      id: newVulnId,
+      name,
+      source,
+      riskLevel,
+      discoveryTime: timeStr,
+      expectedBlockTime,
+      status: 'unassigned',
+      description,
+      severity,
+      affectedComponent,
+      recommendation
+    };
+
+    // 添加到数组
+    mockVulnerabilities.push(newVulnerability);
+
+    res.json({
+      code: 200,
+      message: '漏洞创建成功',
+      data: newVulnerability
+    });
+  },
+
+  // 更新漏洞
+  'PUT /api/vuln/:id': (req: any, res: any) => {
+    const { id } = req.params;
+    const { name, source, riskLevel, description, severity, affectedComponent, recommendation } = req.body;
+
+    const vulnerabilityIndex = mockVulnerabilities.findIndex(item => item.id === id);
+
+    if (vulnerabilityIndex === -1) {
+      return res.json({
+        code: 404,
+        message: '漏洞不存在'
+      });
+    }
+
+    // 更新漏洞信息
+    const updatedVulnerability = {
+      ...mockVulnerabilities[vulnerabilityIndex],
+      name: name || mockVulnerabilities[vulnerabilityIndex].name,
+      source: source || mockVulnerabilities[vulnerabilityIndex].source,
+      riskLevel: riskLevel || mockVulnerabilities[vulnerabilityIndex].riskLevel,
+      description: description || mockVulnerabilities[vulnerabilityIndex].description,
+      severity: severity || mockVulnerabilities[vulnerabilityIndex].severity,
+      affectedComponent: affectedComponent || mockVulnerabilities[vulnerabilityIndex].affectedComponent,
+      recommendation: recommendation || mockVulnerabilities[vulnerabilityIndex].recommendation
+    };
+
+    // 更新预期阻断时间（如果风险等级改变）
+    if (riskLevel && riskLevel !== mockVulnerabilities[vulnerabilityIndex].riskLevel) {
+      updatedVulnerability.expectedBlockTime = calculateExpectedBlockTime(riskLevel);
+    }
+
+    mockVulnerabilities[vulnerabilityIndex] = updatedVulnerability;
+
+    res.json({
+      code: 200,
+      message: '漏洞更新成功',
+      data: updatedVulnerability
+    });
+  },
+
+  // 删除漏洞
+  'DELETE /api/vuln/:id': (req: any, res: any) => {
+    const { id } = req.params;
+
+    const vulnerabilityIndex = mockVulnerabilities.findIndex(item => item.id === id);
+
+    if (vulnerabilityIndex === -1) {
+      return res.json({
+        code: 404,
+        message: '漏洞不存在'
+      });
+    }
+
+    // 检查漏洞是否已关联审批单
+    const vulnerability = mockVulnerabilities[vulnerabilityIndex];
+    if (vulnerability.approvalId) {
+      return res.json({
+        code: 400,
+        message: '漏洞已关联审批单，无法删除'
+      });
+    }
+
+    // 删除漏洞
+    mockVulnerabilities.splice(vulnerabilityIndex, 1);
+
+    res.json({
+      code: 200,
+      message: '漏洞删除成功',
+      data: { deletedVulnId: id }
+    });
+  },
+
   // 创建审批单
   'POST /api/approval/create': (req: any, res: any) => {
     const { title, priority, department, comments, dueDate, vulnerabilityIds } = req.body;
@@ -298,8 +470,8 @@ export default {
     }
 
     // 生成新的审批单ID
-    const newApprovalId = `APP-2024-${String(nextApprovalId).padStart(3, '0')}`;
-    nextApprovalId++;
+    const newApprovalId = `APP-2024-${String(nextVulnApprovalId).padStart(3, '0')}`;
+    nextVulnApprovalId++;
 
     // 获取当前时间
     const now = new Date();

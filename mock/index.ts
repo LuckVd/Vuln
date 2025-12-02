@@ -1,145 +1,76 @@
 import mockVulnerabilities from './vuln';
 import mockApprovals from './approval';
 
-// 简化Mock配置，优先使用真实数据，数据库不可用时回退到Mock数据
+// 纯Mock模式配置 - 完全基于Mock数据，不依赖数据库
 export default {
-  // 漏洞管理API - 优先尝试数据库，失败时使用Mock数据
+  // 漏洞管理API - 纯Mock模式
   'GET /api/vuln': (req: any, res: any) => {
-    console.log('🔄 API调用: GET /api/vuln');
-    try {
-      // 尝试从数据库获取数据
-      require('../api/vulnerabilities').getVulnerabilities(req, res);
-    } catch (error) {
-      console.log('⚠️  数据库不可用，使用Mock数据');
-      // 数据库不可用时使用原始Mock数据
-      const mockData = require('./vuln')['GET /api/vuln'];
-      mockData(req, res);
-    }
+    console.log('🔄 [Mock] API调用: GET /api/vuln');
+    const mockHandler = mockVulnerabilities['GET /api/vuln'];
+    mockHandler(req, res);
   },
   'GET /api/vuln/:id': (req: any, res: any) => {
-    console.log('🔄 API调用: GET /api/vuln/:id');
-    try {
-      require('../api/vulnerabilities').getVulnerabilityById(req, res);
-    } catch (error) {
-      console.log('⚠️  数据库不可用，使用Mock数据');
-      const mockData = require('./vuln')['GET /api/vuln/:id'];
-      mockData(req, res);
-    }
+    console.log('🔄 [Mock] API调用: GET /api/vuln/:id');
+    const mockHandler = mockVulnerabilities['GET /api/vuln/:id'];
+    mockHandler(req, res);
   },
   'GET /api/vuln/unassigned': (req: any, res: any) => {
-    console.log('🔄 API调用: GET /api/vuln/unassigned');
-    try {
-      require('../api/vulnerabilities').getUnassignedVulnerabilities(req, res);
-    } catch (error) {
-      console.log('⚠️  数据库不可用，使用Mock数据');
-      const mockData = require('./vuln')['GET /api/vuln/unassigned'];
-      mockData(req, res);
-    }
+    console.log('🔄 [Mock] API调用: GET /api/vuln/unassigned');
+    const mockHandler = mockVulnerabilities['GET /api/vuln/unassigned'];
+    mockHandler(req, res);
   },
   'POST /api/vuln': (req: any, res: any) => {
-    console.log('🔄 API调用: POST /api/vuln');
-    try {
-      require('../api/vulnerabilities').createVulnerability(req, res);
-    } catch (error) {
-      console.log('⚠️  数据库不可用，使用Mock数据');
-      const mockData = require('./vuln')['POST /api/vuln'];
-      mockData(req, res);
-    }
+    console.log('🔄 [Mock] API调用: POST /api/vuln');
+    const mockHandler = mockVulnerabilities['POST /api/vuln'];
+    mockHandler(req, res);
   },
   'PUT /api/vuln/:id': (req: any, res: any) => {
-    console.log('🔄 API调用: PUT /api/vuln/:id');
-    try {
-      require('../api/vulnerabilities').updateVulnerability(req, res);
-    } catch (error) {
-      console.log('⚠️  数据库不可用，使用Mock数据');
-      const mockData = require('./vuln')['PUT /api/vuln/:id'];
-      mockData(req, res);
-    }
+    console.log('🔄 [Mock] API调用: PUT /api/vuln/:id');
+    const mockHandler = mockVulnerabilities['PUT /api/vuln/:id'];
+    mockHandler(req, res);
   },
   'DELETE /api/vuln/:id': (req: any, res: any) => {
-    console.log('🔄 API调用: DELETE /api/vuln/:id');
-    try {
-      require('../api/vulnerabilities').deleteVulnerability(req, res);
-    } catch (error) {
-      console.log('⚠️  数据库不可用，使用Mock数据');
-      const mockData = require('./vuln')['DELETE /api/vuln/:id'];
-      mockData(req, res);
-    }
+    console.log('🔄 [Mock] API调用: DELETE /api/vuln/:id');
+    const mockHandler = mockVulnerabilities['DELETE /api/vuln/:id'];
+    mockHandler(req, res);
   },
 
-  // 审批单管理API - 优先尝试数据库，失败时使用Mock数据
+  // 审批单管理API - 纯Mock模式
   'GET /api/approval': (req: any, res: any) => {
-    console.log('🔄 API调用: GET /api/approval');
-    try {
-      require('../api/approvals').getApprovals(req, res);
-    } catch (error) {
-      console.log('⚠️  数据库不可用，使用Mock数据');
-      const mockData = require('./approval')['GET /api/approval'];
-      mockData(req, res);
-    }
+    console.log('🔄 [Mock] API调用: GET /api/approval');
+    const mockHandler = mockApprovals['GET /api/approval'];
+    mockHandler(req, res);
   },
   'GET /api/approval/:id': (req: any, res: any) => {
-    console.log('🔄 API调用: GET /api/approval/:id');
-    try {
-      require('../api/approvals').getApprovalById(req, res);
-    } catch (error) {
-      console.log('⚠️  数据库不可用，使用Mock数据');
-      const mockData = require('./approval')['GET /api/approval/:id'];
-      mockData(req, res);
-    }
+    console.log('🔄 [Mock] API调用: GET /api/approval/:id');
+    const mockHandler = mockApprovals['GET /api/approval/:id'];
+    mockHandler(req, res);
   },
-  'POST /api/approval': (req: any, res: any) => {
-    console.log('🔄 API调用: POST /api/approval');
-    try {
-      require('../api/approvals').createApproval(req, res);
-    } catch (error) {
-      console.log('⚠️  数据库不可用，使用Mock数据');
-      const mockData = require('./approval')['POST /api/approval'];
-      mockData(req, res);
-    }
+  'POST /api/approval/create': (req: any, res: any) => {
+    console.log('🔄 [Mock] API调用: POST /api/approval/create');
+    const mockHandler = mockApprovals['POST /api/approval/create'];
+    mockHandler(req, res);
   },
   'GET /api/approval/:id/history': (req: any, res: any) => {
-    console.log('🔄 API调用: GET /api/approval/:id/history');
-    try {
-      require('../api/approvals').getApprovalHistory(req, res);
-    } catch (error) {
-      console.log('⚠️  数据库不可用，使用Mock数据');
-      const mockData = require('./approval')['GET /api/approval/:id/history'];
-      mockData(req, res);
-    }
+    console.log('🔄 [Mock] API调用: GET /api/approval/:id/history');
+    const mockHandler = mockApprovals['GET /api/approval/:id/history'];
+    mockHandler(req, res);
   },
   'POST /api/approval/:id/submit': (req: any, res: any) => {
-    console.log('🔄 API调用: POST /api/approval/:id/submit');
-    try {
-      require('../api/approvals').submitApproval(req, res);
-    } catch (error) {
-      console.log('⚠️  数据库不可用，使用Mock数据');
-      const mockData = require('./approval')['POST /api/approval/:id/submit'];
-      mockData(req, res);
-    }
+    console.log('🔄 [Mock] API调用: POST /api/approval/:id/submit');
+    const mockHandler = mockApprovals['POST /api/approval/:id/submit'];
+    mockHandler(req, res);
   },
   'POST /api/approval/:id/remove-vuln': (req: any, res: any) => {
-    console.log('🔄 API调用: POST /api/approval/:id/remove-vuln');
-    try {
-      require('../api/approvals').removeVulnerabilityFromApproval(req, res);
-    } catch (error) {
-      console.log('⚠️  数据库不可用，使用Mock数据');
-      const mockData = require('./approval')['POST /api/approval/:id/remove-vuln'];
-      mockData(req, res);
-    }
+    console.log('🔄 [Mock] API调用: POST /api/approval/:id/remove-vuln');
+    const mockHandler = mockApprovals['POST /api/approval/:id/remove-vuln'];
+    mockHandler(req, res);
   },
   'POST /api/approval/batch-assign': (req: any, res: any) => {
-    console.log('🔄 API调用: POST /api/approval/batch-assign');
-    try {
-      require('../api/approvals').batchAssignVulnerabilities(req, res);
-    } catch (error) {
-      console.log('⚠️  数据库不可用，使用Mock数据');
-      const mockData = require('./approval')['POST /api/approval/batch-assign'];
-      mockData(req, res);
-    }
+    console.log('🔄 [Mock] API调用: POST /api/approval/batch-assign');
+    const mockHandler = mockApprovals['POST /api/approval/batch-assign'];
+    mockHandler(req, res);
   },
 
-  // 保留一些原有的mock数据作为fallback（当数据库API不可用时）
-  ...mockVulnerabilities,
-  ...mockApprovals
+  // 不需要导出...操作符，因为已经明确定义了所有API
 };
