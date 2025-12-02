@@ -297,11 +297,13 @@ const ApprovalDetail: React.FC = () => {
           message.info('该审批单的所有漏洞已处理完毕，审批单已自动关闭');
         }
 
-        // 因为后端已真正同步数据，这里需要刷新整个审批详情
-        // 短暂延迟确保后端数据已完全更新
+        // 立即从本地状态中移除该漏洞，提供即时UI反馈
+        setVulnerabilities(prev => prev.filter(v => v.id !== vulnId));
+
+        // 同时重新从数据库获取最新数据以确保数据同步
         setTimeout(() => {
           fetchApprovalDetail(id!);
-        }, 300);
+        }, 100); // 缩短延迟，确保数据库更新完成
       } else {
         message.error(result.message || '漏洞移除失败');
       }

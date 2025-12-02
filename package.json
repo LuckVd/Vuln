@@ -8,18 +8,24 @@
     "format": "prettier --write \"**/*.{js,jsx,ts,tsx,css,less,scss,json,md}\"",
     "postinstall": "umi setup",
     "setup": "umi setup",
-    "start": "umi dev"
+    "start": "umi dev",
+    "init-db": "node scripts/init-db.js",
+    "init-db-ts": "ts-node database/initDatabase.ts",
+    "init-simple-db": "ts-node database/initSimple.ts"
   },
   "dependencies": {
     "@ant-design/icons": "^5.0.0",
     "antd": "^5.0.0",
+    "mysql2": "^3.15.3",
     "react": "^18.0.0",
     "react-dom": "^18.0.0"
   },
   "devDependencies": {
     "@types/react": "^18.0.0",
     "@types/react-dom": "^18.0.0",
+    "@types/node": "^20.0.0",
     "prettier": "^2.8.0",
+    "ts-node": "^10.9.2",
     "typescript": "^5.0.0",
     "umi": "^4.0.0"
   }

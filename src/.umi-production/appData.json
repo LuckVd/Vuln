@@ -1,0 +1,2154 @@
+{
+  "cwd": "D:\\Code\\Projects\\Vuln",
+  "pkg": {
+    "name": "vuln-management-system",
+    "version": "1.0.0",
+    "description": "漏洞管理系统",
+    "scripts": {
+      "build": "umi build",
+      "dev": "umi dev",
+      "format": "prettier --write \"**/*.{js,jsx,ts,tsx,css,less,scss,json,md}\"",
+      "postinstall": "umi setup",
+      "setup": "umi setup",
+      "start": "umi dev"
+    },
+    "dependencies": {
+      "@ant-design/icons": "^5.0.0",
+      "antd": "^5.0.0",
+      "react": "^18.0.0",
+      "react-dom": "^18.0.0"
+    },
+    "devDependencies": {
+      "@types/react": "^18.0.0",
+      "@types/react-dom": "^18.0.0",
+      "prettier": "^2.8.0",
+      "typescript": "^5.0.0",
+      "umi": "^4.0.0"
+    }
+  },
+  "pkgPath": "D:\\Code\\Projects\\Vuln\\package.json",
+  "plugins": {
+    "./node_modules/@umijs/core/dist/service/servicePlugin": {
+      "cwd": "D:\\Code\\Projects\\Vuln",
+      "type": "preset",
+      "path": "D:/Code/Projects/Vuln/node_modules/@umijs/core/dist/service/servicePlugin.js",
+      "id": "./node_modules/@umijs/core/dist/service/servicePlugin",
+      "key": "servicePlugin",
+      "config": {},
+      "time": {
+        "hooks": {},
+        "register": 1
+      },
+      "enableBy": "register"
+    },
+    "@umijs/preset-umi": {
+      "cwd": "D:\\Code\\Projects\\Vuln",
+      "type": "preset",
+      "path": "D:/Code/Projects/Vuln/node_modules/@umijs/preset-umi/dist/index.js",
+      "id": "@umijs/preset-umi",
+      "key": "umi",
+      "config": {},
+      "time": {
+        "hooks": {},
+        "register": 5
+      },
+      "enableBy": "register"
+    },
+    "./node_modules/@umijs/preset-umi/dist/registerMethods": {
+      "cwd": "D:\\Code\\Projects\\Vuln",
+      "type": "plugin",
+      "path": "D:/Code/Projects/Vuln/node_modules/@umijs/preset-umi/dist/registerMethods.js",
+      "id": "./node_modules/@umijs/preset-umi/dist/registerMethods",
+      "key": "registerMethods",
+      "config": {},
+      "time": {
+        "hooks": {
+          "onStart": [
+            4
+          ]
+        },
+        "register": 2
+      },
+      "enableBy": "register"
+    },
+    "@umijs/did-you-know": {
+      "cwd": "D:\\Code\\Projects\\Vuln",
+      "type": "plugin",
+      "path": "D:/Code/Projects/Vuln/node_modules/@umijs/did-you-know/dist/plugin.js",
+      "id": "@umijs/did-you-know",
+      "key": "umijsDidYouKnow",
+      "config": {},
+      "time": {
+        "hooks": {
+          "onStart": [
+            2
+          ]
+        },
+        "register": 3
+      },
+      "enableBy": "register"
+    },
+    "./node_modules/@umijs/preset-umi/dist/features/404/404": {
+      "cwd": "D:\\Code\\Projects\\Vuln",
+      "type": "plugin",
+      "path": "D:/Code/Projects/Vuln/node_modules/@umijs/preset-umi/dist/features/404/404.js",
+      "id": "./node_modules/@umijs/preset-umi/dist/features/404/404",
+      "key": "404",
+      "config": {},
+      "time": {
+        "hooks": {
+          "modifyRoutes": [
+            0
+          ]
+        },
+        "register": 0
+      },
+      "enableBy": "register"
+    },
+    "./node_modules/@umijs/preset-umi/dist/features/aiDev/aiDev": {
+      "cwd": "D:\\Code\\Projects\\Vuln",
+      "type": "plugin",
+      "path": "D:/Code/Projects/Vuln/node_modules/@umijs/preset-umi/dist/features/aiDev/aiDev.js",
+      "id": "./node_modules/@umijs/preset-umi/dist/features/aiDev/aiDev",
+      "key": "aiDev",
+      "config": {},
+      "time": {
+        "hooks": {},
+        "register": 1
+      },
+      "enableBy": "register"
+    },
+    "./node_modules/@umijs/preset-umi/dist/features/appData/appData": {
+      "cwd": "D:\\Code\\Projects\\Vuln",
+      "type": "plugin",
+      "path": "D:/Code/Projects/Vuln/node_modules/@umijs/preset-umi/dist/features/appData/appData.js",
+      "id": "./node_modules/@umijs/preset-umi/dist/features/appData/appData",
+      "key": "appData",
+      "config": {},
+      "time": {
+        "hooks": {
+          "modifyAppData": [
+            8
+          ]
+        },
+        "register": 23
+      },
+      "enableBy": "register"
+    },
+    "./node_modules/@umijs/preset-umi/dist/features/appData/umiInfo": {
+      "cwd": "D:\\Code\\Projects\\Vuln",
+      "type": "plugin",
+      "path": "D:/Code/Projects/Vuln/node_modules/@umijs/preset-umi/dist/features/appData/umiInfo.js",
+      "id": "./node_modules/@umijs/preset-umi/dist/features/appData/umiInfo",
+      "key": "umiInfo",
+      "config": {},
+      "time": {
+        "hooks": {},
+        "register": 1
+      },
+      "enableBy": "register"
+    },
+    "./node_modules/@umijs/preset-umi/dist/features/check/check": {
+      "cwd": "D:\\Code\\Projects\\Vuln",
+      "type": "plugin",
+      "path": "D:/Code/Projects/Vuln/node_modules/@umijs/preset-umi/dist/features/check/check.js",
+      "id": "./node_modules/@umijs/preset-umi/dist/features/check/check",
+      "key": "check",
+      "config": {},
+      "time": {
+        "hooks": {
+          "onCheckConfig": [
+            0
+          ],
+          "onCheck": [
+            0
+          ]
+        },
+        "register": 1
+      },
+      "enableBy": "register"
+    },
+    "./node_modules/@umijs/preset-umi/dist/features/check/babel722": {
+      "cwd": "D:\\Code\\Projects\\Vuln",
+      "type": "plugin",
+      "path": "D:/Code/Projects/Vuln/node_modules/@umijs/preset-umi/dist/features/check/babel722.js",
+      "id": "./node_modules/@umijs/preset-umi/dist/features/check/babel722",
+      "key": "babel722",
+      "config": {},
+      "time": {
+        "hooks": {
+          "onCheck": [
+            0
+          ]
+        },
+        "register": 0
+      },
+      "enableBy": "register"
+    },
+    "./node_modules/@umijs/preset-umi/dist/features/codeSplitting/codeSplitting": {
+      "cwd": "D:\\Code\\Projects\\Vuln",
+      "type": "plugin",
+      "path": "D:/Code/Projects/Vuln/node_modules/@umijs/preset-umi/dist/features/codeSplitting/codeSplitting.js",
+      "id": "./node_modules/@umijs/preset-umi/dist/features/codeSplitting/codeSplitting",
+      "key": "codeSplitting",
+      "config": {},
+      "time": {
+        "hooks": {},
+        "register": 1
+      },
+      "enableBy": "config"
+    },
+    "./node_modules/@umijs/preset-umi/dist/features/configPlugins/configPlugins": {
+      "cwd": "D:\\Code\\Projects\\Vuln",
+      "type": "plugin",
+      "path": "D:/Code/Projects/Vuln/node_modules/@umijs/preset-umi/dist/features/configPlugins/configPlugins.js",
+      "id": "./node_modules/@umijs/preset-umi/dist/features/configPlugins/configPlugins",
+      "key": "configPlugins",
+      "config": {},
+      "time": {
+        "hooks": {
+          "modifyConfig": [
+            0
+          ]
+        },
+        "register": 6
+      },
+      "enableBy": "register"
+    },
+    "virtual: config-title": {
+      "id": "virtual: config-title",
+      "key": "title",
+      "config": {},
+      "type": "plugin",
+      "enableBy": "register",
+      "time": {
+        "hooks": {},
+        "register": 0
+      }
+    },
+    "virtual: config-styles": {
+      "id": "virtual: config-styles",
+      "key": "styles",
+      "config": {},
+      "type": "plugin",
+      "enableBy": "register",
+      "time": {
+        "hooks": {},
+        "register": 0
+      }
+    },
+    "virtual: config-scripts": {
+      "id": "virtual: config-scripts",
+      "key": "scripts",
+      "config": {},
+      "type": "plugin",
+      "enableBy": "register",
+      "time": {
+        "hooks": {},
+        "register": 0
+      }
+    },
+    "virtual: config-routes": {
+      "id": "virtual: config-routes",
+      "key": "routes",
+      "config": {
+        "onChange": "regenerateTmpFiles"
+      },
+      "type": "plugin",
+      "enableBy": "register",
+      "time": {
+        "hooks": {},
+        "register": 0
+      }
+    },
+    "virtual: config-routeLoader": {
+      "id": "virtual: config-routeLoader",
+      "key": "routeLoader",
+      "config": {
+        "default": {
+          "moduleType": "esm"
+        }
+      },
+      "type": "plugin",
+      "enableBy": "register",
+      "time": {
+        "hooks": {},
+        "register": 0
+      }
+    },
+    "virtual: config-reactRouter5Compat": {
+      "id": "virtual: config-reactRouter5Compat",
+      "key": "reactRouter5Compat",
+      "config": {},
+      "type": "plugin",
+      "enableBy": "register",
+      "time": {
+        "hooks": {},
+        "register": 0
+      }
+    },
+    "virtual: config-presets": {
+      "id": "virtual: config-presets",
+      "key": "presets",
+      "config": {},
+      "type": "plugin",
+      "enableBy": "register",
+      "time": {
+        "hooks": {},
+        "register": 0
+      }
+    },
+    "virtual: config-plugins": {
+      "id": "virtual: config-plugins",
+      "key": "plugins",
+      "config": {},
+      "type": "plugin",
+      "enableBy": "register",
+      "time": {
+        "hooks": {},
+        "register": 0
+      }
+    },
+    "virtual: config-npmClient": {
+      "id": "virtual: config-npmClient",
+      "key": "npmClient",
+      "config": {},
+      "type": "plugin",
+      "enableBy": "register",
+      "time": {
+        "hooks": {},
+        "register": 0
+      }
+    },
+    "virtual: config-mountElementId": {
+      "id": "virtual: config-mountElementId",
+      "key": "mountElementId",
+      "config": {
+        "default": "root"
+      },
+      "type": "plugin",
+      "enableBy": "register",
+      "time": {
+        "hooks": {},
+        "register": 0
+      }
+    },
+    "virtual: config-metas": {
+      "id": "virtual: config-metas",
+      "key": "metas",
+      "config": {},
+      "type": "plugin",
+      "enableBy": "register",
+      "time": {
+        "hooks": {},
+        "register": 0
+      }
+    },
+    "virtual: config-links": {
+      "id": "virtual: config-links",
+      "key": "links",
+      "config": {},
+      "type": "plugin",
+      "enableBy": "register",
+      "time": {
+        "hooks": {},
+        "register": 0
+      }
+    },
+    "virtual: config-historyWithQuery": {
+      "id": "virtual: config-historyWithQuery",
+      "key": "historyWithQuery",
+      "config": {},
+      "type": "plugin",
+      "enableBy": "register",
+      "time": {
+        "hooks": {},
+        "register": 0
+      }
+    },
+    "virtual: config-history": {
+      "id": "virtual: config-history",
+      "key": "history",
+      "config": {
+        "default": {
+          "type": "browser"
+        }
+      },
+      "type": "plugin",
+      "enableBy": "register",
+      "time": {
+        "hooks": {},
+        "register": 0
+      }
+    },
+    "virtual: config-headScripts": {
+      "id": "virtual: config-headScripts",
+      "key": "headScripts",
+      "config": {},
+      "type": "plugin",
+      "enableBy": "register",
+      "time": {
+        "hooks": {},
+        "register": 0
+      }
+    },
+    "virtual: config-esbuildMinifyIIFE": {
+      "id": "virtual: config-esbuildMinifyIIFE",
+      "key": "esbuildMinifyIIFE",
+      "config": {},
+      "type": "plugin",
+      "enableBy": "register",
+      "time": {
+        "hooks": {},
+        "register": 0
+      }
+    },
+    "virtual: config-conventionRoutes": {
+      "id": "virtual: config-conventionRoutes",
+      "key": "conventionRoutes",
+      "config": {},
+      "type": "plugin",
+      "enableBy": "register",
+      "time": {
+        "hooks": {},
+        "register": 0
+      }
+    },
+    "virtual: config-conventionLayout": {
+      "id": "virtual: config-conventionLayout",
+      "key": "conventionLayout",
+      "config": {},
+      "type": "plugin",
+      "enableBy": "register",
+      "time": {
+        "hooks": {},
+        "register": 0
+      }
+    },
+    "virtual: config-base": {
+      "id": "virtual: config-base",
+      "key": "base",
+      "config": {
+        "default": "/"
+      },
+      "type": "plugin",
+      "enableBy": "register",
+      "time": {
+        "hooks": {},
+        "register": 0
+      }
+    },
+    "virtual: config-analyze": {
+      "id": "virtual: config-analyze",
+      "key": "analyze",
+      "config": {},
+      "type": "plugin",
+      "enableBy": "register",
+      "time": {
+        "hooks": {},
+        "register": 0
+      }
+    },
+    "virtual: config-writeToDisk": {
+      "id": "virtual: config-writeToDisk",
+      "key": "writeToDisk",
+      "config": {},
+      "type": "plugin",
+      "enableBy": "register",
+      "time": {
+        "hooks": {},
+        "register": 0
+      }
+    },
+    "virtual: config-transformRuntime": {
+      "id": "virtual: config-transformRuntime",
+      "key": "transformRuntime",
+      "config": {},
+      "type": "plugin",
+      "enableBy": "register",
+      "time": {
+        "hooks": {},
+        "register": 0
+      }
+    },
+    "virtual: config-theme": {
+      "id": "virtual: config-theme",
+      "key": "theme",
+      "config": {},
+      "type": "plugin",
+      "enableBy": "register",
+      "time": {
+        "hooks": {},
+        "register": 0
+      }
+    },
+    "virtual: config-targets": {
+      "id": "virtual: config-targets",
+      "key": "targets",
+      "config": {},
+      "type": "plugin",
+      "enableBy": "register",
+      "time": {
+        "hooks": {},
+        "register": 0
+      }
+    },
+    "virtual: config-svgr": {
+      "id": "virtual: config-svgr",
+      "key": "svgr",
+      "config": {
+        "default": {}
+      },
+      "type": "plugin",
+      "enableBy": "register",
+      "time": {
+        "hooks": {},
+        "register": 0
+      }
+    },
+    "virtual: config-svgo": {
+      "id": "virtual: config-svgo",
+      "key": "svgo",
+      "config": {},
+      "type": "plugin",
+      "enableBy": "register",
+      "time": {
+        "hooks": {},
+        "register": 0
+      }
+    },
+    "virtual: config-stylusLoader": {
+      "id": "virtual: config-stylusLoader",
+      "key": "stylusLoader",
+      "config": {},
+      "type": "plugin",
+      "enableBy": "register",
+      "time": {
+        "hooks": {},
+        "register": 0
+      }
+    },
+    "virtual: config-styleLoader": {
+      "id": "virtual: config-styleLoader",
+      "key": "styleLoader",
+      "config": {},
+      "type": "plugin",
+      "enableBy": "register",
+      "time": {
+        "hooks": {},
+        "register": 0
+      }
+    },
+    "virtual: config-srcTranspilerOptions": {
+      "id": "virtual: config-srcTranspilerOptions",
+      "key": "srcTranspilerOptions",
+      "config": {},
+      "type": "plugin",
+      "enableBy": "register",
+      "time": {
+        "hooks": {},
+        "register": 0
+      }
+    },
+    "virtual: config-srcTranspiler": {
+      "id": "virtual: config-srcTranspiler",
+      "key": "srcTranspiler",
+      "config": {},
+      "type": "plugin",
+      "enableBy": "register",
+      "time": {
+        "hooks": {},
+        "register": 0
+      }
+    },
+    "virtual: config-sassLoader": {
+      "id": "virtual: config-sassLoader",
+      "key": "sassLoader",
+      "config": {},
+      "type": "plugin",
+      "enableBy": "register",
+      "time": {
+        "hooks": {},
+        "register": 0
+      }
+    },
+    "virtual: config-runtimePublicPath": {
+      "id": "virtual: config-runtimePublicPath",
+      "key": "runtimePublicPath",
+      "config": {},
+      "type": "plugin",
+      "enableBy": "register",
+      "time": {
+        "hooks": {},
+        "register": 0
+      }
+    },
+    "virtual: config-purgeCSS": {
+      "id": "virtual: config-purgeCSS",
+      "key": "purgeCSS",
+      "config": {},
+      "type": "plugin",
+      "enableBy": "register",
+      "time": {
+        "hooks": {},
+        "register": 0
+      }
+    },
+    "virtual: config-publicPath": {
+      "id": "virtual: config-publicPath",
+      "key": "publicPath",
+      "config": {
+        "default": "/"
+      },
+      "type": "plugin",
+      "enableBy": "register",
+      "time": {
+        "hooks": {},
+        "register": 0
+      }
+    },
+    "virtual: config-proxy": {
+      "id": "virtual: config-proxy",
+      "key": "proxy",
+      "config": {},
+      "type": "plugin",
+      "enableBy": "register",
+      "time": {
+        "hooks": {},
+        "register": 0
+      }
+    },
+    "virtual: config-postcssLoader": {
+      "id": "virtual: config-postcssLoader",
+      "key": "postcssLoader",
+      "config": {},
+      "type": "plugin",
+      "enableBy": "register",
+      "time": {
+        "hooks": {},
+        "register": 0
+      }
+    },
+    "virtual: config-outputPath": {
+      "id": "virtual: config-outputPath",
+      "key": "outputPath",
+      "config": {},
+      "type": "plugin",
+      "enableBy": "register",
+      "time": {
+        "hooks": {},
+        "register": 0
+      }
+    },
+    "virtual: config-normalCSSLoaderModules": {
+      "id": "virtual: config-normalCSSLoaderModules",
+      "key": "normalCSSLoaderModules",
+      "config": {},
+      "type": "plugin",
+      "enableBy": "register",
+      "time": {
+        "hooks": {},
+        "register": 0
+      }
+    },
+    "virtual: config-mfsu": {
+      "id": "virtual: config-mfsu",
+      "key": "mfsu",
+      "config": {
+        "default": {
+          "strategy": "eager"
+        }
+      },
+      "type": "plugin",
+      "enableBy": "register",
+      "time": {
+        "hooks": {},
+        "register": 0
+      }
+    },
+    "virtual: config-mdx": {
+      "id": "virtual: config-mdx",
+      "key": "mdx",
+      "config": {},
+      "type": "plugin",
+      "enableBy": "register",
+      "time": {
+        "hooks": {},
+        "register": 0
+      }
+    },
+    "virtual: config-manifest": {
+      "id": "virtual: config-manifest",
+      "key": "manifest",
+      "config": {},
+      "type": "plugin",
+      "enableBy": "register",
+      "time": {
+        "hooks": {},
+        "register": 0
+      }
+    },
+    "virtual: config-lessLoader": {
+      "id": "virtual: config-lessLoader",
+      "key": "lessLoader",
+      "config": {},
+      "type": "plugin",
+      "enableBy": "register",
+      "time": {
+        "hooks": {},
+        "register": 0
+      }
+    },
+    "virtual: config-jsMinifierOptions": {
+      "id": "virtual: config-jsMinifierOptions",
+      "key": "jsMinifierOptions",
+      "config": {},
+      "type": "plugin",
+      "enableBy": "register",
+      "time": {
+        "hooks": {},
+        "register": 0
+      }
+    },
+    "virtual: config-jsMinifier": {
+      "id": "virtual: config-jsMinifier",
+      "key": "jsMinifier",
+      "config": {},
+      "type": "plugin",
+      "enableBy": "register",
+      "time": {
+        "hooks": {},
+        "register": 0
+      }
+    },
+    "virtual: config-inlineLimit": {
+      "id": "virtual: config-inlineLimit",
+      "key": "inlineLimit",
+      "config": {},
+      "type": "plugin",
+      "enableBy": "register",
+      "time": {
+        "hooks": {},
+        "register": 0
+      }
+    },
+    "virtual: config-ignoreMomentLocale": {
+      "id": "virtual: config-ignoreMomentLocale",
+      "key": "ignoreMomentLocale",
+      "config": {
+        "default": true
+      },
+      "type": "plugin",
+      "enableBy": "register",
+      "time": {
+        "hooks": {},
+        "register": 0
+      }
+    },
+    "virtual: config-https": {
+      "id": "virtual: config-https",
+      "key": "https",
+      "config": {},
+      "type": "plugin",
+      "enableBy": "register",
+      "time": {
+        "hooks": {},
+        "register": 0
+      }
+    },
+    "virtual: config-hash": {
+      "id": "virtual: config-hash",
+      "key": "hash",
+      "config": {},
+      "type": "plugin",
+      "enableBy": "register",
+      "time": {
+        "hooks": {},
+        "register": 0
+      }
+    },
+    "virtual: config-forkTSChecker": {
+      "id": "virtual: config-forkTSChecker",
+      "key": "forkTSChecker",
+      "config": {},
+      "type": "plugin",
+      "enableBy": "register",
+      "time": {
+        "hooks": {},
+        "register": 0
+      }
+    },
+    "virtual: config-fastRefresh": {
+      "id": "virtual: config-fastRefresh",
+      "key": "fastRefresh",
+      "config": {},
+      "type": "plugin",
+      "enableBy": "register",
+      "time": {
+        "hooks": {},
+        "register": 0
+      }
+    },
+    "virtual: config-extraPostCSSPlugins": {
+      "id": "virtual: config-extraPostCSSPlugins",
+      "key": "extraPostCSSPlugins",
+      "config": {},
+      "type": "plugin",
+      "enableBy": "register",
+      "time": {
+        "hooks": {},
+        "register": 0
+      }
+    },
+    "virtual: config-extraBabelPresets": {
+      "id": "virtual: config-extraBabelPresets",
+      "key": "extraBabelPresets",
+      "config": {},
+      "type": "plugin",
+      "enableBy": "register",
+      "time": {
+        "hooks": {},
+        "register": 0
+      }
+    },
+    "virtual: config-extraBabelPlugins": {
+      "id": "virtual: config-extraBabelPlugins",
+      "key": "extraBabelPlugins",
+      "config": {},
+      "type": "plugin",
+      "enableBy": "register",
+      "time": {
+        "hooks": {},
+        "register": 0
+      }
+    },
+    "virtual: config-extraBabelIncludes": {
+      "id": "virtual: config-extraBabelIncludes",
+      "key": "extraBabelIncludes",
+      "config": {},
+      "type": "plugin",
+      "enableBy": "register",
+      "time": {
+        "hooks": {},
+        "register": 0
+      }
+    },
+    "virtual: config-externals": {
+      "id": "virtual: config-externals",
+      "key": "externals",
+      "config": {
+        "default": {}
+      },
+      "type": "plugin",
+      "enableBy": "register",
+      "time": {
+        "hooks": {},
+        "register": 0
+      }
+    },
+    "virtual: config-esm": {
+      "id": "virtual: config-esm",
+      "key": "esm",
+      "config": {},
+      "type": "plugin",
+      "enableBy": "register",
+      "time": {
+        "hooks": {},
+        "register": 0
+      }
+    },
+    "virtual: config-devtool": {
+      "id": "virtual: config-devtool",
+      "key": "devtool",
+      "config": {},
+      "type": "plugin",
+      "enableBy": "register",
+      "time": {
+        "hooks": {},
+        "register": 0
+      }
+    },
+    "virtual: config-depTranspiler": {
+      "id": "virtual: config-depTranspiler",
+      "key": "depTranspiler",
+      "config": {},
+      "type": "plugin",
+      "enableBy": "register",
+      "time": {
+        "hooks": {},
+        "register": 0
+      }
+    },
+    "virtual: config-define": {
+      "id": "virtual: config-define",
+      "key": "define",
+      "config": {},
+      "type": "plugin",
+      "enableBy": "register",
+      "time": {
+        "hooks": {},
+        "register": 0
+      }
+    },
+    "virtual: config-deadCode": {
+      "id": "virtual: config-deadCode",
+      "key": "deadCode",
+      "config": {},
+      "type": "plugin",
+      "enableBy": "register",
+      "time": {
+        "hooks": {},
+        "register": 0
+      }
+    },
+    "virtual: config-cssPublicPath": {
+      "id": "virtual: config-cssPublicPath",
+      "key": "cssPublicPath",
+      "config": {},
+      "type": "plugin",
+      "enableBy": "register",
+      "time": {
+        "hooks": {},
+        "register": 0
+      }
+    },
+    "virtual: config-cssMinifierOptions": {
+      "id": "virtual: config-cssMinifierOptions",
+      "key": "cssMinifierOptions",
+      "config": {},
+      "type": "plugin",
+      "enableBy": "register",
+      "time": {
+        "hooks": {},
+        "register": 0
+      }
+    },
+    "virtual: config-cssMinifier": {
+      "id": "virtual: config-cssMinifier",
+      "key": "cssMinifier",
+      "config": {},
+      "type": "plugin",
+      "enableBy": "register",
+      "time": {
+        "hooks": {},
+        "register": 0
+      }
+    },
+    "virtual: config-cssLoaderModules": {
+      "id": "virtual: config-cssLoaderModules",
+      "key": "cssLoaderModules",
+      "config": {},
+      "type": "plugin",
+      "enableBy": "register",
+      "time": {
+        "hooks": {},
+        "register": 0
+      }
+    },
+    "virtual: config-cssLoader": {
+      "id": "virtual: config-cssLoader",
+      "key": "cssLoader",
+      "config": {},
+      "type": "plugin",
+      "enableBy": "register",
+      "time": {
+        "hooks": {},
+        "register": 0
+      }
+    },
+    "virtual: config-copy": {
+      "id": "virtual: config-copy",
+      "key": "copy",
+      "config": {},
+      "type": "plugin",
+      "enableBy": "register",
+      "time": {
+        "hooks": {},
+        "register": 0
+      }
+    },
+    "virtual: config-checkDepCssModules": {
+      "id": "virtual: config-checkDepCssModules",
+      "key": "checkDepCssModules",
+      "config": {},
+      "type": "plugin",
+      "enableBy": "register",
+      "time": {
+        "hooks": {},
+        "register": 0
+      }
+    },
+    "virtual: config-chainWebpack": {
+      "id": "virtual: config-chainWebpack",
+      "key": "chainWebpack",
+      "config": {},
+      "type": "plugin",
+      "enableBy": "register",
+      "time": {
+        "hooks": {},
+        "register": 0
+      }
+    },
+    "virtual: config-cacheDirectoryPath": {
+      "id": "virtual: config-cacheDirectoryPath",
+      "key": "cacheDirectoryPath",
+      "config": {},
+      "type": "plugin",
+      "enableBy": "register",
+      "time": {
+        "hooks": {},
+        "register": 0
+      }
+    },
+    "virtual: config-babelLoaderCustomize": {
+      "id": "virtual: config-babelLoaderCustomize",
+      "key": "babelLoaderCustomize",
+      "config": {},
+      "type": "plugin",
+      "enableBy": "register",
+      "time": {
+        "hooks": {},
+        "register": 0
+      }
+    },
+    "virtual: config-autoprefixer": {
+      "id": "virtual: config-autoprefixer",
+      "key": "autoprefixer",
+      "config": {},
+      "type": "plugin",
+      "enableBy": "register",
+      "time": {
+        "hooks": {},
+        "register": 0
+      }
+    },
+    "virtual: config-autoCSSModules": {
+      "id": "virtual: config-autoCSSModules",
+      "key": "autoCSSModules",
+      "config": {
+        "default": true
+      },
+      "type": "plugin",
+      "enableBy": "register",
+      "time": {
+        "hooks": {},
+        "register": 0
+      }
+    },
+    "virtual: config-alias": {
+      "id": "virtual: config-alias",
+      "key": "alias",
+      "config": {
+        "default": {
+          "umi": "@@/exports",
+          "react": "D:\\Code\\Projects\\Vuln\\node_modules\\react",
+          "react-dom": "D:\\Code\\Projects\\Vuln\\node_modules\\react-dom",
+          "react-router": "D:\\Code\\Projects\\Vuln\\node_modules\\react-router",
+          "react-router-dom": "D:\\Code\\Projects\\Vuln\\node_modules\\react-router-dom"
+        }
+      },
+      "type": "plugin",
+      "enableBy": "register",
+      "time": {
+        "hooks": {},
+        "register": 0
+      }
+    },
+    "./node_modules/@umijs/preset-umi/dist/features/crossorigin/crossorigin": {
+      "cwd": "D:\\Code\\Projects\\Vuln",
+      "type": "plugin",
+      "path": "D:/Code/Projects/Vuln/node_modules/@umijs/preset-umi/dist/features/crossorigin/crossorigin.js",
+      "id": "./node_modules/@umijs/preset-umi/dist/features/crossorigin/crossorigin",
+      "key": "crossorigin",
+      "config": {},
+      "time": {
+        "hooks": {},
+        "register": 1
+      },
+      "enableBy": "config"
+    },
+    "./node_modules/@umijs/preset-umi/dist/features/depsOnDemand/depsOnDemand": {
+      "cwd": "D:\\Code\\Projects\\Vuln",
+      "type": "plugin",
+      "path": "D:/Code/Projects/Vuln/node_modules/@umijs/preset-umi/dist/features/depsOnDemand/depsOnDemand.js",
+      "id": "./node_modules/@umijs/preset-umi/dist/features/depsOnDemand/depsOnDemand",
+      "key": "depsOnDemand",
+      "config": {},
+      "time": {
+        "hooks": {
+          "onStart": [
+            1
+          ]
+        },
+        "register": 0
+      },
+      "enableBy": "register"
+    },
+    "./node_modules/@umijs/preset-umi/dist/features/devTool/devTool": {
+      "cwd": "D:\\Code\\Projects\\Vuln",
+      "type": "plugin",
+      "path": "D:/Code/Projects/Vuln/node_modules/@umijs/preset-umi/dist/features/devTool/devTool.js",
+      "id": "./node_modules/@umijs/preset-umi/dist/features/devTool/devTool",
+      "key": "devTool",
+      "config": {},
+      "time": {
+        "hooks": {},
+        "register": 1
+      },
+      "enableBy": "register"
+    },
+    "./node_modules/@umijs/preset-umi/dist/features/esbuildHelperChecker/esbuildHelperChecker": {
+      "cwd": "D:\\Code\\Projects\\Vuln",
+      "type": "plugin",
+      "path": "D:/Code/Projects/Vuln/node_modules/@umijs/preset-umi/dist/features/esbuildHelperChecker/esbuildHelperChecker.js",
+      "id": "./node_modules/@umijs/preset-umi/dist/features/esbuildHelperChecker/esbuildHelperChecker",
+      "key": "esbuildHelperChecker",
+      "config": {},
+      "time": {
+        "hooks": {},
+        "register": 81
+      },
+      "enableBy": "register"
+    },
+    "./node_modules/@umijs/preset-umi/dist/features/esmi/esmi": {
+      "cwd": "D:\\Code\\Projects\\Vuln",
+      "type": "plugin",
+      "path": "D:/Code/Projects/Vuln/node_modules/@umijs/preset-umi/dist/features/esmi/esmi.js",
+      "id": "./node_modules/@umijs/preset-umi/dist/features/esmi/esmi",
+      "key": "esmi",
+      "config": {},
+      "time": {
+        "hooks": {},
+        "register": 35
+      },
+      "enableBy": "config"
+    },
+    "./node_modules/@umijs/preset-umi/dist/features/exportStatic/exportStatic": {
+      "cwd": "D:\\Code\\Projects\\Vuln",
+      "type": "plugin",
+      "path": "D:/Code/Projects/Vuln/node_modules/@umijs/preset-umi/dist/features/exportStatic/exportStatic.js",
+      "id": "./node_modules/@umijs/preset-umi/dist/features/exportStatic/exportStatic",
+      "key": "exportStatic",
+      "config": {},
+      "time": {
+        "hooks": {},
+        "register": 19
+      },
+      "enableBy": "config"
+    },
+    "./node_modules/@umijs/preset-umi/dist/features/favicons/favicons": {
+      "cwd": "D:\\Code\\Projects\\Vuln",
+      "type": "plugin",
+      "path": "D:/Code/Projects/Vuln/node_modules/@umijs/preset-umi/dist/features/favicons/favicons.js",
+      "id": "./node_modules/@umijs/preset-umi/dist/features/favicons/favicons",
+      "key": "favicons",
+      "config": {},
+      "time": {
+        "hooks": {
+          "modifyAppData": [
+            0
+          ]
+        },
+        "register": 0
+      },
+      "enableBy": "register"
+    },
+    "./node_modules/@umijs/preset-umi/dist/features/helmet/helmet": {
+      "cwd": "D:\\Code\\Projects\\Vuln",
+      "type": "plugin",
+      "path": "D:/Code/Projects/Vuln/node_modules/@umijs/preset-umi/dist/features/helmet/helmet.js",
+      "id": "./node_modules/@umijs/preset-umi/dist/features/helmet/helmet",
+      "key": "helmet",
+      "config": {},
+      "time": {
+        "hooks": {},
+        "register": 1
+      },
+      "enableBy": "register"
+    },
+    "./node_modules/@umijs/preset-umi/dist/features/icons/icons": {
+      "cwd": "D:\\Code\\Projects\\Vuln",
+      "type": "plugin",
+      "path": "D:/Code/Projects/Vuln/node_modules/@umijs/preset-umi/dist/features/icons/icons.js",
+      "id": "./node_modules/@umijs/preset-umi/dist/features/icons/icons",
+      "key": "icons",
+      "config": {},
+      "time": {
+        "hooks": {},
+        "register": 1
+      },
+      "enableBy": "config"
+    },
+    "./node_modules/@umijs/preset-umi/dist/features/mock/mock": {
+      "cwd": "D:\\Code\\Projects\\Vuln",
+      "type": "plugin",
+      "path": "D:/Code/Projects/Vuln/node_modules/@umijs/preset-umi/dist/features/mock/mock.js",
+      "id": "./node_modules/@umijs/preset-umi/dist/features/mock/mock",
+      "key": "mock",
+      "config": {},
+      "time": {
+        "hooks": {},
+        "register": 32
+      }
+    },
+    "./node_modules/@umijs/preset-umi/dist/features/mpa/mpa": {
+      "cwd": "D:\\Code\\Projects\\Vuln",
+      "type": "plugin",
+      "path": "D:/Code/Projects/Vuln/node_modules/@umijs/preset-umi/dist/features/mpa/mpa.js",
+      "id": "./node_modules/@umijs/preset-umi/dist/features/mpa/mpa",
+      "key": "mpa",
+      "config": {},
+      "time": {
+        "hooks": {},
+        "register": 1
+      },
+      "enableBy": "config"
+    },
+    "./node_modules/@umijs/preset-umi/dist/features/okam/okam": {
+      "cwd": "D:\\Code\\Projects\\Vuln",
+      "type": "plugin",
+      "path": "D:/Code/Projects/Vuln/node_modules/@umijs/preset-umi/dist/features/okam/okam.js",
+      "id": "./node_modules/@umijs/preset-umi/dist/features/okam/okam",
+      "key": "okam",
+      "config": {},
+      "time": {
+        "hooks": {},
+        "register": 1
+      }
+    },
+    "./node_modules/@umijs/preset-umi/dist/features/overrides/overrides": {
+      "cwd": "D:\\Code\\Projects\\Vuln",
+      "type": "plugin",
+      "path": "D:/Code/Projects/Vuln/node_modules/@umijs/preset-umi/dist/features/overrides/overrides.js",
+      "id": "./node_modules/@umijs/preset-umi/dist/features/overrides/overrides",
+      "key": "overrides",
+      "config": {},
+      "time": {
+        "hooks": {},
+        "register": 0
+      },
+      "enableBy": "register"
+    },
+    "./node_modules/@umijs/preset-umi/dist/features/phantomDependency/phantomDependency": {
+      "cwd": "D:\\Code\\Projects\\Vuln",
+      "type": "plugin",
+      "path": "D:/Code/Projects/Vuln/node_modules/@umijs/preset-umi/dist/features/phantomDependency/phantomDependency.js",
+      "id": "./node_modules/@umijs/preset-umi/dist/features/phantomDependency/phantomDependency",
+      "key": "phantomDependency",
+      "config": {},
+      "time": {
+        "hooks": {},
+        "register": 1
+      },
+      "enableBy": "config"
+    },
+    "./node_modules/@umijs/preset-umi/dist/features/polyfill/polyfill": {
+      "cwd": "D:\\Code\\Projects\\Vuln",
+      "type": "plugin",
+      "path": "D:/Code/Projects/Vuln/node_modules/@umijs/preset-umi/dist/features/polyfill/polyfill.js",
+      "id": "./node_modules/@umijs/preset-umi/dist/features/polyfill/polyfill",
+      "key": "polyfill",
+      "config": {},
+      "time": {
+        "hooks": {
+          "modifyConfig": [
+            1
+          ]
+        },
+        "register": 2
+      }
+    },
+    "./node_modules/@umijs/preset-umi/dist/features/polyfill/publicPathPolyfill": {
+      "cwd": "D:\\Code\\Projects\\Vuln",
+      "type": "plugin",
+      "path": "D:/Code/Projects/Vuln/node_modules/@umijs/preset-umi/dist/features/polyfill/publicPathPolyfill.js",
+      "id": "./node_modules/@umijs/preset-umi/dist/features/polyfill/publicPathPolyfill",
+      "key": "publicPathPolyfill",
+      "config": {},
+      "time": {
+        "hooks": {},
+        "register": 0
+      },
+      "enableBy": "register"
+    },
+    "./node_modules/@umijs/preset-umi/dist/features/prepare/prepare": {
+      "cwd": "D:\\Code\\Projects\\Vuln",
+      "type": "plugin",
+      "path": "D:/Code/Projects/Vuln/node_modules/@umijs/preset-umi/dist/features/prepare/prepare.js",
+      "id": "./node_modules/@umijs/preset-umi/dist/features/prepare/prepare",
+      "key": "prepare",
+      "config": {},
+      "time": {
+        "hooks": {},
+        "register": 2
+      },
+      "enableBy": "register"
+    },
+    "./node_modules/@umijs/preset-umi/dist/features/routePrefetch/routePrefetch": {
+      "cwd": "D:\\Code\\Projects\\Vuln",
+      "type": "plugin",
+      "path": "D:/Code/Projects/Vuln/node_modules/@umijs/preset-umi/dist/features/routePrefetch/routePrefetch.js",
+      "id": "./node_modules/@umijs/preset-umi/dist/features/routePrefetch/routePrefetch",
+      "key": "routePrefetch",
+      "config": {},
+      "time": {
+        "hooks": {},
+        "register": 0
+      },
+      "enableBy": "config"
+    },
+    "./node_modules/@umijs/preset-umi/dist/features/stagewise/stagewise": {
+      "cwd": "D:\\Code\\Projects\\Vuln",
+      "type": "plugin",
+      "path": "D:/Code/Projects/Vuln/node_modules/@umijs/preset-umi/dist/features/stagewise/stagewise.js",
+      "id": "./node_modules/@umijs/preset-umi/dist/features/stagewise/stagewise",
+      "key": "stagewise",
+      "config": {},
+      "time": {
+        "hooks": {},
+        "register": 1
+      },
+      "enableBy": "config"
+    },
+    "./node_modules/@umijs/preset-umi/dist/features/terminal/terminal": {
+      "cwd": "D:\\Code\\Projects\\Vuln",
+      "type": "plugin",
+      "path": "D:/Code/Projects/Vuln/node_modules/@umijs/preset-umi/dist/features/terminal/terminal.js",
+      "id": "./node_modules/@umijs/preset-umi/dist/features/terminal/terminal",
+      "key": "terminal",
+      "config": {},
+      "time": {
+        "hooks": {},
+        "register": 0
+      },
+      "enableBy": "register"
+    },
+    "./node_modules/@umijs/preset-umi/dist/features/tmpFiles/tmpFiles": {
+      "cwd": "D:\\Code\\Projects\\Vuln",
+      "type": "plugin",
+      "path": "D:/Code/Projects/Vuln/node_modules/@umijs/preset-umi/dist/features/tmpFiles/tmpFiles.js",
+      "id": "./node_modules/@umijs/preset-umi/dist/features/tmpFiles/tmpFiles",
+      "key": "tmpFiles",
+      "config": {},
+      "time": {
+        "hooks": {},
+        "register": 5
+      },
+      "enableBy": "register"
+    },
+    "./node_modules/@umijs/preset-umi/dist/features/clientLoader/clientLoader": {
+      "cwd": "D:\\Code\\Projects\\Vuln",
+      "type": "plugin",
+      "path": "D:/Code/Projects/Vuln/node_modules/@umijs/preset-umi/dist/features/clientLoader/clientLoader.js",
+      "id": "./node_modules/@umijs/preset-umi/dist/features/clientLoader/clientLoader",
+      "key": "clientLoader",
+      "config": {},
+      "time": {
+        "hooks": {},
+        "register": 1
+      },
+      "enableBy": "config"
+    },
+    "./node_modules/@umijs/preset-umi/dist/features/routeProps/routeProps": {
+      "cwd": "D:\\Code\\Projects\\Vuln",
+      "type": "plugin",
+      "path": "D:/Code/Projects/Vuln/node_modules/@umijs/preset-umi/dist/features/routeProps/routeProps.js",
+      "id": "./node_modules/@umijs/preset-umi/dist/features/routeProps/routeProps",
+      "key": "routeProps",
+      "config": {},
+      "time": {
+        "hooks": {},
+        "register": 1
+      }
+    },
+    "./node_modules/@umijs/preset-umi/dist/features/ssr/ssr": {
+      "cwd": "D:\\Code\\Projects\\Vuln",
+      "type": "plugin",
+      "path": "D:/Code/Projects/Vuln/node_modules/@umijs/preset-umi/dist/features/ssr/ssr.js",
+      "id": "./node_modules/@umijs/preset-umi/dist/features/ssr/ssr",
+      "key": "ssr",
+      "config": {},
+      "time": {
+        "hooks": {},
+        "register": 3
+      },
+      "enableBy": "config"
+    },
+    "./node_modules/@umijs/preset-umi/dist/features/tmpFiles/configTypes": {
+      "cwd": "D:\\Code\\Projects\\Vuln",
+      "type": "plugin",
+      "path": "D:/Code/Projects/Vuln/node_modules/@umijs/preset-umi/dist/features/tmpFiles/configTypes.js",
+      "id": "./node_modules/@umijs/preset-umi/dist/features/tmpFiles/configTypes",
+      "key": "configTypes",
+      "config": {},
+      "time": {
+        "hooks": {},
+        "register": 2
+      },
+      "enableBy": "register"
+    },
+    "./node_modules/@umijs/preset-umi/dist/features/transform/transform": {
+      "cwd": "D:\\Code\\Projects\\Vuln",
+      "type": "plugin",
+      "path": "D:/Code/Projects/Vuln/node_modules/@umijs/preset-umi/dist/features/transform/transform.js",
+      "id": "./node_modules/@umijs/preset-umi/dist/features/transform/transform",
+      "key": "transform",
+      "config": {},
+      "time": {
+        "hooks": {},
+        "register": 4
+      },
+      "enableBy": "register"
+    },
+    "./node_modules/@umijs/preset-umi/dist/features/lowImport/lowImport": {
+      "cwd": "D:\\Code\\Projects\\Vuln",
+      "type": "plugin",
+      "path": "D:/Code/Projects/Vuln/node_modules/@umijs/preset-umi/dist/features/lowImport/lowImport.js",
+      "id": "./node_modules/@umijs/preset-umi/dist/features/lowImport/lowImport",
+      "key": "lowImport",
+      "config": {},
+      "time": {
+        "hooks": {},
+        "register": 2
+      },
+      "enableBy": "config"
+    },
+    "./node_modules/@umijs/preset-umi/dist/features/vite/vite": {
+      "cwd": "D:\\Code\\Projects\\Vuln",
+      "type": "plugin",
+      "path": "D:/Code/Projects/Vuln/node_modules/@umijs/preset-umi/dist/features/vite/vite.js",
+      "id": "./node_modules/@umijs/preset-umi/dist/features/vite/vite",
+      "key": "vite",
+      "config": {},
+      "time": {
+        "hooks": {},
+        "register": 1
+      },
+      "enableBy": "config"
+    },
+    "./node_modules/@umijs/preset-umi/dist/features/apiRoute/apiRoute": {
+      "cwd": "D:\\Code\\Projects\\Vuln",
+      "type": "plugin",
+      "path": "D:/Code/Projects/Vuln/node_modules/@umijs/preset-umi/dist/features/apiRoute/apiRoute.js",
+      "id": "./node_modules/@umijs/preset-umi/dist/features/apiRoute/apiRoute",
+      "key": "apiRoute",
+      "config": {},
+      "time": {
+        "hooks": {},
+        "register": 5
+      }
+    },
+    "./node_modules/@umijs/preset-umi/dist/features/monorepo/redirect": {
+      "cwd": "D:\\Code\\Projects\\Vuln",
+      "type": "plugin",
+      "path": "D:/Code/Projects/Vuln/node_modules/@umijs/preset-umi/dist/features/monorepo/redirect.js",
+      "id": "./node_modules/@umijs/preset-umi/dist/features/monorepo/redirect",
+      "key": "monorepoRedirect",
+      "config": {},
+      "time": {
+        "hooks": {},
+        "register": 19
+      },
+      "enableBy": "config"
+    },
+    "./node_modules/@umijs/preset-umi/dist/features/test/test": {
+      "cwd": "D:\\Code\\Projects\\Vuln",
+      "type": "plugin",
+      "path": "D:/Code/Projects/Vuln/node_modules/@umijs/preset-umi/dist/features/test/test.js",
+      "id": "./node_modules/@umijs/preset-umi/dist/features/test/test",
+      "key": "test",
+      "config": {},
+      "time": {
+        "hooks": {},
+        "register": 0
+      }
+    },
+    "./node_modules/@umijs/preset-umi/dist/features/clickToComponent/clickToComponent": {
+      "cwd": "D:\\Code\\Projects\\Vuln",
+      "type": "plugin",
+      "path": "D:/Code/Projects/Vuln/node_modules/@umijs/preset-umi/dist/features/clickToComponent/clickToComponent.js",
+      "id": "./node_modules/@umijs/preset-umi/dist/features/clickToComponent/clickToComponent",
+      "key": "clickToComponent",
+      "config": {},
+      "time": {
+        "hooks": {},
+        "register": 1
+      }
+    },
+    "./node_modules/@umijs/preset-umi/dist/features/legacy/legacy": {
+      "cwd": "D:\\Code\\Projects\\Vuln",
+      "type": "plugin",
+      "path": "D:/Code/Projects/Vuln/node_modules/@umijs/preset-umi/dist/features/legacy/legacy.js",
+      "id": "./node_modules/@umijs/preset-umi/dist/features/legacy/legacy",
+      "key": "legacy",
+      "config": {},
+      "time": {
+        "hooks": {},
+        "register": 1
+      },
+      "enableBy": "config"
+    },
+    "./node_modules/@umijs/preset-umi/dist/features/classPropertiesLoose/classPropertiesLoose": {
+      "cwd": "D:\\Code\\Projects\\Vuln",
+      "type": "plugin",
+      "path": "D:/Code/Projects/Vuln/node_modules/@umijs/preset-umi/dist/features/classPropertiesLoose/classPropertiesLoose.js",
+      "id": "./node_modules/@umijs/preset-umi/dist/features/classPropertiesLoose/classPropertiesLoose",
+      "key": "classPropertiesLoose",
+      "config": {},
+      "time": {
+        "hooks": {},
+        "register": 1
+      },
+      "enableBy": "config"
+    },
+    "./node_modules/@umijs/preset-umi/dist/features/webpack/webpack": {
+      "cwd": "D:\\Code\\Projects\\Vuln",
+      "type": "plugin",
+      "path": "D:/Code/Projects/Vuln/node_modules/@umijs/preset-umi/dist/features/webpack/webpack.js",
+      "id": "./node_modules/@umijs/preset-umi/dist/features/webpack/webpack",
+      "key": "preset-umi:webpack",
+      "config": {},
+      "time": {
+        "hooks": {},
+        "register": 0
+      }
+    },
+    "./node_modules/@umijs/preset-umi/dist/features/swc/swc": {
+      "cwd": "D:\\Code\\Projects\\Vuln",
+      "type": "plugin",
+      "path": "D:/Code/Projects/Vuln/node_modules/@umijs/preset-umi/dist/features/swc/swc.js",
+      "id": "./node_modules/@umijs/preset-umi/dist/features/swc/swc",
+      "key": "swc",
+      "config": {},
+      "time": {
+        "hooks": {
+          "addOnDemandDeps": [
+            0
+          ]
+        },
+        "register": 1
+      },
+      "enableBy": "register"
+    },
+    "./node_modules/@umijs/preset-umi/dist/features/ui/ui": {
+      "cwd": "D:\\Code\\Projects\\Vuln",
+      "type": "plugin",
+      "path": "D:/Code/Projects/Vuln/node_modules/@umijs/preset-umi/dist/features/ui/ui.js",
+      "id": "./node_modules/@umijs/preset-umi/dist/features/ui/ui",
+      "key": "ui",
+      "config": {},
+      "time": {
+        "hooks": {},
+        "register": 2
+      }
+    },
+    "./node_modules/@umijs/preset-umi/dist/features/mako/mako": {
+      "cwd": "D:\\Code\\Projects\\Vuln",
+      "type": "plugin",
+      "path": "D:/Code/Projects/Vuln/node_modules/@umijs/preset-umi/dist/features/mako/mako.js",
+      "id": "./node_modules/@umijs/preset-umi/dist/features/mako/mako",
+      "key": "mako",
+      "config": {},
+      "time": {
+        "hooks": {},
+        "register": 1
+      },
+      "enableBy": "config"
+    },
+    "./node_modules/@umijs/preset-umi/dist/features/utoopack/utoopack": {
+      "cwd": "D:\\Code\\Projects\\Vuln",
+      "type": "plugin",
+      "path": "D:/Code/Projects/Vuln/node_modules/@umijs/preset-umi/dist/features/utoopack/utoopack.js",
+      "id": "./node_modules/@umijs/preset-umi/dist/features/utoopack/utoopack",
+      "key": "utoopack",
+      "config": {},
+      "time": {
+        "hooks": {},
+        "register": 1
+      }
+    },
+    "./node_modules/@umijs/preset-umi/dist/features/hmrGuardian/hmrGuardian": {
+      "cwd": "D:\\Code\\Projects\\Vuln",
+      "type": "plugin",
+      "path": "D:/Code/Projects/Vuln/node_modules/@umijs/preset-umi/dist/features/hmrGuardian/hmrGuardian.js",
+      "id": "./node_modules/@umijs/preset-umi/dist/features/hmrGuardian/hmrGuardian",
+      "key": "hmrGuardian",
+      "config": {},
+      "time": {
+        "hooks": {},
+        "register": 5
+      }
+    },
+    "./node_modules/@umijs/preset-umi/dist/features/routePreloadOnLoad/routePreloadOnLoad": {
+      "cwd": "D:\\Code\\Projects\\Vuln",
+      "type": "plugin",
+      "path": "D:/Code/Projects/Vuln/node_modules/@umijs/preset-umi/dist/features/routePreloadOnLoad/routePreloadOnLoad.js",
+      "id": "./node_modules/@umijs/preset-umi/dist/features/routePreloadOnLoad/routePreloadOnLoad",
+      "key": "routePreloadOnLoad",
+      "config": {},
+      "time": {
+        "hooks": {},
+        "register": 29
+      }
+    },
+    "./node_modules/@umijs/preset-umi/dist/features/forget/forget": {
+      "cwd": "D:\\Code\\Projects\\Vuln",
+      "type": "plugin",
+      "path": "D:/Code/Projects/Vuln/node_modules/@umijs/preset-umi/dist/features/forget/forget.js",
+      "id": "./node_modules/@umijs/preset-umi/dist/features/forget/forget",
+      "key": "forget",
+      "config": {},
+      "time": {
+        "hooks": {},
+        "register": 1
+      },
+      "enableBy": "config"
+    },
+    "./node_modules/@umijs/preset-umi/dist/features/bundler/bundler": {
+      "cwd": "D:\\Code\\Projects\\Vuln",
+      "type": "plugin",
+      "path": "D:/Code/Projects/Vuln/node_modules/@umijs/preset-umi/dist/features/bundler/bundler.js",
+      "id": "./node_modules/@umijs/preset-umi/dist/features/bundler/bundler",
+      "key": "preset-umi:bundler",
+      "config": {},
+      "time": {
+        "hooks": {},
+        "register": 1
+      },
+      "enableBy": "register"
+    },
+    "./node_modules/@umijs/preset-umi/dist/commands/build": {
+      "cwd": "D:\\Code\\Projects\\Vuln",
+      "type": "plugin",
+      "path": "D:/Code/Projects/Vuln/node_modules/@umijs/preset-umi/dist/commands/build.js",
+      "id": "./node_modules/@umijs/preset-umi/dist/commands/build",
+      "key": "build",
+      "config": {},
+      "time": {
+        "hooks": {},
+        "register": 3
+      },
+      "enableBy": "register"
+    },
+    "./node_modules/@umijs/preset-umi/dist/commands/config/config": {
+      "cwd": "D:\\Code\\Projects\\Vuln",
+      "type": "plugin",
+      "path": "D:/Code/Projects/Vuln/node_modules/@umijs/preset-umi/dist/commands/config/config.js",
+      "id": "./node_modules/@umijs/preset-umi/dist/commands/config/config",
+      "key": "config",
+      "config": {},
+      "time": {
+        "hooks": {},
+        "register": 37
+      },
+      "enableBy": "register"
+    },
+    "./node_modules/@umijs/preset-umi/dist/commands/dev/dev": {
+      "cwd": "D:\\Code\\Projects\\Vuln",
+      "type": "plugin",
+      "path": "D:/Code/Projects/Vuln/node_modules/@umijs/preset-umi/dist/commands/dev/dev.js",
+      "id": "./node_modules/@umijs/preset-umi/dist/commands/dev/dev",
+      "key": "dev",
+      "config": {},
+      "time": {
+        "hooks": {},
+        "register": 27
+      }
+    },
+    "./node_modules/@umijs/preset-umi/dist/commands/help": {
+      "cwd": "D:\\Code\\Projects\\Vuln",
+      "type": "plugin",
+      "path": "D:/Code/Projects/Vuln/node_modules/@umijs/preset-umi/dist/commands/help.js",
+      "id": "./node_modules/@umijs/preset-umi/dist/commands/help",
+      "key": "help",
+      "config": {},
+      "time": {
+        "hooks": {},
+        "register": 1
+      },
+      "enableBy": "register"
+    },
+    "./node_modules/@umijs/preset-umi/dist/commands/lint": {
+      "cwd": "D:\\Code\\Projects\\Vuln",
+      "type": "plugin",
+      "path": "D:/Code/Projects/Vuln/node_modules/@umijs/preset-umi/dist/commands/lint.js",
+      "id": "./node_modules/@umijs/preset-umi/dist/commands/lint",
+      "key": "lint",
+      "config": {},
+      "time": {
+        "hooks": {},
+        "register": 0
+      },
+      "enableBy": "register"
+    },
+    "./node_modules/@umijs/preset-umi/dist/commands/setup": {
+      "cwd": "D:\\Code\\Projects\\Vuln",
+      "type": "plugin",
+      "path": "D:/Code/Projects/Vuln/node_modules/@umijs/preset-umi/dist/commands/setup.js",
+      "id": "./node_modules/@umijs/preset-umi/dist/commands/setup",
+      "key": "setup",
+      "config": {},
+      "time": {
+        "hooks": {},
+        "register": 1
+      },
+      "enableBy": "register"
+    },
+    "./node_modules/@umijs/preset-umi/dist/commands/deadcode": {
+      "cwd": "D:\\Code\\Projects\\Vuln",
+      "type": "plugin",
+      "path": "D:/Code/Projects/Vuln/node_modules/@umijs/preset-umi/dist/commands/deadcode.js",
+      "id": "./node_modules/@umijs/preset-umi/dist/commands/deadcode",
+      "key": "deadcode",
+      "config": {},
+      "time": {
+        "hooks": {},
+        "register": 0
+      },
+      "enableBy": "register"
+    },
+    "./node_modules/@umijs/preset-umi/dist/commands/version": {
+      "cwd": "D:\\Code\\Projects\\Vuln",
+      "type": "plugin",
+      "path": "D:/Code/Projects/Vuln/node_modules/@umijs/preset-umi/dist/commands/version.js",
+      "id": "./node_modules/@umijs/preset-umi/dist/commands/version",
+      "key": "version",
+      "config": {},
+      "time": {
+        "hooks": {},
+        "register": 1
+      },
+      "enableBy": "register"
+    },
+    "./node_modules/@umijs/preset-umi/dist/commands/generators/page": {
+      "cwd": "D:\\Code\\Projects\\Vuln",
+      "type": "plugin",
+      "path": "D:/Code/Projects/Vuln/node_modules/@umijs/preset-umi/dist/commands/generators/page.js",
+      "id": "./node_modules/@umijs/preset-umi/dist/commands/generators/page",
+      "key": "generator:page",
+      "config": {},
+      "time": {
+        "hooks": {},
+        "register": 2
+      },
+      "enableBy": "register"
+    },
+    "./node_modules/@umijs/preset-umi/dist/commands/generators/prettier": {
+      "cwd": "D:\\Code\\Projects\\Vuln",
+      "type": "plugin",
+      "path": "D:/Code/Projects/Vuln/node_modules/@umijs/preset-umi/dist/commands/generators/prettier.js",
+      "id": "./node_modules/@umijs/preset-umi/dist/commands/generators/prettier",
+      "key": "generator:prettier",
+      "config": {},
+      "time": {
+        "hooks": {},
+        "register": 0
+      },
+      "enableBy": "register"
+    },
+    "./node_modules/@umijs/preset-umi/dist/commands/generators/tsconfig": {
+      "cwd": "D:\\Code\\Projects\\Vuln",
+      "type": "plugin",
+      "path": "D:/Code/Projects/Vuln/node_modules/@umijs/preset-umi/dist/commands/generators/tsconfig.js",
+      "id": "./node_modules/@umijs/preset-umi/dist/commands/generators/tsconfig",
+      "key": "generator:tsconfig",
+      "config": {},
+      "time": {
+        "hooks": {},
+        "register": 1
+      },
+      "enableBy": "register"
+    },
+    "./node_modules/@umijs/preset-umi/dist/commands/generators/jest": {
+      "cwd": "D:\\Code\\Projects\\Vuln",
+      "type": "plugin",
+      "path": "D:/Code/Projects/Vuln/node_modules/@umijs/preset-umi/dist/commands/generators/jest.js",
+      "id": "./node_modules/@umijs/preset-umi/dist/commands/generators/jest",
+      "key": "generator:jest",
+      "config": {},
+      "time": {
+        "hooks": {},
+        "register": 1
+      },
+      "enableBy": "register"
+    },
+    "./node_modules/@umijs/preset-umi/dist/commands/generators/tailwindcss": {
+      "cwd": "D:\\Code\\Projects\\Vuln",
+      "type": "plugin",
+      "path": "D:/Code/Projects/Vuln/node_modules/@umijs/preset-umi/dist/commands/generators/tailwindcss.js",
+      "id": "./node_modules/@umijs/preset-umi/dist/commands/generators/tailwindcss",
+      "key": "generator:tailwindcss",
+      "config": {},
+      "time": {
+        "hooks": {},
+        "register": 0
+      },
+      "enableBy": "register"
+    },
+    "./node_modules/@umijs/preset-umi/dist/commands/generators/dva": {
+      "cwd": "D:\\Code\\Projects\\Vuln",
+      "type": "plugin",
+      "path": "D:/Code/Projects/Vuln/node_modules/@umijs/preset-umi/dist/commands/generators/dva.js",
+      "id": "./node_modules/@umijs/preset-umi/dist/commands/generators/dva",
+      "key": "generator:dva",
+      "config": {},
+      "time": {
+        "hooks": {},
+        "register": 1
+      },
+      "enableBy": "register"
+    },
+    "./node_modules/@umijs/preset-umi/dist/commands/generators/component": {
+      "cwd": "D:\\Code\\Projects\\Vuln",
+      "type": "plugin",
+      "path": "D:/Code/Projects/Vuln/node_modules/@umijs/preset-umi/dist/commands/generators/component.js",
+      "id": "./node_modules/@umijs/preset-umi/dist/commands/generators/component",
+      "key": "generator:component",
+      "config": {},
+      "time": {
+        "hooks": {},
+        "register": 0
+      },
+      "enableBy": "register"
+    },
+    "./node_modules/@umijs/preset-umi/dist/commands/generators/mock": {
+      "cwd": "D:\\Code\\Projects\\Vuln",
+      "type": "plugin",
+      "path": "D:/Code/Projects/Vuln/node_modules/@umijs/preset-umi/dist/commands/generators/mock.js",
+      "id": "./node_modules/@umijs/preset-umi/dist/commands/generators/mock",
+      "key": "generator:mock",
+      "config": {},
+      "time": {
+        "hooks": {},
+        "register": 1
+      },
+      "enableBy": "register"
+    },
+    "./node_modules/@umijs/preset-umi/dist/commands/generators/cypress": {
+      "cwd": "D:\\Code\\Projects\\Vuln",
+      "type": "plugin",
+      "path": "D:/Code/Projects/Vuln/node_modules/@umijs/preset-umi/dist/commands/generators/cypress.js",
+      "id": "./node_modules/@umijs/preset-umi/dist/commands/generators/cypress",
+      "key": "generator:cypress",
+      "config": {},
+      "time": {
+        "hooks": {},
+        "register": 1
+      },
+      "enableBy": "register"
+    },
+    "./node_modules/@umijs/preset-umi/dist/commands/generators/api": {
+      "cwd": "D:\\Code\\Projects\\Vuln",
+      "type": "plugin",
+      "path": "D:/Code/Projects/Vuln/node_modules/@umijs/preset-umi/dist/commands/generators/api.js",
+      "id": "./node_modules/@umijs/preset-umi/dist/commands/generators/api",
+      "key": "generator:api",
+      "config": {},
+      "time": {
+        "hooks": {},
+        "register": 0
+      },
+      "enableBy": "register"
+    },
+    "./node_modules/@umijs/preset-umi/dist/commands/generators/precommit": {
+      "cwd": "D:\\Code\\Projects\\Vuln",
+      "type": "plugin",
+      "path": "D:/Code/Projects/Vuln/node_modules/@umijs/preset-umi/dist/commands/generators/precommit.js",
+      "id": "./node_modules/@umijs/preset-umi/dist/commands/generators/precommit",
+      "key": "generator:precommit",
+      "config": {},
+      "time": {
+        "hooks": {},
+        "register": 1
+      },
+      "enableBy": "register"
+    },
+    "./node_modules/@umijs/preset-umi/dist/commands/plugin": {
+      "cwd": "D:\\Code\\Projects\\Vuln",
+      "type": "plugin",
+      "path": "D:/Code/Projects/Vuln/node_modules/@umijs/preset-umi/dist/commands/plugin.js",
+      "id": "./node_modules/@umijs/preset-umi/dist/commands/plugin",
+      "key": "command:plugin",
+      "config": {},
+      "time": {
+        "hooks": {},
+        "register": 0
+      },
+      "enableBy": "register"
+    },
+    "./node_modules/@umijs/preset-umi/dist/commands/verify-commit": {
+      "cwd": "D:\\Code\\Projects\\Vuln",
+      "type": "plugin",
+      "path": "D:/Code/Projects/Vuln/node_modules/@umijs/preset-umi/dist/commands/verify-commit.js",
+      "id": "./node_modules/@umijs/preset-umi/dist/commands/verify-commit",
+      "key": "verifyCommit",
+      "config": {},
+      "time": {
+        "hooks": {},
+        "register": 1
+      },
+      "enableBy": "register"
+    },
+    "./node_modules/@umijs/preset-umi/dist/commands/preview": {
+      "cwd": "D:\\Code\\Projects\\Vuln",
+      "type": "plugin",
+      "path": "D:/Code/Projects/Vuln/node_modules/@umijs/preset-umi/dist/commands/preview.js",
+      "id": "./node_modules/@umijs/preset-umi/dist/commands/preview",
+      "key": "preview",
+      "config": {},
+      "time": {
+        "hooks": {},
+        "register": 20
+      },
+      "enableBy": "register"
+    },
+    "./node_modules/@umijs/preset-umi/dist/commands/mfsu/mfsu": {
+      "cwd": "D:\\Code\\Projects\\Vuln",
+      "type": "plugin",
+      "path": "D:/Code/Projects/Vuln/node_modules/@umijs/preset-umi/dist/commands/mfsu/mfsu.js",
+      "id": "./node_modules/@umijs/preset-umi/dist/commands/mfsu/mfsu",
+      "key": "mfsu-cli",
+      "config": {},
+      "time": {
+        "hooks": {},
+        "register": 1
+      },
+      "enableBy": "register"
+    },
+    "@umijs/plugin-run": {
+      "cwd": "D:\\Code\\Projects\\Vuln",
+      "type": "plugin",
+      "path": "D:/Code/Projects/Vuln/node_modules/@umijs/plugin-run/dist/index.js",
+      "id": "@umijs/plugin-run",
+      "key": "run",
+      "config": {},
+      "time": {
+        "hooks": {},
+        "register": 2
+      },
+      "enableBy": "register"
+    },
+    "./node_modules/@umijs/core/dist/service/generatePlugin": {
+      "cwd": "D:\\Code\\Projects\\Vuln",
+      "type": "plugin",
+      "path": "D:/Code/Projects/Vuln/node_modules/@umijs/core/dist/service/generatePlugin.js",
+      "id": "./node_modules/@umijs/core/dist/service/generatePlugin",
+      "key": "generatePlugin",
+      "config": {},
+      "time": {
+        "hooks": {},
+        "register": 0
+      },
+      "enableBy": "register"
+    }
+  },
+  "presets": [],
+  "name": "build",
+  "args": {
+    "_": []
+  },
+  "userConfig": {
+    "routes": [
+      {
+        "path": "/",
+        "component": "../layouts/index",
+        "routes": [
+          {
+            "path": "/",
+            "component": "./index"
+          },
+          {
+            "path": "/vuln",
+            "component": "./vuln/index"
+          },
+          {
+            "path": "/vuln/:id",
+            "component": "./vuln/[id]"
+          },
+          {
+            "path": "/approval",
+            "component": "./approval/index"
+          },
+          {
+            "path": "/approval/:id",
+            "component": "./approval/[id]"
+          }
+        ]
+      }
+    ],
+    "npmClient": "npm"
+  },
+  "mainConfigFile": "D:\\Code\\Projects\\Vuln\\.umirc.ts",
+  "config": {
+    "routeLoader": {
+      "moduleType": "esm"
+    },
+    "mountElementId": "root",
+    "history": {
+      "type": "browser"
+    },
+    "base": "/",
+    "svgr": {},
+    "publicPath": "/",
+    "mfsu": {
+      "strategy": "eager"
+    },
+    "ignoreMomentLocale": true,
+    "externals": {},
+    "autoCSSModules": true,
+    "alias": {
+      "umi": "@@/exports",
+      "react": "D:\\Code\\Projects\\Vuln\\node_modules\\react",
+      "react-dom": "D:\\Code\\Projects\\Vuln\\node_modules\\react-dom",
+      "react-router": "D:\\Code\\Projects\\Vuln\\node_modules\\react-router",
+      "react-router-dom": "D:\\Code\\Projects\\Vuln\\node_modules\\react-router-dom",
+      "@": "D:/Code/Projects/Vuln/src",
+      "@@": "D:/Code/Projects/Vuln/src/.umi-production",
+      "regenerator-runtime": "D:\\Code\\Projects\\Vuln\\node_modules\\regenerator-runtime"
+    },
+    "routes": [
+      {
+        "path": "/",
+        "component": "../layouts/index",
+        "routes": [
+          {
+            "path": "/",
+            "component": "./index"
+          },
+          {
+            "path": "/vuln",
+            "component": "./vuln/index"
+          },
+          {
+            "path": "/vuln/:id",
+            "component": "./vuln/[id]"
+          },
+          {
+            "path": "/approval",
+            "component": "./approval/index"
+          },
+          {
+            "path": "/approval/:id",
+            "component": "./approval/[id]"
+          }
+        ]
+      }
+    ],
+    "npmClient": "npm",
+    "targets": {
+      "chrome": 80
+    }
+  },
+  "routes": {
+    "1": {
+      "path": "/",
+      "file": "@/layouts/index.tsx",
+      "parentId": "@@/global-layout",
+      "id": "1",
+      "absPath": "/",
+      "__content": "import React, { useState } from 'react';\nimport { Layout, Menu } from 'antd';\nimport { Link, Outlet, useLocation } from 'umi';\nimport {\n  SecurityScanOutlined,\n  AuditOutlined,\n  DashboardOutlined,\n  EyeOutlined,\n  ArrowLeftOutlined,\n  ArrowRightOutlined,\n  CheckCircleOutlined\n} from '@ant-design/icons';\nimport './index.less';\n\nconst { Header, Sider, Content } = Layout;\n\nconst BasicLayout: React.FC = () => {\n  const location = useLocation();\n\n  const menuItems = [\n    {\n      key: '/vuln',\n      icon: <SecurityScanOutlined />,\n      label: <Link to=\"/vuln\">漏洞管理</Link>,\n    },\n    {\n      key: '/approval',\n      icon: <AuditOutlined />,\n      label: <Link to=\"/approval\">审批管理</Link>,\n    },\n    {\n      key: '/',\n      icon: <DashboardOutlined />,\n      label: <Link to=\"/\">首页</Link>,\n    },\n  ];\n\n  const getSelectedKey = () => {\n    if (location.pathname.startsWith('/vuln')) {\n      return '/vuln';\n    }\n    if (location.pathname.startsWith('/approval')) {\n      return '/approval';\n    }\n    return '/';\n  };\n\n  return (\n    <Layout className=\"basic-layout\">\n      <Sider\n        width={200}\n        style={{\n          overflow: 'auto',\n          height: '100vh',\n          position: 'fixed',\n          left: 0,\n          top: 0,\n          bottom: 0,\n        }}\n      >\n        <div className=\"logo\">\n          <SecurityScanOutlined style={{ fontSize: 24, marginRight: 8 }} /> 漏洞管理系统\n        </div>\n        <Menu\n          theme=\"dark\"\n          mode=\"inline\"\n          selectedKeys={[getSelectedKey()]}\n          items={menuItems}\n          style={{\n            borderRight: 'none',\n            backgroundColor: '#001529'\n          }}\n        />\n      </Sider>\n      <Layout style={{ marginLeft: 200 }}>\n        <Header className=\"header\">\n          <h1>漏洞管理系统</h1>\n        </Header>\n        <Content className=\"content\">\n          <div className=\"content-wrapper\">\n            <Outlet />\n          </div>\n        </Content>\n      </Layout>\n    </Layout>\n  );\n};\n\nexport default BasicLayout;",
+      "__isJSFile": true,
+      "__absFile": "D:/Code/Projects/Vuln/src/layouts/index.tsx"
+    },
+    "2": {
+      "path": "/",
+      "file": "@/pages/index.tsx",
+      "parentId": "1",
+      "id": "2",
+      "absPath": "/",
+      "__content": "import React from 'react';\nimport { Card, Row, Col, Statistic, Button, Space } from 'antd';\nimport { Link } from 'umi';\nimport {\n  SecurityScanOutlined,\n  AuditOutlined,\n  CheckCircleOutlined,\n  ClockCircleOutlined,\n  ExclamationCircleOutlined,\n  ArrowRightOutlined\n} from '@ant-design/icons';\n\nconst HomePage: React.FC = () => {\n  // 模拟统计数据\n  const stats = {\n    totalVulns: 156,\n    criticalVulns: 8,\n    processingVulns: 23,\n    completedApprovals: 89,\n    pendingApprovals: 12,\n  };\n\n  const quickLinks = [\n    {\n      title: '漏洞管理',\n      description: '查看和管理所有安全漏洞',\n      icon: <SecurityScanOutlined style={{ fontSize: '24px', color: '#1890ff' }} />,\n      link: '/vuln',\n      color: '#1890ff'\n    },\n    {\n      title: '审批管理',\n      description: '管理漏洞修复审批流程',\n      icon: <AuditOutlined style={{ fontSize: '24px', color: '#52c41a' }} />,\n      link: '/approval',\n      color: '#52c41a'\n    }\n  ];\n\n  return (\n    <div className=\"home-page\">\n      {/* 统计概览 */}\n      <Row gutter={[16, 16]} style={{ marginBottom: 24 }}>\n        <Col xs={24} sm={12} md={8} lg={6}>\n          <Card>\n            <Statistic\n              title=\"总漏洞数\"\n              value={stats.totalVulns}\n              prefix={<SecurityScanOutlined />}\n              valueStyle={{ color: '#1890ff' }}\n            />\n          </Card>\n        </Col>\n        <Col xs={24} sm={12} md={8} lg={6}>\n          <Card>\n            <Statistic\n              title=\"严重漏洞\"\n              value={stats.criticalVulns}\n              prefix={<ExclamationCircleOutlined />}\n              valueStyle={{ color: '#ff4d4f' }}\n            />\n          </Card>\n        </Col>\n        <Col xs={24} sm={12} md={8} lg={6}>\n          <Card>\n            <Statistic\n              title=\"处理中\"\n              value={stats.processingVulns}\n              prefix={<ClockCircleOutlined />}\n              valueStyle={{ color: '#fa8c16' }}\n            />\n          </Card>\n        </Col>\n        <Col xs={24} sm={12} md={8} lg={6}>\n          <Card>\n            <Statistic\n              title=\"已完成审批\"\n              value={stats.completedApprovals}\n              prefix={<CheckCircleOutlined />}\n              valueStyle={{ color: '#52c41a' }}\n            />\n          </Card>\n        </Col>\n      </Row>\n\n      {/* 快速导航 */}\n      <Row gutter={[16, 16]}>\n        <Col xs={24} lg={12}>\n          <Card title=\"快速导航\" style={{ height: '100%' }}>\n            <Space direction=\"vertical\" size=\"middle\" style={{ width: '100%' }}>\n              {quickLinks.map((item, index) => (\n                <Card\n                  key={index}\n                  size=\"small\"\n                  hoverable\n                  style={{ borderColor: item.color }}\n                  bodyStyle={{ padding: '16px' }}\n                >\n                  <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>\n                    <div style={{ display: 'flex', alignItems: 'center', flex: 1 }}>\n                      <div style={{ marginRight: '12px' }}>\n                        {item.icon}\n                      </div>\n                      <div>\n                        <div style={{ fontWeight: 'bold', marginBottom: '4px' }}>\n                          {item.title}\n                        </div>\n                        <div style={{ color: '#666', fontSize: '12px' }}>\n                          {item.description}\n                        </div>\n                      </div>\n                    </div>\n                    <Link to={item.link}>\n                      <Button type=\"text\" icon={<ArrowRightOutlined />} />\n                    </Link>\n                  </div>\n                </Card>\n              ))}\n            </Space>\n          </Card>\n        </Col>\n\n        <Col xs={24} lg={12}>\n          <Card title=\"系统说明\" style={{ height: '100%' }}>\n            <div>\n              <h4>欢迎使用漏洞管理系统</h4>\n              <p style={{ lineHeight: 1.8, color: '#666' }}>\n                本系统提供完整的漏洞生命周期管理功能，包括漏洞发现、评估、审批、修复和验证等环节。\n              </p>\n\n              <h4>主要功能</h4>\n              <ul style={{ lineHeight: 1.8, color: '#666', paddingLeft: '20px' }}>\n                <li>漏洞信息管理和查询</li>\n                <li>漏洞详情查看和跟踪</li>\n                <li>审批流程管理</li>\n                <li>多维度统计分析</li>\n                <li>权限控制和操作日志</li>\n              </ul>\n\n              <h4>使用说明</h4>\n              <p style={{ lineHeight: 1.8, color: '#666' }}>\n                通过左侧导航菜单可以快速访问各个功能模块。点击漏洞编号可以查看详细信息，\n                点击状态可以查看相关的审批单信息。\n              </p>\n            </div>\n          </Card>\n        </Col>\n      </Row>\n    </div>\n  );\n};\n\nexport default HomePage;",
+      "__isJSFile": true,
+      "__absFile": "D:/Code/Projects/Vuln/src/pages/index.tsx"
+    },
+    "3": {
+      "path": "/vuln",
+      "file": "@/pages/vuln/index.tsx",
+      "parentId": "1",
+      "id": "3",
+      "absPath": "/vuln",
+      "__content": "import React, { useState, useEffect } from 'react';\nimport { Table, Input, Select, Space, Tag, Button, Card, message } from 'antd';\nimport { SearchOutlined, ReloadOutlined } from '@ant-design/icons';\nimport { Link } from 'umi';\nimport type { ColumnsType } from 'antd/es/table';\nimport { Vulnerability } from '@/types';\n\nconst { Option } = Select;\n\nconst VulnerabilityList: React.FC = () => {\n  const [vulnerabilities, setVulnerabilities] = useState<Vulnerability[]>([]);\n  const [loading, setLoading] = useState(false);\n  const [total, setTotal] = useState(0);\n  const [current, setCurrent] = useState(1);\n  const [pageSize, setPageSize] = useState(10);\n  const [searchText, setSearchText] = useState('');\n  const [riskLevelFilter, setRiskLevelFilter] = useState<string>('');\n  const [statusFilter, setStatusFilter] = useState<string>('');\n\n  // 获取漏洞列表\n  const fetchVulnerabilities = async (page: number = 1, size: number = 10) => {\n    setLoading(true);\n    try {\n      const params = new URLSearchParams({\n        page: page.toString(),\n        pageSize: size.toString(),\n      });\n\n      if (searchText) {\n        params.append('search', searchText);\n      }\n      if (riskLevelFilter) {\n        params.append('riskLevel', riskLevelFilter);\n      }\n      if (statusFilter) {\n        params.append('status', statusFilter);\n      }\n\n      const response = await fetch(`/api/vuln?${params}`);\n      const result = await response.json();\n\n      if (result.code === 200) {\n        setVulnerabilities(result.data);\n        setTotal(result.total);\n      } else {\n        message.error('获取漏洞列表失败');\n      }\n    } catch (error) {\n      message.error('网络错误，请重试');\n    } finally {\n      setLoading(false);\n    }\n  };\n\n  useEffect(() => {\n    fetchVulnerabilities(current, pageSize);\n  }, [current, pageSize]);\n\n  // 搜索处理\n  const handleSearch = () => {\n    setCurrent(1);\n    fetchVulnerabilities(1, pageSize);\n  };\n\n  // 重置筛选\n  const handleReset = () => {\n    setSearchText('');\n    setRiskLevelFilter('');\n    setStatusFilter('');\n    setCurrent(1);\n    fetchVulnerabilities(1, pageSize);\n  };\n\n  // 分页处理\n  const handleTableChange = (pagination: any) => {\n    setCurrent(pagination.current);\n    setPageSize(pagination.pageSize);\n  };\n\n  // 风险等级标签\n  const getRiskLevelTag = (level: string) => {\n    const config = {\n      critical: { color: 'red', text: '严重' },\n      high: { color: 'orange', text: '高危' },\n      medium: { color: 'gold', text: '中危' },\n      low: { color: 'green', text: '低危' },\n    };\n    const { color, text } = config[level] || { color: 'default', text: '未知' };\n    return <Tag color={color}>{text}</Tag>;\n  };\n\n  // 状态标签\n  const getStatusTag = (status: string) => {\n    const config = {\n      pending: { color: 'orange', text: '待审批' },\n      approved: { color: 'green', text: '已通过' },\n      rejected: { color: 'red', text: '已拒绝' },\n      processing: { color: 'blue', text: '处理中' },\n    };\n    const { color, text } = config[status] || { color: 'default', text: '未知' };\n    return <Tag color={color}>{text}</Tag>;\n  };\n\n  const columns: ColumnsType<Vulnerability> = [\n    {\n      title: '漏洞编号',\n      dataIndex: 'id',\n      key: 'id',\n      width: 150,\n      render: (text: string, record: Vulnerability) => (\n        <Link to={`/vuln/${text}`} style={{ color: '#1890ff', textDecoration: 'underline' }}>\n          {text}\n        </Link>\n      ),\n    },\n    {\n      title: '漏洞名称',\n      dataIndex: 'name',\n      key: 'name',\n      width: 200,\n    },\n    {\n      title: '漏洞来源',\n      dataIndex: 'source',\n      key: 'source',\n      width: 100,\n    },\n    {\n      title: '危害等级',\n      dataIndex: 'riskLevel',\n      key: 'riskLevel',\n      width: 120,\n      render: (level: string) => getRiskLevelTag(level),\n    },\n    {\n      title: '发现时间',\n      dataIndex: 'discoveryTime',\n      key: 'discoveryTime',\n      width: 180,\n    },\n    {\n      title: '预期拦截时间',\n      dataIndex: 'expectedBlockTime',\n      key: 'expectedBlockTime',\n      width: 180,\n    },\n    {\n      title: '当前状态',\n      dataIndex: 'status',\n      key: 'status',\n      width: 120,\n      render: (status: string, record: Vulnerability) => (\n        <Link to={`/approval/${record.approvalId}`} style={{ textDecoration: 'none' }}>\n          {getStatusTag(status)}\n        </Link>\n      ),\n    },\n  ];\n\n  return (\n    <div className=\"vulnerability-list\">\n      <Card title=\"漏洞管理\" extra={\n        <Button\n          icon={<ReloadOutlined />}\n          onClick={() => fetchVulnerabilities(current, pageSize)}\n        >\n          刷新\n        </Button>\n      }>\n        {/* 搜索和筛选 */}\n        <div style={{ marginBottom: 16 }}>\n          <Space size=\"middle\">\n            <Input\n              placeholder=\"搜索漏洞名称或编号\"\n              value={searchText}\n              onChange={(e) => setSearchText(e.target.value)}\n              style={{ width: 200 }}\n              onPressEnter={handleSearch}\n            />\n            <Select\n              placeholder=\"风险等级\"\n              value={riskLevelFilter}\n              onChange={setRiskLevelFilter}\n              style={{ width: 120 }}\n              allowClear\n            >\n              <Option value=\"critical\">严重</Option>\n              <Option value=\"high\">高危</Option>\n              <Option value=\"medium\">中危</Option>\n              <Option value=\"low\">低危</Option>\n            </Select>\n            <Select\n              placeholder=\"审批状态\"\n              value={statusFilter}\n              onChange={setStatusFilter}\n              style={{ width: 120 }}\n              allowClear\n            >\n              <Option value=\"pending\">待审批</Option>\n              <Option value=\"approved\">已通过</Option>\n              <Option value=\"rejected\">已拒绝</Option>\n              <Option value=\"processing\">处理中</Option>\n            </Select>\n            <Button type=\"primary\" icon={<SearchOutlined />} onClick={handleSearch}>\n              搜索\n            </Button>\n            <Button onClick={handleReset}>重置</Button>\n          </Space>\n        </div>\n\n        {/* 表格 */}\n        <Table\n          columns={columns}\n          dataSource={vulnerabilities}\n          rowKey=\"id\"\n          loading={loading}\n          pagination={{\n            current,\n            pageSize,\n            total,\n            showSizeChanger: true,\n            showQuickJumper: true,\n            showTotal: (total) => `共 ${total} 条记录`,\n            pageSizeOptions: ['10', '20', '50', '100'],\n          }}\n          onChange={handleTableChange}\n          scroll={{ x: 1200 }}\n        />\n      </Card>\n    </div>\n  );\n};\n\nexport default VulnerabilityList;",
+      "__isJSFile": true,
+      "__absFile": "D:/Code/Projects/Vuln/src/pages/vuln/index.tsx"
+    },
+    "4": {
+      "path": "/vuln/:id",
+      "file": "@/pages/vuln/[id].tsx",
+      "parentId": "1",
+      "id": "4",
+      "absPath": "/vuln/:id",
+      "__content": "import React, { useState, useEffect } from 'react';\nimport { useParams, history } from 'umi';\nimport { Card, Descriptions, Tag, Button, Space, Spin, Alert, Divider } from 'antd';\nimport { ArrowLeftOutlined, EyeOutlined } from '@ant-design/icons';\nimport { Vulnerability } from '@/types';\n\nconst VulnerabilityDetail: React.FC = () => {\n  const { id } = useParams<{ id: string }>();\n  const [vulnerability, setVulnerability] = useState<Vulnerability | null>(null);\n  const [loading, setLoading] = useState(true);\n\n  // 获取漏洞详情\n  const fetchVulnerabilityDetail = async (vulnId: string) => {\n    setLoading(true);\n    try {\n      const response = await fetch(`/api/vuln/${vulnId}`);\n      const result = await response.json();\n\n      if (result.code === 200) {\n        setVulnerability(result.data);\n      } else {\n        // 如果API不存在，使用模拟数据\n        const mockVulnerabilities: Vulnerability[] = [\n          {\n            id: 'VUL-2024-001',\n            name: 'SQL注入漏洞',\n            source: 'IAST',\n            riskLevel: 'critical',\n            discoveryTime: '2024-01-15 10:30:00',\n            expectedBlockTime: '2024-01-20 00:00:00',\n            status: 'approved',\n            description: '在用户登录模块发现SQL注入漏洞，攻击者可以通过构造恶意SQL语句获取数据库敏感信息。该漏洞存在于登录表单的username参数处理逻辑中，未对用户输入进行充分的参数化处理。',\n            severity: '严重',\n            affectedComponent: 'user/login',\n            recommendation: '立即使用参数化查询替换字符串拼接，对所有用户输入进行严格验证，实施输入验证和输出编码。建议使用PreparedStatement或ORM框架来防止SQL注入攻击。',\n            approvalId: 'APP-2024-001'\n          },\n          {\n            id: 'VUL-2024-002',\n            name: 'XSS跨站脚本攻击',\n            source: 'DAST',\n            riskLevel: 'high',\n            discoveryTime: '2024-01-16 14:20:00',\n            expectedBlockTime: '2024-01-22 00:00:00',\n            status: 'processing',\n            description: '在评论功能中发现存储型XSS漏洞，攻击者可以注入恶意脚本在用户浏览器中执行。漏洞出现在评论提交和展示功能中，未对用户输入进行适当的HTML编码处理。',\n            severity: '高危',\n            affectedComponent: 'product/comments',\n            recommendation: '对用户输入进行HTML编码，使用CSP头部保护，实施内容安全策略。建议使用成熟的XSS防护库，如DOMPurify，对所有用户生成内容进行净化处理。',\n            approvalId: 'APP-2024-002'\n          }\n        ];\n\n        const vuln = mockVulnerabilities.find(item => item.id === vulnId);\n        if (vuln) {\n          setVulnerability(vuln);\n        } else {\n          setVulnerability(null);\n        }\n      }\n    } catch (error) {\n      console.error('获取漏洞详情失败:', error);\n      setVulnerability(null);\n    } finally {\n      setLoading(false);\n    }\n  };\n\n  useEffect(() => {\n    if (id) {\n      fetchVulnerabilityDetail(id);\n    }\n  }, [id]);\n\n  // 返回列表页\n  const goBack = () => {\n    history.push('/vuln');\n  };\n\n  // 查看审批单\n  const viewApproval = (approvalId: string) => {\n    history.push(`/approval/${approvalId}`);\n  };\n\n  // 风险等级标签\n  const getRiskLevelTag = (level: string) => {\n    const config = {\n      critical: { color: 'red', text: '严重' },\n      high: { color: 'orange', text: '高危' },\n      medium: { color: 'gold', text: '中危' },\n      low: { color: 'green', text: '低危' },\n    };\n    const { color, text } = config[level] || { color: 'default', text: '未知' };\n    return <Tag color={color}>{text}</Tag>;\n  };\n\n  // 状态标签\n  const getStatusTag = (status: string) => {\n    const config = {\n      pending: { color: 'orange', text: '待审批' },\n      approved: { color: 'green', text: '已通过' },\n      rejected: { color: 'red', text: '已拒绝' },\n      processing: { color: 'blue', text: '处理中' },\n    };\n    const { color, text } = config[status] || { color: 'default', text: '未知' };\n    return <Tag color={color}>{text}</Tag>;\n  };\n\n  if (loading) {\n    return (\n      <div style={{ textAlign: 'center', padding: '50px' }}>\n        <Spin size=\"large\" />\n        <div style={{ marginTop: 16 }}>加载中...</div>\n      </div>\n    );\n  }\n\n  if (!vulnerability) {\n    return (\n      <div>\n        <Space style={{ marginBottom: 16 }}>\n          <Button icon={<ArrowLeftOutlined />} onClick={goBack}>\n            返回列表\n          </Button>\n        </Space>\n        <Alert\n          message=\"漏洞不存在\"\n          description=\"请检查漏洞编号是否正确，或返回漏洞列表重新选择。\"\n          type=\"error\"\n          showIcon\n        />\n      </div>\n    );\n  }\n\n  return (\n    <div className=\"vulnerability-detail\">\n      <Space style={{ marginBottom: 16 }}>\n        <Button icon={<ArrowLeftOutlined />} onClick={goBack}>\n          返回列表\n        </Button>\n        {vulnerability.approvalId && (\n          <Button\n            type=\"primary\"\n            icon={<EyeOutlined />}\n            onClick={() => viewApproval(vulnerability.approvalId!)}\n          >\n            查看审批单\n          </Button>\n        )}\n      </Space>\n\n      {/* 基本信息 */}\n      <Card title=\"基本信息\" style={{ marginBottom: 16 }}>\n        <Descriptions column={2} bordered>\n          <Descriptions.Item label=\"漏洞编号\">{vulnerability.id}</Descriptions.Item>\n          <Descriptions.Item label=\"漏洞名称\">{vulnerability.name}</Descriptions.Item>\n          <Descriptions.Item label=\"漏洞来源\">{vulnerability.source}</Descriptions.Item>\n          <Descriptions.Item label=\"危害等级\">{getRiskLevelTag(vulnerability.riskLevel)}</Descriptions.Item>\n          <Descriptions.Item label=\"发现时间\">{vulnerability.discoveryTime}</Descriptions.Item>\n          <Descriptions.Item label=\"预期拦截时间\">{vulnerability.expectedBlockTime}</Descriptions.Item>\n          <Descriptions.Item label=\"当前状态\">{getStatusTag(vulnerability.status)}</Descriptions.Item>\n          <Descriptions.Item label=\"严重程度\">{vulnerability.severity || '未定义'}</Descriptions.Item>\n          <Descriptions.Item label=\"影响组件\" span={2}>{vulnerability.affectedComponent || '未定义'}</Descriptions.Item>\n          <Descriptions.Item label=\"审批单ID\" span={2}>\n            {vulnerability.approvalId ? (\n              <Button\n                type=\"link\"\n                size=\"small\"\n                onClick={() => viewApproval(vulnerability.approvalId!)}\n              >\n                {vulnerability.approvalId}\n              </Button>\n            ) : (\n              '未关联'\n            )}\n          </Descriptions.Item>\n        </Descriptions>\n      </Card>\n\n      {/* 漏洞描述 */}\n      <Card title=\"漏洞描述\" style={{ marginBottom: 16 }}>\n        <p style={{ lineHeight: 1.8, fontSize: 14 }}>\n          {vulnerability.description || '暂无详细描述'}\n        </p>\n      </Card>\n\n      {/* 修复建议 */}\n      {vulnerability.recommendation && (\n        <Card title=\"修复建议\" style={{ marginBottom: 16 }}>\n          <div style={{\n            background: '#f6ffed',\n            border: '1px solid #b7eb8f',\n            borderRadius: '6px',\n            padding: '16px'\n          }}>\n            <p style={{ margin: 0, lineHeight: 1.8, fontSize: 14 }}>\n              {vulnerability.recommendation}\n            </p>\n          </div>\n        </Card>\n      )}\n\n      {/* 风险评估 */}\n      <Card title=\"风险评估\">\n        <div style={{ display: 'flex', gap: '16px', alignItems: 'center' }}>\n          <div>\n            <div style={{ fontSize: '14px', color: '#666', marginBottom: '8px' }}>风险等级</div>\n            <div>{getRiskLevelTag(vulnerability.riskLevel)}</div>\n          </div>\n          <Divider type=\"vertical\" style={{ height: '60px' }} />\n          <div>\n            <div style={{ fontSize: '14px', color: '#666', marginBottom: '8px' }}>处理状态</div>\n            <div>{getStatusTag(vulnerability.status)}</div>\n          </div>\n          <Divider type=\"vertical\" style={{ height: '60px' }} />\n          <div>\n            <div style={{ fontSize: '14px', color: '#666', marginBottom: '8px' }}>时间限制</div>\n            <div style={{ fontSize: '16px', fontWeight: 'bold', color: '#1890ff' }}>\n              {vulnerability.expectedBlockTime}\n            </div>\n          </div>\n        </div>\n      </Card>\n    </div>\n  );\n};\n\nexport default VulnerabilityDetail;",
+      "__isJSFile": true,
+      "__absFile": "D:/Code/Projects/Vuln/src/pages/vuln/[id].tsx"
+    },
+    "5": {
+      "path": "/approval",
+      "file": "@/pages/approval/index.tsx",
+      "parentId": "1",
+      "id": "5",
+      "absPath": "/approval",
+      "__content": "import React, { useState, useEffect } from 'react';\nimport { Table, Card, Tag, Button, Space, message } from 'antd';\nimport { ReloadOutlined, EyeOutlined } from '@ant-design/icons';\nimport { Link } from 'umi';\nimport type { ColumnsType } from 'antd/es/table';\nimport { Approval } from '@/types';\n\nconst ApprovalList: React.FC = () => {\n  const [approvals, setApprovals] = useState<Approval[]>([]);\n  const [loading, setLoading] = useState(false);\n  const [total, setTotal] = useState(0);\n  const [current, setCurrent] = useState(1);\n  const [pageSize, setPageSize] = useState(10);\n\n  // 获取审批单列表\n  const fetchApprovals = async (page: number = 1, size: number = 10) => {\n    setLoading(true);\n    try {\n      const params = new URLSearchParams({\n        page: page.toString(),\n        pageSize: size.toString(),\n        status: 'completed' // 只获取已完成的审批单\n      });\n\n      const response = await fetch(`/api/approval?${params}`);\n      const result = await response.json();\n\n      if (result.code === 200) {\n        setApprovals(result.data);\n        setTotal(result.total);\n      } else {\n        message.error('获取审批单列表失败');\n      }\n    } catch (error) {\n      message.error('网络错误，请重试');\n    } finally {\n      setLoading(false);\n    }\n  };\n\n  useEffect(() => {\n    fetchApprovals(current, pageSize);\n  }, [current, pageSize]);\n\n  // 分页处理\n  const handleTableChange = (pagination: any) => {\n    setCurrent(pagination.current);\n    setPageSize(pagination.pageSize);\n  };\n\n  // 优先级标签\n  const getPriorityTag = (priority: string) => {\n    const config = {\n      urgent: { color: 'red', text: '紧急' },\n      normal: { color: 'blue', text: '普通' },\n      low: { color: 'green', text: '低优先级' },\n    };\n    const { color, text } = config[priority] || { color: 'default', text: '未知' };\n    return <Tag color={color}>{text}</Tag>;\n  };\n\n  const columns: ColumnsType<Approval> = [\n    {\n      title: '审批单号',\n      dataIndex: 'id',\n      key: 'id',\n      width: 150,\n      render: (text: string) => (\n        <Link to={`/approval/${text}`} style={{ color: '#1890ff', textDecoration: 'underline' }}>\n          {text}\n        </Link>\n      ),\n    },\n    {\n      title: '审批标题',\n      dataIndex: 'title',\n      key: 'title',\n      width: 250,\n    },\n    {\n      title: '优先级',\n      dataIndex: 'priority',\n      key: 'priority',\n      width: 100,\n      render: (priority: string) => getPriorityTag(priority),\n    },\n    {\n      title: '状态',\n      dataIndex: 'status',\n      key: 'status',\n      width: 100,\n      render: () => <Tag color=\"green\">已完成</Tag>,\n    },\n    {\n      title: '审批人',\n      dataIndex: 'approver',\n      key: 'approver',\n      width: 120,\n    },\n    {\n      title: '部门',\n      dataIndex: 'department',\n      key: 'department',\n      width: 120,\n    },\n    {\n      title: '创建时间',\n      dataIndex: 'createTime',\n      key: 'createTime',\n      width: 180,\n    },\n    {\n      title: '更新时间',\n      dataIndex: 'updateTime',\n      key: 'updateTime',\n      width: 180,\n    },\n    {\n      title: '操作',\n      key: 'action',\n      width: 120,\n      render: (_, record: Approval) => (\n        <Button\n          type=\"primary\"\n          size=\"small\"\n          icon={<EyeOutlined />}\n          onClick={() => {\n            window.location.href = `/approval/${record.id}`;\n          }}\n        >\n          查看详情\n        </Button>\n      ),\n    },\n  ];\n\n  return (\n    <div className=\"approval-list\">\n      <Card title=\"审批管理\" extra={\n        <Button\n          icon={<ReloadOutlined />}\n          onClick={() => fetchApprovals(current, pageSize)}\n        >\n          刷新\n        </Button>\n      }>\n        <div style={{ marginBottom: 16 }}>\n          <Space>\n            <span style={{ color: '#666' }}>\n              注：仅显示已完成的审批单\n            </span>\n          </Space>\n        </div>\n\n        <Table\n          columns={columns}\n          dataSource={approvals}\n          rowKey=\"id\"\n          loading={loading}\n          pagination={{\n            current,\n            pageSize,\n            total,\n            showSizeChanger: true,\n            showQuickJumper: true,\n            showTotal: (total) => `共 ${total} 条记录`,\n            pageSizeOptions: ['10', '20', '50', '100'],\n          }}\n          onChange={handleTableChange}\n          scroll={{ x: 1400 }}\n        />\n      </Card>\n    </div>\n  );\n};\n\nexport default ApprovalList;",
+      "__isJSFile": true,
+      "__absFile": "D:/Code/Projects/Vuln/src/pages/approval/index.tsx"
+    },
+    "6": {
+      "path": "/approval/:id",
+      "file": "@/pages/approval/[id].tsx",
+      "parentId": "1",
+      "id": "6",
+      "absPath": "/approval/:id",
+      "__content": "import React, { useState, useEffect } from 'react';\nimport { useParams, history } from 'umi';\nimport { Card, Descriptions, Tag, Button, Space, Spin, Alert, Timeline, Table } from 'antd';\nimport { ArrowLeftOutlined, ClockCircleOutlined, CheckCircleOutlined } from '@ant-design/icons';\nimport type { ColumnsType } from 'antd/es/table';\nimport { Approval, ApprovalHistory, Vulnerability } from '@/types';\n\nconst ApprovalDetail: React.FC = () => {\n  const { id } = useParams<{ id: string }>();\n  const [approval, setApproval] = useState<Approval | null>(null);\n  const [history, setHistory] = useState<ApprovalHistory[]>([]);\n  const [vulnerabilities, setVulnerabilities] = useState<Vulnerability[]>([]);\n  const [loading, setLoading] = useState(true);\n\n  // 管理三个部分的折叠状态\n  const [vulnSectionCollapsed, setVulnSectionCollapsed] = useState(false);\n  const [approvalInfoCollapsed, setApprovalInfoCollapsed] = useState(false);\n  const [processSectionCollapsed, setProcessSectionCollapsed] = useState(false);\n\n  // 获取审批单详情\n  const fetchApprovalDetail = async (approvalId: string) => {\n    setLoading(true);\n    try {\n      // 获取审批单基本信息\n      const approvalResponse = await fetch(`/api/approval/${approvalId}`);\n      const approvalResult = await approvalResponse.json();\n\n      // 获取审批历史\n      const historyResponse = await fetch(`/api/approval/${approvalId}/history`);\n      const historyResult = await historyResponse.json();\n\n      // 获取相关漏洞\n      const vulnResponse = await fetch(`/api/vuln/approval/${approvalId}`);\n      const vulnResult = await vulnResponse.json();\n\n      if (approvalResult.code === 200) {\n        setApproval(approvalResult.data);\n      } else {\n        // 使用模拟数据\n        const mockApproval: Approval = {\n          id: 'APP-2024-001',\n          title: '紧急漏洞修复审批',\n          status: 'completed',\n          createTime: '2024-01-15 11:00:00',\n          updateTime: '2024-01-20 16:30:00',\n          approver: '张三',\n          priority: 'urgent',\n          department: '安全部',\n          comments: '本次漏洞涉及SQL注入和CSRF两个高危漏洞，需要紧急处理。请开发团队立即组织修复，测试团队重点验证。',\n        };\n        setApproval(mockApproval);\n      }\n\n      if (historyResult.code === 200) {\n        setHistory(historyResult.data);\n      } else {\n        // 使用模拟数据\n        const mockHistory: ApprovalHistory[] = [\n          {\n            id: 'HIS-2024-001-01',\n            approvalId: approvalId,\n            step: '提交申请',\n            operator: '张三',\n            operation: '提交',\n            time: '2024-01-15 11:00:00',\n            comments: '发现SQL注入和CSRF漏洞，申请紧急修复'\n          },\n          {\n            id: 'HIS-2024-001-02',\n            approvalId: approvalId,\n            step: '安全评估',\n            operator: '李四',\n            operation: '审核通过',\n            time: '2024-01-16 10:00:00',\n            comments: '漏洞确实存在，风险等级评估准确'\n          },\n          {\n            id: 'HIS-2024-001-03',\n            approvalId: approvalId,\n            step: '技术方案评审',\n            operator: '王五',\n            operation: '审核通过',\n            time: '2024-01-17 14:00:00',\n            comments: '修复方案可行，建议立即实施'\n          },\n          {\n            id: 'HIS-2024-001-04',\n            approvalId: approvalId,\n            step: '最终审批',\n            operator: '赵六',\n            operation: '审批完成',\n            time: '2024-01-20 16:30:00',\n            comments: '审批通过，请立即开始修复工作'\n          }\n        ];\n        setHistory(mockHistory);\n      }\n\n      if (vulnResult.code === 200) {\n        setVulnerabilities(vulnResult.data);\n      } else {\n        // 使用模拟数据\n        const mockVulns: Vulnerability[] = [\n          {\n            id: 'VUL-2024-001',\n            name: 'SQL注入漏洞',\n            source: 'IAST',\n            riskLevel: 'critical',\n            discoveryTime: '2024-01-15 10:30:00',\n            expectedBlockTime: '2024-01-20 00:00:00',\n            status: 'approved',\n            description: '在用户登录模块发现SQL注入漏洞',\n            severity: '严重',\n            affectedComponent: 'user/login',\n            approvalId: approvalId\n          },\n          {\n            id: 'VUL-2024-004',\n            name: 'CSRF跨站请求伪造',\n            source: 'IAST',\n            riskLevel: 'medium',\n            discoveryTime: '2024-01-18 16:45:00',\n            expectedBlockTime: '2024-01-26 00:00:00',\n            status: 'approved',\n            description: '关键业务操作缺少CSRF保护',\n            severity: '中危',\n            affectedComponent: 'user/settings',\n            approvalId: approvalId\n          }\n        ];\n        setVulnerabilities(mockVulns);\n      }\n\n    } catch (error) {\n      console.error('获取审批单详情失败:', error);\n      setApproval(null);\n    } finally {\n      setLoading(false);\n    }\n  };\n\n  useEffect(() => {\n    if (id) {\n      fetchApprovalDetail(id);\n    }\n  }, [id]);\n\n  // 返回列表页\n  const goBack = () => {\n    history.push('/approval');\n  };\n\n  // 查看漏洞详情\n  const viewVulnerability = (vulnId: string) => {\n    history.push(`/vuln/${vulnId}`);\n  };\n\n  // 优先级标签\n  const getPriorityTag = (priority: string) => {\n    const config = {\n      urgent: { color: 'red', text: '紧急' },\n      normal: { color: 'blue', text: '普通' },\n      low: { color: 'green', text: '低优先级' },\n    };\n    const { color, text } = config[priority] || { color: 'default', text: '未知' };\n    return <Tag color={color}>{text}</Tag>;\n  };\n\n  // 风险等级标签\n  const getRiskLevelTag = (level: string) => {\n    const config = {\n      critical: { color: 'red', text: '严重' },\n      high: { color: 'orange', text: '高危' },\n      medium: { color: 'gold', text: '中危' },\n      low: { color: 'green', text: '低危' },\n    };\n    const { color, text } = config[level] || { color: 'default', text: '未知' };\n    return <Tag color={color}>{text}</Tag>;\n  };\n\n  const vulnColumns: ColumnsType<Vulnerability> = [\n    {\n      title: '漏洞编号',\n      dataIndex: 'id',\n      key: 'id',\n      width: 150,\n      render: (text: string) => (\n        <Button\n          type=\"link\"\n          size=\"small\"\n          onClick={() => viewVulnerability(text)}\n        >\n          {text}\n        </Button>\n      ),\n    },\n    {\n      title: '漏洞名称',\n      dataIndex: 'name',\n      key: 'name',\n      width: 200,\n    },\n    {\n      title: '漏洞来源',\n      dataIndex: 'source',\n      key: 'source',\n      width: 100,\n    },\n    {\n      title: '危害等级',\n      dataIndex: 'riskLevel',\n      key: 'riskLevel',\n      width: 120,\n      render: (level: string) => getRiskLevelTag(level),\n    },\n    {\n      title: '发现时间',\n      dataIndex: 'discoveryTime',\n      key: 'discoveryTime',\n      width: 180,\n    },\n    {\n      title: '状态',\n      dataIndex: 'status',\n      key: 'status',\n      width: 100,\n      render: (status: string) => {\n        const config = {\n          pending: { color: 'orange', text: '待审批' },\n          approved: { color: 'green', text: '已通过' },\n          rejected: { color: 'red', text: '已拒绝' },\n          processing: { color: 'blue', text: '处理中' },\n        };\n        const { color, text } = config[status] || { color: 'default', text: '未知' };\n        return <Tag color={color}>{text}</Tag>;\n      },\n    },\n  ];\n\n  if (loading) {\n    return (\n      <div style={{ textAlign: 'center', padding: '50px' }}>\n        <Spin size=\"large\" />\n        <div style={{ marginTop: 16 }}>加载中...</div>\n      </div>\n    );\n  }\n\n  if (!approval) {\n    return (\n      <div>\n        <Space style={{ marginBottom: 16 }}>\n          <Button icon={<ArrowLeftOutlined />} onClick={goBack}>\n            返回列表\n          </Button>\n        </Space>\n        <Alert\n          message=\"审批单不存在\"\n          description=\"请检查审批单编号是否正确，或返回审批单列表重新选择。\"\n          type=\"error\"\n          showIcon\n        />\n      </div>\n    );\n  }\n\n  return (\n    <div className=\"approval-detail\">\n      <Space style={{ marginBottom: 16 }}>\n        <Button icon={<ArrowLeftOutlined />} onClick={goBack}>\n          返回列表\n        </Button>\n      </Space>\n\n      {/* 基本信息 */}\n      <Card title=\"审批单信息\" style={{ marginBottom: 16 }}>\n        <Descriptions column={2} bordered>\n          <Descriptions.Item label=\"审批单号\">{approval.id}</Descriptions.Item>\n          <Descriptions.Item label=\"审批标题\">{approval.title}</Descriptions.Item>\n          <Descriptions.Item label=\"优先级\">{getPriorityTag(approval.priority)}</Descriptions.Item>\n          <Descriptions.Item label=\"状态\">\n            <Tag color=\"green\" icon={<CheckCircleOutlined />}>已完成</Tag>\n          </Descriptions.Item>\n          <Descriptions.Item label=\"审批人\">{approval.approver}</Descriptions.Item>\n          <Descriptions.Item label=\"所属部门\">{approval.department || '未指定'}</Descriptions.Item>\n          <Descriptions.Item label=\"创建时间\">{approval.createTime}</Descriptions.Item>\n          <Descriptions.Item label=\"更新时间\">{approval.updateTime}</Descriptions.Item>\n          <Descriptions.Item label=\"备注说明\" span={2}>\n            {approval.comments || '无'}\n          </Descriptions.Item>\n        </Descriptions>\n      </Card>\n\n      <div style={{ display: 'flex', gap: '16px' }}>\n        {/* 审批流程 */}\n        <Card title=\"审批流程\" style={{ flex: 1, marginBottom: 16 }}>\n          <Timeline\n            mode=\"left\"\n            items={history.map((item) => ({\n              dot: <ClockCircleOutlined style={{ color: '#1890ff' }} />,\n              children: (\n                <div>\n                  <div style={{ fontWeight: 'bold', marginBottom: '4px' }}>\n                    {item.step} - {item.operator}\n                  </div>\n                  <div style={{ color: '#666', fontSize: '12px', marginBottom: '4px' }}>\n                    {item.time}\n                  </div>\n                  <div style={{ color: '#1890ff' }}>\n                    {item.operation}\n                  </div>\n                  {item.comments && (\n                    <div style={{ color: '#666', marginTop: '4px', fontSize: '13px' }}>\n                      {item.comments}\n                    </div>\n                  )}\n                </div>\n              ),\n            }))}\n          />\n        </Card>\n\n        {/* 统计信息 */}\n        <Card title=\"统计信息\" style={{ width: '300px', marginBottom: 16 }}>\n          <div style={{ textAlign: 'center' }}>\n            <div style={{ marginBottom: '16px' }}>\n              <div style={{ fontSize: '24px', fontWeight: 'bold', color: '#1890ff' }}>\n                {vulnerabilities.length}\n              </div>\n              <div style={{ color: '#666' }}>涉及漏洞数量</div>\n            </div>\n            <div style={{ display: 'flex', justifyContent: 'space-around' }}>\n              <div>\n                <div style={{ fontSize: '16px', fontWeight: 'bold', color: '#ff4d4f' }}>\n                  {vulnerabilities.filter(v => v.riskLevel === 'critical').length}\n                </div>\n                <div style={{ color: '#666', fontSize: '12px' }}>严重</div>\n              </div>\n              <div>\n                <div style={{ fontSize: '16px', fontWeight: 'bold', color: '#ff7a45' }}>\n                  {vulnerabilities.filter(v => v.riskLevel === 'high').length}\n                </div>\n                <div style={{ color: '#666', fontSize: '12px' }}>高危</div>\n              </div>\n              <div>\n                <div style={{ fontSize: '16px', fontWeight: 'bold', color: '#ffa940' }}>\n                  {vulnerabilities.filter(v => v.riskLevel === 'medium').length}\n                </div>\n                <div style={{ color: '#666', fontSize: '12px' }}>中危</div>\n              </div>\n              <div>\n                <div style={{ fontSize: '16px', fontWeight: 'bold', color: '#52c41a' }}>\n                  {vulnerabilities.filter(v => v.riskLevel === 'low').length}\n                </div>\n                <div style={{ color: '#666', fontSize: '12px' }}>低危</div>\n              </div>\n            </div>\n          </div>\n        </Card>\n      </div>\n\n      {/* 相关漏洞 */}\n      <Card title={`相关漏洞 (${vulnerabilities.length})`}>\n        <Table\n          columns={vulnColumns}\n          dataSource={vulnerabilities}\n          rowKey=\"id\"\n          pagination={false}\n          scroll={{ x: 1000 }}\n        />\n      </Card>\n    </div>\n  );\n};\n\nexport default ApprovalDetail;",
+      "__isJSFile": true,
+      "__absFile": "D:/Code/Projects/Vuln/src/pages/approval/[id].tsx"
+    },
+    "@@/global-layout": {
+      "id": "@@/global-layout",
+      "path": "/",
+      "file": "D:/Code/Projects/Vuln/src/layouts/index.tsx",
+      "absPath": "/",
+      "isLayout": true,
+      "__absFile": "D:/Code/Projects/Vuln/src/layouts/index.tsx"
+    }
+  },
+  "apiRoutes": {},
+  "hasSrcDir": true,
+  "npmClient": "npm",
+  "umi": {
+    "version": "4.6.0",
+    "name": "Umi",
+    "importSource": "umi",
+    "cliName": "umi"
+  },
+  "bundleStatus": {
+    "done": false
+  },
+  "mfsuBundleStatus": {
+    "done": false
+  },
+  "react": {
+    "version": "18.3.1",
+    "path": "D:\\Code\\Projects\\Vuln\\node_modules\\react"
+  },
+  "react-dom": {
+    "version": "18.3.1",
+    "path": "D:\\Code\\Projects\\Vuln\\node_modules\\react-dom"
+  },
+  "appJS": null,
+  "locale": "zh-CN",
+  "globalCSS": [
+    "D:\\Code\\Projects\\Vuln\\src\\global.less"
+  ],
+  "globalJS": [
+    "D:\\Code\\Projects\\Vuln\\src\\global.ts"
+  ],
+  "overridesCSS": [],
+  "bundler": "webpack",
+  "git": {
+    "originUrl": "git@github.com:LuckVd/Vuln.git"
+  },
+  "framework": "react",
+  "typescript": {
+    "tsVersion": "5.9.3",
+    "tslibVersion": "2.8.1"
+  },
+  "faviconFiles": []
+}

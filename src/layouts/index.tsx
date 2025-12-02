@@ -1,10 +1,14 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { Layout, Menu } from 'antd';
 import { Link, Outlet, useLocation } from 'umi';
 import {
   SecurityScanOutlined,
   AuditOutlined,
-  DashboardOutlined
+  DashboardOutlined,
+  EyeOutlined,
+  ArrowLeftOutlined,
+  ArrowRightOutlined,
+  CheckCircleOutlined
 } from '@ant-design/icons';
 import './index.less';
 
@@ -55,13 +59,17 @@ const BasicLayout: React.FC = () => {
         }}
       >
         <div className="logo">
-          <SecurityScanOutlined /> 漏洞管理系统
+          <SecurityScanOutlined style={{ fontSize: 24, marginRight: 8 }} /> 漏洞管理系统
         </div>
         <Menu
           theme="dark"
           mode="inline"
           selectedKeys={[getSelectedKey()]}
           items={menuItems}
+          style={{
+            borderRight: 'none',
+            backgroundColor: '#001529'
+          }}
         />
       </Sider>
       <Layout style={{ marginLeft: 200 }}>

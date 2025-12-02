@@ -15,7 +15,18 @@
       "Bash(git remote remove:*)",
       "Bash(git push:*)",
       "Bash(git remote set-url:*)",
-      "Bash(git rm:*)"
+      "Bash(git rm:*)",
+      "Bash(curl:*)",
+      "Bash(chmod:*)",
+      "Bash(npm run build:*)",
+      "Bash(netstat:*)",
+      "Bash(findstr:*)",
+      "Bash(npm run init-simple-db:*)",
+      "Bash(npx tsc:*)",
+      "Bash(chcp:*)",
+      "Bash(npx ts-node:*)",
+      "Bash(mysql:*)",
+      "Bash(node:*)"
     ],
     "deny": [],
     "ask": []

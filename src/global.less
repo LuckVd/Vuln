@@ -1,0 +1,106 @@
+// 全局样式
+.approval-detail {
+  .ant-card {
+    border-radius: 8px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+
+    .ant-card-head {
+      border-bottom: 1px solid #e8e8e8;
+      padding: 12px 16px;
+
+      .ant-card-head-title {
+        font-size: 18px;
+        font-weight: 600;
+        color: #1890ff;
+        margin: 0;
+      }
+    }
+  }
+
+  .ant-card-body {
+    padding: 20px;
+  }
+
+  .ant-descriptions-item-label {
+    font-weight: 500;
+    color: #666;
+  }
+
+  .ant-descriptions-item-content {
+    color: #262626;
+    font-size: 14px;
+  }
+
+  .ant-timeline-item-content {
+    margin-left: 20px;
+
+    .ant-timeline-item-tail {
+      border-left: 2px solid #e8e8e8;
+    }
+  }
+
+  .ant-timeline-item-head {
+    .ant-timeline-item-dot {
+      border-color: #1890ff;
+      background-color: #1890ff;
+    }
+  }
+
+  .vulnerability-list {
+    .ant-table-thead > tr > th {
+      background-color: #fafafa;
+      font-weight: 600;
+    }
+
+    .ant-table-tbody > tr:hover > td {
+      background-color: #f5f5f5;
+    }
+  }
+}
+
+.vuln-detail {
+  .ant-card {
+    border-radius: 8px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+  }
+
+  .ant-badge {
+    font-size: 12px;
+  }
+
+  .home-page {
+    .ant-statistic-title {
+      font-size: 16px;
+      color: #666;
+    }
+
+    .ant-statistic-content {
+      font-size: 24px;
+      font-weight: bold;
+    }
+  }
+}
+
+// 响应式优化
+@media (max-width: 768px) {
+  .approval-detail {
+    .flex-layout {
+      flex-direction: column;
+    }
+
+    .ant-card {
+      margin-bottom: 12px;
+    }
+  }
+}
+
+// 动画效果
+.collapse-animation {
+  transition: all 0.3s ease-in-out;
+}
+
+// 主题色彩
+@primary-color: #1890ff;
+@success-color: #52c41a;
+@warning-color: #faad14;
+@error-color: #ff4d4f;
