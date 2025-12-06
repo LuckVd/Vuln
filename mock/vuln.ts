@@ -1,4 +1,4 @@
-import { Vulnerability } from '@/types';
+import { Vulnerability, StageOperation } from '@/types';
 
 // Mock 漏洞数据
 let mockVulnerabilities: Vulnerability[] = [
@@ -197,6 +197,14 @@ let mockVulnerabilities: Vulnerability[] = [
 
 // 用于生成新的审批单ID（避免与其他模块冲突）
 let nextVulnApprovalId = 8;
+
+// 暂存操作数据
+let stageOperations: StageOperation[] = [];
+
+// 生成暂存操作ID
+function generateStageOperationId(): string {
+  return `STAGE-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
+}
 
 // 计算预期阻断时间
 function calculateExpectedBlockTime(riskLevel: string): string {
@@ -496,6 +504,304 @@ export default {
         vulnerabilityIds,
         vulnerabilityCount: vulnerabilityIds.length
       }
+    });
+  },
+
+  // 暂存漏洞修改
+  'POST /api/vuln/stage': (req: any, res: any) => {
+    const { vulnId, stagedData } = req.body;
+
+    const vulnerability = mockVulnerabilities.find(v => v.id === vulnId);
+    if (!vulnerability) {
+      return res.json({
+        code: 404,
+        message: '漏洞不存在'
+      });
+    }
+
+    const now = new Date();
+    const timeStr = now.toISOString().replace('T', ' ').substring(0, 19);
+
+    // 如果漏洞已经有暂存数据，更新它
+    if (vulnerability.isStaged) {
+      vulnerability.stagedData = { ...vulnerability.stagedData, ...stagedData };
+      vulnerability.stageTime = timeStr;
+
+      // 更新暂存操作记录
+      const existingOperation = stageOperations.find(op => op.vulnId === vulnId && op.operation === 'update');
+      if (existingOperation) {
+        existingOperation.stagedData = vulnerability.stagedData;
+        existingOperation.createTime = timeStr;
+      }
+    } else {
+      // 新增暂存数据
+      vulnerability.isStaged = true;
+      vulnerability.stagedData = stagedData;
+      vulnerability.stageTime = timeStr;
+
+      // 创建暂存操作记录
+      const stageOperation: StageOperation = {
+        id: generateStageOperationId(),
+        vulnId,
+        operation: 'update',
+        originalData: { ...vulnerability, isStaged: false, stagedData: undefined, stageTime: undefined },
+        stagedData,
+        createTime: timeStr
+      };
+      stageOperations.push(stageOperation);
+    }
+
+    res.json({
+      code: 200,
+      message: '暂存成功',
+      data: {
+        vulnId,
+        stagedData: vulnerability.stagedData,
+        stageTime: vulnerability.stageTime
+      }
+    });
+  },
+
+  // 批量暂存漏洞修改
+  'POST /api/vuln/stage/batch': (req: any, res: any) => {
+    const { operations } = req.body; // [{ vulnId, stagedData }]
+
+    const results = [];
+    const now = new Date();
+    const timeStr = now.toISOString().replace('T', ' ').substring(0, 19);
+
+    for (const { vulnId, stagedData } of operations) {
+      const vulnerability = mockVulnerabilities.find(v => v.id === vulnId);
+
+      if (!vulnerability) {
+        results.push({ vulnId, success: false, message: '漏洞不存在' });
+        continue;
+      }
+
+      try {
+        if (vulnerability.isStaged) {
+          vulnerability.stagedData = { ...vulnerability.stagedData, ...stagedData };
+          vulnerability.stageTime = timeStr;
+
+          const existingOperation = stageOperations.find(op => op.vulnId === vulnId && op.operation === 'update');
+          if (existingOperation) {
+            existingOperation.stagedData = vulnerability.stagedData;
+            existingOperation.createTime = timeStr;
+          }
+        } else {
+          vulnerability.isStaged = true;
+          vulnerability.stagedData = stagedData;
+          vulnerability.stageTime = timeStr;
+
+          const stageOperation: StageOperation = {
+            id: generateStageOperationId(),
+            vulnId,
+            operation: 'update',
+            originalData: { ...vulnerability, isStaged: false, stagedData: undefined, stageTime: undefined },
+            stagedData,
+            createTime: timeStr
+          };
+          stageOperations.push(stageOperation);
+        }
+
+        results.push({ vulnId, success: true, message: '暂存成功' });
+      } catch (error) {
+        results.push({ vulnId, success: false, message: '暂存失败' });
+      }
+    }
+
+    res.json({
+      code: 200,
+      message: '批量暂存操作完成',
+      data: results
+    });
+  },
+
+  // 获取暂存的漏洞列表
+  'GET /api/vuln/staged': (req: any, res: any) => {
+    const stagedVulnerabilities = mockVulnerabilities.filter(v => v.isStaged);
+
+    res.json({
+      code: 200,
+      data: stagedVulnerabilities,
+      total: stagedVulnerabilities.length
+    });
+  },
+
+  // 应用暂存修改（将暂存数据应用到实际数据）
+  'POST /api/vuln/stage/apply/:vulnId': (req: any, res: any) => {
+    const { vulnId } = req.params;
+    const vulnerability = mockVulnerabilities.find(v => v.id === vulnId);
+
+    if (!vulnerability) {
+      return res.json({
+        code: 404,
+        message: '漏洞不存在'
+      });
+    }
+
+    if (!vulnerability.isStaged || !vulnerability.stagedData) {
+      return res.json({
+        code: 400,
+        message: '漏洞没有暂存的修改'
+      });
+    }
+
+    // 应用暂存的修改
+    const updatedVulnerability = {
+      ...vulnerability,
+      ...vulnerability.stagedData,
+      isStaged: false,
+      stagedData: undefined,
+      stageTime: undefined
+    };
+
+    // 更新预期阻断时间（如果风险等级改变）
+    if (vulnerability.stagedData.riskLevel && vulnerability.stagedData.riskLevel !== vulnerability.riskLevel) {
+      updatedVulnerability.expectedBlockTime = calculateExpectedBlockTime(vulnerability.stagedData.riskLevel);
+    }
+
+    const index = mockVulnerabilities.findIndex(v => v.id === vulnId);
+    mockVulnerabilities[index] = updatedVulnerability;
+
+    // 删除暂存操作记录
+    stageOperations = stageOperations.filter(op => op.vulnId !== vulnId);
+
+    res.json({
+      code: 200,
+      message: '暂存修改已应用',
+      data: updatedVulnerability
+    });
+  },
+
+  // 批量应用暂存修改
+  'POST /api/vuln/stage/apply/batch': (req: any, res: any) => {
+    const { vulnIds } = req.body;
+    const results = [];
+
+    for (const vulnId of vulnIds) {
+      const vulnerability = mockVulnerabilities.find(v => v.id === vulnId);
+
+      if (!vulnerability) {
+        results.push({ vulnId, success: false, message: '漏洞不存在' });
+        continue;
+      }
+
+      if (!vulnerability.isStaged || !vulnerability.stagedData) {
+        results.push({ vulnId, success: false, message: '漏洞没有暂存的修改' });
+        continue;
+      }
+
+      try {
+        const updatedVulnerability = {
+          ...vulnerability,
+          ...vulnerability.stagedData,
+          isStaged: false,
+          stagedData: undefined,
+          stageTime: undefined
+        };
+
+        if (vulnerability.stagedData.riskLevel && vulnerability.stagedData.riskLevel !== vulnerability.riskLevel) {
+          updatedVulnerability.expectedBlockTime = calculateExpectedBlockTime(vulnerability.stagedData.riskLevel);
+        }
+
+        const index = mockVulnerabilities.findIndex(v => v.id === vulnId);
+        mockVulnerabilities[index] = updatedVulnerability;
+
+        results.push({ vulnId, success: true, message: '暂存修改已应用' });
+      } catch (error) {
+        results.push({ vulnId, success: false, message: '应用失败' });
+      }
+    }
+
+    // 删除已应用的暂存操作记录
+    stageOperations = stageOperations.filter(op => !vulnIds.includes(op.vulnId));
+
+    res.json({
+      code: 200,
+      message: '批量应用暂存修改完成',
+      data: results
+    });
+  },
+
+  // 取消暂存修改
+  'DELETE /api/vuln/stage/:vulnId': (req: any, res: any) => {
+    const { vulnId } = req.params;
+    const vulnerability = mockVulnerabilities.find(v => v.id === vulnId);
+
+    if (!vulnerability) {
+      return res.json({
+        code: 404,
+        message: '漏洞不存在'
+      });
+    }
+
+    if (!vulnerability.isStaged) {
+      return res.json({
+        code: 400,
+        message: '漏洞没有暂存的修改'
+      });
+    }
+
+    // 取消暂存
+    vulnerability.isStaged = false;
+    vulnerability.stagedData = undefined;
+    vulnerability.stageTime = undefined;
+
+    // 删除暂存操作记录
+    stageOperations = stageOperations.filter(op => op.vulnId !== vulnId);
+
+    res.json({
+      code: 200,
+      message: '暂存修改已取消',
+      data: { vulnId }
+    });
+  },
+
+  // 批量取消暂存修改
+  'DELETE /api/vuln/stage/batch': (req: any, res: any) => {
+    const { vulnIds } = req.body;
+    const results = [];
+
+    for (const vulnId of vulnIds) {
+      const vulnerability = mockVulnerabilities.find(v => v.id === vulnId);
+
+      if (!vulnerability) {
+        results.push({ vulnId, success: false, message: '漏洞不存在' });
+        continue;
+      }
+
+      if (!vulnerability.isStaged) {
+        results.push({ vulnId, success: false, message: '漏洞没有暂存的修改' });
+        continue;
+      }
+
+      try {
+        vulnerability.isStaged = false;
+        vulnerability.stagedData = undefined;
+        vulnerability.stageTime = undefined;
+        results.push({ vulnId, success: true, message: '暂存修改已取消' });
+      } catch (error) {
+        results.push({ vulnId, success: false, message: '取消失败' });
+      }
+    }
+
+    // 删除已取消的暂存操作记录
+    stageOperations = stageOperations.filter(op => !vulnIds.includes(op.vulnId));
+
+    res.json({
+      code: 200,
+      message: '批量取消暂存修改完成',
+      data: results
+    });
+  },
+
+  // 获取暂存操作历史
+  'GET /api/vuln/stage/operations': (req: any, res: any) => {
+    res.json({
+      code: 200,
+      data: stageOperations,
+      total: stageOperations.length
     });
   }
 };

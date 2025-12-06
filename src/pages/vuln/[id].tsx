@@ -1,13 +1,23 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, history } from 'umi';
-import { Card, Descriptions, Tag, Button, Space, Spin, Alert, Divider } from 'antd';
-import { ArrowLeftOutlined, EyeOutlined } from '@ant-design/icons';
+import { Card, Descriptions, Tag, Button, Space, Spin, Alert, Divider, Modal, Form, Input, Select, DatePicker, message, Popconfirm } from 'antd';
+import { ArrowLeftOutlined, EyeOutlined, EditOutlined, SaveOutlined, CloudUploadOutlined } from '@ant-design/icons';
 import { Vulnerability } from '@/types';
 
 const VulnerabilityDetail: React.FC = () => {
   const { id } = useParams<{ id: string }>();
   const [vulnerability, setVulnerability] = useState<Vulnerability | null>(null);
   const [loading, setLoading] = useState(true);
+
+  // 暂存编辑相关状态
+  const [editModalVisible, setEditModalVisible] = useState(false);
+  const [editForm] = Form.useForm();
+  const [editLoading, setEditLoading] = useState(false);
+
+  // 创建审批单相关状态
+  const [createApprovalModalVisible, setCreateApprovalModalVisible] = useState(false);
+  const [createApprovalForm] = Form.useForm();
+  const [createApprovalLoading, setCreateApprovalLoading] = useState(false);
 
   // 获取漏洞详情
   const fetchVulnerabilityDetail = async (vulnId: string) => {
@@ -82,6 +92,162 @@ const VulnerabilityDetail: React.FC = () => {
     history.push(`/approval/${approvalId}`);
   };
 
+  // 打开编辑模态框
+  const openEditModal = () => {
+    if (!vulnerability) return;
+
+    // 如果有暂存数据，使用暂存数据填充表单
+    const formData = {
+      name: vulnerability.stagedData?.name || vulnerability.name,
+      riskLevel: vulnerability.stagedData?.riskLevel || vulnerability.riskLevel,
+      description: vulnerability.stagedData?.description || vulnerability.description,
+      severity: vulnerability.stagedData?.severity || vulnerability.severity,
+      affectedComponent: vulnerability.stagedData?.affectedComponent || vulnerability.affectedComponent,
+      recommendation: vulnerability.stagedData?.recommendation || vulnerability.recommendation,
+    };
+
+    editForm.setFieldsValue(formData);
+    setEditModalVisible(true);
+  };
+
+  // 暂存编辑
+  const submitStagedEdit = async (values: any) => {
+    if (!vulnerability) return;
+
+    setEditLoading(true);
+    try {
+      const response = await fetch('/api/vuln/stage', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          vulnId: vulnerability.id,
+          stagedData: values,
+        }),
+      });
+
+      const result = await response.json();
+
+      if (result.code === 200) {
+        message.success('暂存成功');
+        setEditModalVisible(false);
+        editForm.resetFields();
+        // 刷新漏洞详情
+        fetchVulnerabilityDetail(vulnerability.id);
+      } else {
+        message.error(result.message || '暂存失败');
+      }
+    } catch (error) {
+      console.error('暂存失败:', error);
+      message.error('网络错误，请重试');
+    } finally {
+      setEditLoading(false);
+    }
+  };
+
+  // 应用暂存修改
+  const applyStagedChanges = async () => {
+    if (!vulnerability) return;
+
+    try {
+      const response = await fetch(`/api/vuln/stage/apply/${vulnerability.id}`, {
+        method: 'POST',
+      });
+
+      const result = await response.json();
+
+      if (result.code === 200) {
+        message.success('暂存修改已应用');
+        fetchVulnerabilityDetail(vulnerability.id);
+      } else {
+        message.error(result.message || '应用失败');
+      }
+    } catch (error) {
+      message.error('网络错误，请重试');
+    }
+  };
+
+  // 取消暂存修改
+  const cancelStagedChanges = async () => {
+    if (!vulnerability) return;
+
+    try {
+      const response = await fetch(`/api/vuln/stage/${vulnerability.id}`, {
+        method: 'DELETE',
+      });
+
+      const result = await response.json();
+
+      if (result.code === 200) {
+        message.success('暂存修改已取消');
+        fetchVulnerabilityDetail(vulnerability.id);
+      } else {
+        message.error(result.message || '取消失败');
+      }
+    } catch (error) {
+      message.error('网络错误，请重试');
+    }
+  };
+
+  // 取消编辑
+  const cancelEdit = () => {
+    setEditModalVisible(false);
+    editForm.resetFields();
+  };
+
+  // 打开创建审批单模态框
+  const openCreateApprovalModal = () => {
+    if (!vulnerability) return;
+    setCreateApprovalModalVisible(true);
+  };
+
+  // 创建审批单
+  const submitCreateApproval = async (values: any) => {
+    if (!vulnerability) return;
+
+    setCreateApprovalLoading(true);
+    try {
+      const response = await fetch('/api/approval/create', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          title: values.title,
+          priority: values.priority,
+          department: values.department,
+          comments: values.comments,
+          dueDate: values.dueDate?.format('YYYY-MM-DD HH:mm:ss'),
+          vulnerabilityIds: [vulnerability.id],
+        }),
+      });
+
+      const result = await response.json();
+
+      if (result.code === 200) {
+        message.success('审批单创建成功');
+        setCreateApprovalModalVisible(false);
+        createApprovalForm.resetFields();
+        // 刷新漏洞详情
+        fetchVulnerabilityDetail(vulnerability.id);
+      } else {
+        message.error(result.message || '创建失败');
+      }
+    } catch (error) {
+      console.error('创建审批单失败:', error);
+      message.error('网络错误，请重试');
+    } finally {
+      setCreateApprovalLoading(false);
+    }
+  };
+
+  // 取消创建审批单
+  const cancelCreateApproval = () => {
+    setCreateApprovalModalVisible(false);
+    createApprovalForm.resetFields();
+  };
+
   // 风险等级标签
   const getRiskLevelTag = (level: string) => {
     const config = {
@@ -141,7 +307,7 @@ const VulnerabilityDetail: React.FC = () => {
         </Button>
         {vulnerability.approvalId && (
           <Button
-            type="primary"
+            type="default"
             icon={<EyeOutlined />}
             onClick={() => viewApproval(vulnerability.approvalId!)}
           >
@@ -150,18 +316,65 @@ const VulnerabilityDetail: React.FC = () => {
         )}
       </Space>
 
+      {/* 暂存状态提示 */}
+      {vulnerability.isStaged && (
+        <Alert
+          message="当前漏洞有暂存的修改"
+          description={`暂存时间: ${vulnerability.stageTime}`}
+          type="info"
+          showIcon
+          style={{ marginBottom: 16 }}
+        />
+      )}
+
       {/* 基本信息 */}
       <Card title="基本信息" style={{ marginBottom: 16 }}>
         <Descriptions column={2} bordered>
           <Descriptions.Item label="漏洞编号">{vulnerability.id}</Descriptions.Item>
-          <Descriptions.Item label="漏洞名称">{vulnerability.name}</Descriptions.Item>
+          <Descriptions.Item label="漏洞名称">
+            <div>
+              <div>{vulnerability.name}</div>
+              {vulnerability.isStaged && vulnerability.stagedData?.name && (
+                <div style={{ fontSize: '12px', color: '#52c41a', fontStyle: 'italic' }}>
+                  → {vulnerability.stagedData.name}
+                </div>
+              )}
+            </div>
+          </Descriptions.Item>
           <Descriptions.Item label="漏洞来源">{vulnerability.source}</Descriptions.Item>
-          <Descriptions.Item label="危害等级">{getRiskLevelTag(vulnerability.riskLevel)}</Descriptions.Item>
+          <Descriptions.Item label="危害等级">
+            <div>
+              {getRiskLevelTag(vulnerability.riskLevel)}
+              {vulnerability.isStaged && vulnerability.stagedData?.riskLevel && vulnerability.stagedData.riskLevel !== vulnerability.riskLevel && (
+                <div style={{ marginTop: 4 }}>
+                  {getRiskLevelTag(vulnerability.stagedData.riskLevel)}
+                </div>
+              )}
+            </div>
+          </Descriptions.Item>
           <Descriptions.Item label="发现时间">{vulnerability.discoveryTime}</Descriptions.Item>
           <Descriptions.Item label="预期拦截时间">{vulnerability.expectedBlockTime}</Descriptions.Item>
           <Descriptions.Item label="当前状态">{getStatusTag(vulnerability.status)}</Descriptions.Item>
-          <Descriptions.Item label="严重程度">{vulnerability.severity || '未定义'}</Descriptions.Item>
-          <Descriptions.Item label="影响组件" span={2}>{vulnerability.affectedComponent || '未定义'}</Descriptions.Item>
+          <Descriptions.Item label="严重程度">
+            <div>
+              <div>{vulnerability.severity || '未定义'}</div>
+              {vulnerability.isStaged && vulnerability.stagedData?.severity && (
+                <div style={{ fontSize: '12px', color: '#52c41a', fontStyle: 'italic' }}>
+                  → {vulnerability.stagedData.severity}
+                </div>
+              )}
+            </div>
+          </Descriptions.Item>
+          <Descriptions.Item label="影响组件" span={2}>
+            <div>
+              <div>{vulnerability.affectedComponent || '未定义'}</div>
+              {vulnerability.isStaged && vulnerability.stagedData?.affectedComponent && (
+                <div style={{ fontSize: '12px', color: '#52c41a', fontStyle: 'italic' }}>
+                  → {vulnerability.stagedData.affectedComponent}
+                </div>
+              )}
+            </div>
+          </Descriptions.Item>
           <Descriptions.Item label="审批单ID" span={2}>
             {vulnerability.approvalId ? (
               <Button
@@ -180,26 +393,64 @@ const VulnerabilityDetail: React.FC = () => {
 
       {/* 漏洞描述 */}
       <Card title="漏洞描述" style={{ marginBottom: 16 }}>
-        <p style={{ lineHeight: 1.8, fontSize: 14 }}>
-          {vulnerability.description || '暂无详细描述'}
-        </p>
+        <div>
+          <p style={{ lineHeight: 1.8, fontSize: 14 }}>
+            {vulnerability.description || '暂无详细描述'}
+          </p>
+          {vulnerability.isStaged && vulnerability.stagedData?.description && (
+            <div style={{
+              background: '#f6ffed',
+              border: '1px solid #b7eb8f',
+              borderRadius: '6px',
+              padding: '12px',
+              marginTop: '12px'
+            }}>
+              <div style={{ fontSize: '12px', color: '#52c41a', fontWeight: 'bold', marginBottom: '4px' }}>
+                暂存的修改:
+              </div>
+              <p style={{ margin: 0, lineHeight: 1.6, fontSize: 13 }}>
+                {vulnerability.stagedData.description}
+              </p>
+            </div>
+          )}
+        </div>
       </Card>
 
       {/* 修复建议 */}
-      {vulnerability.recommendation && (
-        <Card title="修复建议" style={{ marginBottom: 16 }}>
-          <div style={{
-            background: '#f6ffed',
-            border: '1px solid #b7eb8f',
-            borderRadius: '6px',
-            padding: '16px'
-          }}>
-            <p style={{ margin: 0, lineHeight: 1.8, fontSize: 14 }}>
-              {vulnerability.recommendation}
-            </p>
-          </div>
-        </Card>
-      )}
+      <Card title="修复建议" style={{ marginBottom: 16 }}>
+        <div>
+          {vulnerability.recommendation ? (
+            <div style={{
+              background: '#f6ffed',
+              border: '1px solid #b7eb8f',
+              borderRadius: '6px',
+              padding: '16px'
+            }}>
+              <p style={{ margin: 0, lineHeight: 1.8, fontSize: 14 }}>
+                {vulnerability.recommendation}
+              </p>
+            </div>
+          ) : (
+            <p style={{ color: '#999', fontStyle: 'italic' }}>暂无修复建议</p>
+          )}
+          {vulnerability.isStaged && vulnerability.stagedData?.recommendation && (
+            <div style={{
+              background: '#fff7e6',
+              border: '1px solid #ffd591',
+              borderRadius: '6px',
+              padding: '12px',
+              marginTop: '12px'
+            }}>
+              <div style={{ fontSize: '12px', color: '#fa8c16', fontWeight: 'bold', marginBottom: '4px' }}>
+                暂存的修改:
+              </div>
+              <p style={{ margin: 0, lineHeight: 1.6, fontSize: 13 }}>
+                {vulnerability.stagedData.recommendation}
+              </p>
+            </div>
+          )}
+        </div>
+      </Card>
 
       {/* 风险评估 */}
       <Card title="风险评估">
@@ -222,6 +473,255 @@ const VulnerabilityDetail: React.FC = () => {
           </div>
         </div>
       </Card>
+
+      {/* 操作按钮区域 */}
+      {!vulnerability.approvalId && (
+        <Card style={{ marginTop: 16 }}>
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+            <div>
+              <div style={{ fontSize: '16px', fontWeight: 600, color: '#262626', marginBottom: '4px' }}>
+                漏洞操作
+              </div>
+              <div style={{ fontSize: '13px', color: '#666' }}>
+                {!vulnerability.isStaged ? '修改漏洞信息并暂存，或直接创建审批单' : '已暂存修改，可继续编辑或创建审批单'}
+              </div>
+            </div>
+            <Space size="large">
+              <Button
+                icon={<EditOutlined />}
+                onClick={openEditModal}
+                size="large"
+              >
+                {vulnerability.isStaged ? '继续编辑' : '修改漏洞'}
+              </Button>
+              {vulnerability.isStaged && (
+                <>
+                  <Popconfirm
+                    title="确定要应用暂存的修改吗？"
+                    description="应用后漏洞信息将被更新"
+                    onConfirm={applyStagedChanges}
+                    okText="确认"
+                    cancelText="取消"
+                  >
+                    <Button
+                      type="default"
+                      icon={<SaveOutlined />}
+                      size="large"
+                    >
+                      应用修改
+                    </Button>
+                  </Popconfirm>
+                  <Popconfirm
+                    title="确定要取消暂存的修改吗？"
+                    description="取消后将丢失所有未应用的修改"
+                    onConfirm={cancelStagedChanges}
+                    okText="确认"
+                    cancelText="取消"
+                  >
+                    <Button
+                      danger
+                      icon={<CloseOutlined />}
+                      size="large"
+                    >
+                      取消暂存
+                    </Button>
+                  </Popconfirm>
+                </>
+              )}
+              <Button
+                type="primary"
+                icon={<CloudUploadOutlined />}
+                onClick={openCreateApprovalModal}
+                size="large"
+                style={{
+                  background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+                  border: 'none',
+                  boxShadow: '0 4px 15px rgba(102, 126, 234, 0.4)'
+                }}
+              >
+                创建审批单
+              </Button>
+            </Space>
+          </div>
+        </Card>
+      )}
+
+      {/* 编辑模态框 */}
+      <Modal
+        title={vulnerability.isStaged ? '编辑暂存' : '编辑漏洞'}
+        open={editModalVisible}
+        onCancel={cancelEdit}
+        footer={null}
+        width={700}
+        destroyOnClose
+      >
+        <Form
+          form={editForm}
+          layout="vertical"
+          onFinish={submitStagedEdit}
+        >
+          <Form.Item
+            name="name"
+            label="漏洞名称"
+            rules={[{ required: true, message: '请输入漏洞名称' }]}
+          >
+            <Input placeholder="请输入漏洞名称" />
+          </Form.Item>
+
+          <Form.Item
+            name="riskLevel"
+            label="风险等级"
+            rules={[{ required: true, message: '请选择风险等级' }]}
+          >
+            <Select placeholder="请选择风险等级">
+              <Select.Option value="critical">严重</Select.Option>
+              <Select.Option value="high">高危</Select.Option>
+              <Select.Option value="medium">中危</Select.Option>
+              <Select.Option value="low">低危</Select.Option>
+            </Select>
+          </Form.Item>
+
+          <Form.Item
+            name="description"
+            label="漏洞描述"
+            rules={[{ required: true, message: '请输入漏洞描述' }]}
+          >
+            <Input.TextArea
+              rows={4}
+              placeholder="请详细描述漏洞的情况..."
+            />
+          </Form.Item>
+
+          <Form.Item
+            name="severity"
+            label="严重程度"
+          >
+            <Input placeholder="请输入严重程度" />
+          </Form.Item>
+
+          <Form.Item
+            name="affectedComponent"
+            label="影响组件"
+          >
+            <Input placeholder="请输入影响组件" />
+          </Form.Item>
+
+          <Form.Item
+            name="recommendation"
+            label="修复建议"
+          >
+            <Input.TextArea
+              rows={4}
+              placeholder="请输入修复建议..."
+            />
+          </Form.Item>
+
+          <Form.Item>
+            <Space style={{ width: '100%', justifyContent: 'flex-end' }}>
+              <Button onClick={cancelEdit}>
+                取消
+              </Button>
+              <Button
+                type="primary"
+                htmlType="submit"
+                loading={editLoading}
+              >
+                暂存修改
+              </Button>
+            </Space>
+          </Form.Item>
+        </Form>
+      </Modal>
+
+      {/* 创建审批单模态框 */}
+      <Modal
+        title="创建审批单"
+        open={createApprovalModalVisible}
+        onCancel={cancelCreateApproval}
+        footer={null}
+        width={600}
+        destroyOnClose
+      >
+        <Form
+          form={createApprovalForm}
+          layout="vertical"
+          onFinish={submitCreateApproval}
+        >
+          <Form.Item
+            name="title"
+            label="审批标题"
+            rules={[{ required: true, message: '请输入审批标题' }]}
+            initialValue={`${vulnerability?.name || '漏洞'} - 修复审批`}
+          >
+            <Input placeholder="请输入审批标题" />
+          </Form.Item>
+
+          <Form.Item
+            name="priority"
+            label="优先级"
+            rules={[{ required: true, message: '请选择优先级' }]}
+            initialValue="normal"
+          >
+            <Select placeholder="请选择优先级">
+              <Option value="urgent">紧急</Option>
+              <Option value="normal">普通</Option>
+              <Option value="low">低优先级</Option>
+            </Select>
+          </Form.Item>
+
+          <Form.Item
+            name="department"
+            label="负责部门"
+            rules={[{ required: true, message: '请输入负责部门' }]}
+            initialValue="开发部"
+          >
+            <Input placeholder="请输入负责部门" />
+          </Form.Item>
+
+          <Form.Item
+            name="dueDate"
+            label="截止日期"
+            rules={[{ required: true, message: '请选择截止日期' }]}
+          >
+            <DatePicker
+              showTime
+              placeholder="请选择完成截止日期"
+              style={{ width: '100%' }}
+            />
+          </Form.Item>
+
+          <Form.Item
+            name="comments"
+            label="备注说明"
+            rules={[{ required: true, message: '请填写备注说明' }]}
+          >
+            <Input.TextArea
+              rows={4}
+              placeholder="请详细说明审批要求、处理建议等信息..."
+            />
+          </Form.Item>
+
+          <Form.Item>
+            <Space style={{ width: '100%', justifyContent: 'flex-end' }}>
+              <Button onClick={cancelCreateApproval}>
+                取消
+              </Button>
+              <Button
+                type="primary"
+                htmlType="submit"
+                loading={createApprovalLoading}
+                style={{
+                  background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+                  border: 'none',
+                  boxShadow: '0 4px 15px rgba(102, 126, 234, 0.4)'
+                }}
+              >
+                创建审批单
+              </Button>
+            </Space>
+          </Form.Item>
+        </Form>
+      </Modal>
     </div>
   );
 };

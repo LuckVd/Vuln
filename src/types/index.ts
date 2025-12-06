@@ -12,6 +12,19 @@ export interface Vulnerability {
   affectedComponent?: string;
   recommendation?: string;
   approvalId?: string; // 关联的审批单ID，可选
+  isStaged?: boolean; // 是否为暂存状态
+  stagedData?: Partial<Vulnerability>; // 暂存的修改数据
+  stageTime?: string; // 暂存时间
+}
+
+// 暂存漏洞操作类型
+export interface StageOperation {
+  id: string;
+  vulnId: string;
+  operation: 'create' | 'update' | 'delete';
+  originalData?: Vulnerability;
+  stagedData?: Partial<Vulnerability>;
+  createTime: string;
 }
 
 // 审批单数据类型
