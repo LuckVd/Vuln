@@ -3,21 +3,22 @@ import { Table, Input, Select, Space, Tag, Button, Card, message, Modal, Form, D
 import { SearchOutlined, ReloadOutlined, PlusOutlined, LinkOutlined, EditOutlined, SaveOutlined, CloseOutlined, WarningOutlined, CheckCircleOutlined } from '@ant-design/icons';
 import { Link, history } from 'umi';
 import type { ColumnsType } from 'antd/es/table';
-import { Vulnerability } from '@/types';
+import { EditableProTable } from '@ant-design/pro-table';
+import { ProblemDocument, ENUMS, REVERSE_STRING_ENUMS } from '@/types';
 
 const { Option } = Select;
 const { TextArea } = AntInput;
 
 const VulnerabilityList: React.FC = () => {
-  const [vulnerabilities, setVulnerabilities] = useState<Vulnerability[]>([]);
+  const [problems, setProblems] = useState<ProblemDocument[]>([]);
   const [loading, setLoading] = useState(false);
   const [total, setTotal] = useState(0);
   const [current, setCurrent] = useState(1);
   const [pageSize, setPageSize] = useState(10);
   const [searchText, setSearchText] = useState('');
-  const [riskLevelFilter, setRiskLevelFilter] = useState<string>('');
+  const [vulnerabilityLevelFilter, setVulnerabilityLevelFilter] = useState<string>('');
   const [statusFilter, setStatusFilter] = useState<string>('');
-  const [selectedRowKeys, setSelectedRowKeys] = useState<string[]>([]);
+  const [selectedRowKeys, setSelectedRowKeys] = useState<number[]>([]);
   const [createModalVisible, setCreateModalVisible] = useState(false);
   const [createLoading, setCreateLoading] = useState(false);
   const [createForm] = Form.useForm();
@@ -25,34 +26,34 @@ const VulnerabilityList: React.FC = () => {
   // 暂存相关状态
   const [batchEditModalVisible, setBatchEditModalVisible] = useState(false);
   const [batchEditLoading, setBatchEditLoading] = useState(false);
-  const [selectedVulnsForEdit, setSelectedVulnsForEdit] = useState<Vulnerability[]>([]);
-  const [editingVulnsData, setEditingVulnsData] = useState<Record<string, Partial<Vulnerability>>>({});
+  const [selectedProblemsForEdit, setSelectedProblemsForEdit] = useState<ProblemDocument[]>([]);
+  const [editingProblemsData, setEditingProblemsData] = useState<Record<number, Partial<ProblemDocument>>>({});
 
   // 获取漏洞列表
-  const fetchVulnerabilities = async (page: number = 1, size: number = 10) => {
+  const fetchProblems = async (page: number = 1, size: number = 10) => {
     setLoading(true);
     try {
       const params = new URLSearchParams({
-        page: page.toString(),
+        current: page.toString(),
         pageSize: size.toString(),
       });
 
       if (searchText) {
         params.append('search', searchText);
       }
-      if (riskLevelFilter) {
-        params.append('riskLevel', riskLevelFilter);
+      if (vulnerabilityLevelFilter) {
+        params.append('vulnerabilityLevel', vulnerabilityLevelFilter);
       }
       if (statusFilter) {
         params.append('status', statusFilter);
       }
 
-      const response = await fetch(`/api/vuln?${params}`);
+      const response = await fetch(`/api/problem?${params}`);
       const result = await response.json();
 
       if (result.code === 200) {
-        setVulnerabilities(result.data);
-        setTotal(result.total);
+        setProblems(result.data.list);
+        setTotal(result.data.total);
       } else {
         message.error('获取漏洞列表失败');
       }
@@ -64,22 +65,22 @@ const VulnerabilityList: React.FC = () => {
   };
 
   useEffect(() => {
-    fetchVulnerabilities(current, pageSize);
+    fetchProblems(current, pageSize);
   }, [current, pageSize]);
 
   // 搜索处理
   const handleSearch = () => {
     setCurrent(1);
-    fetchVulnerabilities(1, pageSize);
+    fetchProblems(1, pageSize);
   };
 
   // 重置筛选
   const handleReset = () => {
     setSearchText('');
-    setRiskLevelFilter('');
+    setVulnerabilityLevelFilter('');
     setStatusFilter('');
     setCurrent(1);
-    fetchVulnerabilities(1, pageSize);
+    fetchProblems(1, pageSize);
   };
 
   // 分页处理
@@ -89,7 +90,7 @@ const VulnerabilityList: React.FC = () => {
   };
 
   // 多选处理
-  const onSelectChange = (newSelectedRowKeys: string[]) => {
+  const onSelectChange = (newSelectedRowKeys: number[]) => {
     setSelectedRowKeys(newSelectedRowKeys);
   };
 
@@ -101,17 +102,17 @@ const VulnerabilityList: React.FC = () => {
     }
 
     // 检查选择的漏洞是否符合条件
-    const selectedVulns = vulnerabilities.filter(v => selectedRowKeys.includes(v.id));
-    const hasApprovalId = selectedVulns.some(v => v.approvalId);
-    const sources = [...new Set(selectedVulns.map(v => v.source))];
+    const selectedProblems = problems.filter(p => selectedRowKeys.includes(p.id));
+    const hasApprovalList = selectedProblems.some(p => p.approvalList && p.approvalList.length > 0);
+    const projects = [...new Set(selectedProblems.map(p => p.projectNumber))];
 
-    if (hasApprovalId) {
+    if (hasApprovalList) {
       message.error('选择的漏洞中包含已关联审批单的漏洞，请取消选择');
       return;
     }
 
-    if (sources.length > 1) {
-      message.error('只能选择相同来源的漏洞创建审批单');
+    if (projects.length > 1) {
+      message.error('只能选择相同项目的漏洞创建审批单');
       return;
     }
 
@@ -138,7 +139,7 @@ const VulnerabilityList: React.FC = () => {
           department: values.department,
           comments: values.comments,
           dueDate: values.dueDate?.format('YYYY-MM-DD HH:mm:ss'),
-          vulnerabilityIds: selectedRowKeys,
+          problemIds: selectedRowKeys,
         }),
       });
 
@@ -150,7 +151,7 @@ const VulnerabilityList: React.FC = () => {
         createForm.resetFields();
         setSelectedRowKeys([]);
         // 刷新列表
-        fetchVulnerabilities(current, pageSize);
+        fetchProblems(current, pageSize);
       } else {
         message.error(result.message || '创建失败');
       }
@@ -176,28 +177,28 @@ const VulnerabilityList: React.FC = () => {
     }
 
     // 获取选中的漏洞详情
-    const selectedVulns = vulnerabilities.filter(v => selectedRowKeys.includes(v.id));
-    setSelectedVulnsForEdit(selectedVulns);
+    const selectedProblemsForEdit = problems.filter(p => selectedRowKeys.includes(p.id));
+    setSelectedProblemsForEdit(selectedProblemsForEdit);
 
     // 初始化编辑数据
-    const initialEditData: Record<string, Partial<Vulnerability>> = {};
-    selectedVulns.forEach(vuln => {
-      initialEditData[vuln.id] = {
-        name: vuln.name,
-        riskLevel: vuln.riskLevel,
-        description: vuln.description,
-        severity: vuln.severity,
-        affectedComponent: vuln.affectedComponent,
-        recommendation: vuln.recommendation,
+    const initialEditData: Record<number, Partial<ProblemDocument>> = {};
+    selectedProblemsForEdit.forEach(problem => {
+      initialEditData[problem.id] = {
+        descriptionBrief: problem.descriptionBrief,
+        vulnerabilityLevel: problem.vulnerabilityLevel,
+        descriptionDetailed: problem.descriptionDetailed,
+        componentName: problem.componentName,
+        responsiblePerson: problem.responsiblePerson,
+        expectedDate: problem.expectedDate,
       };
     });
-    setEditingVulnsData(initialEditData);
+    setEditingProblemsData(initialEditData);
     setBatchEditModalVisible(true);
   };
 
   // 提交批量编辑
-  const submitBatchEdit = async (vulnDataList: any[]) => {
-    if (vulnDataList.length === 0) {
+  const submitBatchEdit = async (problemDataList: any[]) => {
+    if (problemDataList.length === 0) {
       message.error('没有修改的数据');
       return;
     }
@@ -205,19 +206,19 @@ const VulnerabilityList: React.FC = () => {
     setBatchEditLoading(true);
     try {
       // 构建批量操作数据
-      const operations = vulnDataList.map(vuln => ({
-        vulnId: vuln.id,
+      const operations = problemDataList.map(problem => ({
+        problemId: problem.id,
         stagedData: {
-          ...(vuln.name && { name: vuln.name }),
-          ...(vuln.description && { description: vuln.description }),
-          ...(vuln.severity && { severity: vuln.severity }),
-          ...(vuln.affectedComponent && { affectedComponent: vuln.affectedComponent }),
-          ...(vuln.recommendation && { recommendation: vuln.recommendation }),
-          ...(vuln.riskLevel && { riskLevel: vuln.riskLevel }),
+          ...(problem.descriptionBrief && { descriptionBrief: problem.descriptionBrief }),
+          ...(problem.descriptionDetailed && { descriptionDetailed: problem.descriptionDetailed }),
+          ...(problem.vulnerabilityLevel && { vulnerabilityLevel: problem.vulnerabilityLevel }),
+          ...(problem.componentName && { componentName: problem.componentName }),
+          ...(problem.responsiblePerson && { responsiblePerson: problem.responsiblePerson }),
+          ...(problem.expectedDate && { expectedDate: problem.expectedDate }),
         }
       }));
 
-      const response = await fetch('/api/vuln/stage/batch', {
+      const response = await fetch('/api/problem/stage/batch', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -230,10 +231,10 @@ const VulnerabilityList: React.FC = () => {
       if (result.code === 200) {
         message.success('批量暂存成功');
         setBatchEditModalVisible(false);
-        setSelectedVulnsForEdit([]);
+        setSelectedProblemsForEdit([]);
         setSelectedRowKeys([]);
         // 刷新列表
-        fetchVulnerabilities(current, pageSize);
+        fetchProblems(current, pageSize);
       } else {
         message.error(result.message || '批量暂存失败');
       }
@@ -245,327 +246,77 @@ const VulnerabilityList: React.FC = () => {
     }
   };
 
-  // 更新单个漏洞的编辑数据
-  const updateVulnEditData = (vulnId: string, field: keyof Vulnerability, value: string) => {
-    setEditingVulnsData(prev => ({
-      ...prev,
-      [vulnId]: {
-        ...prev[vulnId],
-        [field]: value
-      }
-    }));
-  };
+  // EditableProTable会自动处理数据更新，不再需要手动更新函数
 
   // 取消批量编辑
   const cancelBatchEdit = () => {
     setBatchEditModalVisible(false);
-    setSelectedVulnsForEdit([]);
-    setEditingVulnsData({});
+    setSelectedProblemsForEdit([]);
+    setEditingProblemsData({});
+  };
+
+  // 数据转换函数
+  const getVulnerabilityLevelString = (level: number): string => {
+    return REVERSE_STRING_ENUMS.VULNERABILITY_LEVEL[level] || 'low';
+  };
+
+  const getStatusString = (status: number): string => {
+    return REVERSE_STRING_ENUMS.STATUS[status] || 'pending';
   };
 
   // 获取风险等级颜色
-  const getRiskLevelColor = (level: string) => {
+  const getRiskLevelColor = (level: number) => {
     const colors = {
-      critical: '#ff4d4f',
-      high: '#fa8c16',
-      medium: '#faad14',
-      low: '#52c41a'
+      1: '#ff4d4f', // 严重
+      2: '#fa8c16', // 高危
+      3: '#faad14', // 中危
+      4: '#52c41a'  // 低危
     };
     return colors[level] || '#d9d9d9';
   };
 
   // 获取风险等级背景色
-  const getRiskLevelBgColor = (level: string) => {
+  const getRiskLevelBgColor = (level: number) => {
     const colors = {
-      critical: '#fff2f0',
-      high: '#fff7e6',
-      medium: '#fffbe6',
-      low: '#f6ffed'
+      1: '#fff2f0', // 严重
+      2: '#fff7e6', // 高危
+      3: '#fffbe6', // 中危
+      4: '#f6ffed'  // 低危
     };
     return colors[level] || '#fafafa';
   };
 
-  // 可编辑表格列定义
-  const editableColumns: ColumnsType<Vulnerability> = [
+  // 可编辑表格列定义 - 使用problem字段结构
+  const editableColumns = [
     {
-      title: '',
-      dataIndex: 'status',
-      width: 40,
-      fixed: 'left',
-      render: (_, record) => {
-        const hasChanges = editingVulnsData[record.id] && Object.keys(editingVulnsData[record.id]).some(key => {
-          const newValue = editingVulnsData[record.id][key as keyof Vulnerability];
-          const originalValue = record[key as keyof Vulnerability];
+      title: '修改状态',
+      dataIndex: 'editStatus',
+      width: 80,
+      editable: () => false,
+      render: (_: any, record: any) => {
+        const hasChanges = editingProblemsData[record.id] && Object.keys(editingProblemsData[record.id]).some(key => {
+          const newValue = editingProblemsData[record.id][key as keyof ProblemDocument];
+          const originalValue = record[key as keyof ProblemDocument];
           return newValue !== undefined && newValue !== originalValue;
         });
 
         return hasChanges ? (
-          <Badge status="processing" />
+          <Badge status="processing" text="已修改" />
         ) : (
-          <div style={{ width: 8, height: 8 }} />
+          <span style={{ color: '#999' }}>未修改</span>
         );
       },
     },
     {
-      title: '漏洞编号',
-      dataIndex: 'id',
-      width: 160,
-      fixed: 'left',
-      render: (text: string, record: Vulnerability) => (
-        <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-          <Avatar
-            size="small"
-            style={{
-              backgroundColor: getRiskLevelColor(record.riskLevel),
-              fontSize: '12px',
-              fontWeight: 'bold'
-            }}
-          >
-            {String(record.id).slice(-2)}
-          </Avatar>
-          <div>
-            <div style={{ fontWeight: 600, fontSize: '13px', color: '#262626' }}>{text}</div>
-            <div style={{ fontSize: '11px', color: '#8c8c8c' }}>
-              {record.source} · {record.status}
-              {record.isStaged && <Tag color="purple" size="small" style={{ marginLeft: 4 }}>暂存</Tag>}
-            </div>
-          </div>
-        </div>
-      ),
-    },
-    {
-      title: '漏洞名称',
-      dataIndex: 'name',
-      width: 220,
-      render: (text: string, record: Vulnerability) => (
-        <Input
-          value={editingVulnsData[record.id]?.name || ''}
-          onChange={(e) => updateVulnEditData(record.id, 'name', e.target.value)}
-          placeholder="请输入漏洞名称"
-          style={{
-            borderRadius: '6px',
-            border: editingVulnsData[record.id]?.name && editingVulnsData[record.id].name !== record.name ? '2px solid #1890ff' : '1px solid #d9d9d9'
-          }}
-        />
-      ),
-    },
-    {
-      title: '风险等级',
-      dataIndex: 'riskLevel',
-      width: 130,
-      render: (level: string, record: Vulnerability) => (
-        <Select
-          value={editingVulnsData[record.id]?.riskLevel || level}
-          onChange={(value) => updateVulnEditData(record.id, 'riskLevel', value)}
-          style={{
-            width: '100%',
-            borderRadius: '6px',
-            border: editingVulnsData[record.id]?.riskLevel && editingVulnsData[record.id].riskLevel !== record.riskLevel ? '2px solid #1890ff' : '1px solid #d9d9d9'
-          }}
-          suffixIcon={
-            <div
-              style={{
-                width: '8px',
-                height: '8px',
-                borderRadius: '50%',
-                backgroundColor: getRiskLevelColor(editingVulnsData[record.id]?.riskLevel || level),
-                marginRight: '4px'
-              }}
-            />
-          }
-        >
-          <Option value="critical">
-            <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-              <div style={{ width: '8px', height: '8px', borderRadius: '50%', backgroundColor: '#ff4d4f' }} />
-              严重
-            </div>
-          </Option>
-          <Option value="high">
-            <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-              <div style={{ width: '8px', height: '8px', borderRadius: '50%', backgroundColor: '#fa8c16' }} />
-              高危
-            </div>
-          </Option>
-          <Option value="medium">
-            <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-              <div style={{ width: '8px', height: '8px', borderRadius: '50%', backgroundColor: '#faad14' }} />
-              中危
-            </div>
-          </Option>
-          <Option value="low">
-            <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-              <div style={{ width: '8px', height: '8px', borderRadius: '50%', backgroundColor: '#52c41a' }} />
-              低危
-            </div>
-          </Option>
-        </Select>
-      ),
-    },
-    {
-      title: '严重程度',
-      dataIndex: 'severity',
-      width: 120,
-      render: (text: string, record: Vulnerability) => (
-        <Input
-          value={editingVulnsData[record.id]?.severity || ''}
-          onChange={(e) => updateVulnEditData(record.id, 'severity', e.target.value)}
-          placeholder="请输入严重程度"
-          style={{
-            borderRadius: '6px',
-            border: editingVulnsData[record.id]?.severity && editingVulnsData[record.id].severity !== record.severity ? '2px solid #1890ff' : '1px solid #d9d9d9'
-          }}
-        />
-      ),
-    },
-    {
-      title: '发现时间',
-      dataIndex: 'discoveryTime',
-      width: 180,
-      render: (text: string) => (
-        <div style={{ fontSize: '13px', color: '#666' }}>
-          {text || '-'}
-        </div>
-      ),
-    },
-    {
-      title: '预期拦截时间',
-      dataIndex: 'expectedBlockTime',
-      width: 180,
-      render: (text: string) => (
-        <div style={{ fontSize: '13px', color: '#666' }}>
-          {text || '-'}
-        </div>
-      ),
-    },
-    {
-      title: '影响组件',
-      dataIndex: 'affectedComponent',
-      width: 180,
-      render: (text: string, record: Vulnerability) => (
-        <Input
-          value={editingVulnsData[record.id]?.affectedComponent || ''}
-          onChange={(e) => updateVulnEditData(record.id, 'affectedComponent', e.target.value)}
-          placeholder="请输入影响组件"
-          style={{
-            borderRadius: '6px',
-            border: editingVulnsData[record.id]?.affectedComponent && editingVulnsData[record.id].affectedComponent !== record.affectedComponent ? '2px solid #1890ff' : '1px solid #d9d9d9'
-          }}
-        />
-      ),
-    },
-    {
-      title: '漏洞描述',
-      dataIndex: 'description',
-      width: 280,
-      render: (text: string, record: Vulnerability) => (
-        <div>
-          <TextArea
-            value={editingVulnsData[record.id]?.description || ''}
-            onChange={(e) => updateVulnEditData(record.id, 'description', e.target.value)}
-            placeholder="请输入漏洞描述"
-            rows={3}
-            maxLength={500}
-            showCount
-            style={{
-              borderRadius: '6px',
-              border: editingVulnsData[record.id]?.description && editingVulnsData[record.id].description !== record.description ? '2px solid #1890ff' : '1px solid #d9d9d9'
-            }}
-          />
-          {editingVulnsData[record.id]?.description && editingVulnsData[record.id].description !== record.description && (
-            <div style={{ marginTop: '4px', fontSize: '11px', color: '#1890ff' }}>
-              <CheckCircleOutlined style={{ marginRight: '4px' }} />
-              已修改
-            </div>
-          )}
-        </div>
-      ),
-    },
-    {
-      title: '修复建议',
-      dataIndex: 'recommendation',
-      width: 280,
-      render: (text: string, record: Vulnerability) => (
-        <div>
-          <TextArea
-            value={editingVulnsData[record.id]?.recommendation || ''}
-            onChange={(e) => updateVulnEditData(record.id, 'recommendation', e.target.value)}
-            placeholder="请输入修复建议"
-            rows={3}
-            maxLength={500}
-            showCount
-            style={{
-              borderRadius: '6px',
-              border: editingVulnsData[record.id]?.recommendation && editingVulnsData[record.id].recommendation !== record.recommendation ? '2px solid #1890ff' : '1px solid #d9d9d9'
-            }}
-          />
-          {editingVulnsData[record.id]?.recommendation && editingVulnsData[record.id].recommendation !== record.recommendation && (
-            <div style={{ marginTop: '4px', fontSize: '11px', color: '#1890ff' }}>
-              <CheckCircleOutlined style={{ marginRight: '4px' }} />
-              已修改
-            </div>
-          )}
-        </div>
-      ),
-    },
-  ];
-
-  // 检查是否可以创建审批单
-  const canCreateApproval = () => {
-    if (selectedRowKeys.length === 0) return false;
-
-    const selectedVulns = vulnerabilities.filter(v => selectedRowKeys.includes(v.id));
-    const hasApprovalId = selectedVulns.some(v => v.approvalId);
-    const sources = [...new Set(selectedVulns.map(v => v.source))];
-
-    return !hasApprovalId && sources.length <= 1;
-  };
-
-  // 风险等级标签
-  const getRiskLevelTag = (level: string) => {
-    const config = {
-      critical: { color: 'red', text: '严重' },
-      high: { color: 'orange', text: '高危' },
-      medium: { color: 'gold', text: '中危' },
-      low: { color: 'green', text: '低危' },
-    };
-    const { color, text } = config[level] || { color: 'default', text: '未知' };
-    return <Tag color={color}>{text}</Tag>;
-  };
-
-  // 状态标签
-  const getStatusTag = (status: string) => {
-    const config = {
-      pending: { color: 'orange', text: '待审批' },
-      approved: { color: 'green', text: '已通过' },
-      rejected: { color: 'red', text: '已拒绝' },
-      processing: { color: 'blue', text: '处理中' },
-      unassigned: { color: 'gray', text: '未分配' },
-    };
-    const { color, text } = config[status] || { color: 'default', text: '未知' };
-    return <Tag color={color}>{text}</Tag>;
-  };
-
-  const rowSelection = {
-    selectedRowKeys,
-    onChange: onSelectChange,
-    getCheckboxProps: (record: Vulnerability) => ({
-      disabled: !!record.approvalId, // 已关联审批单的漏洞不能选择
-    }),
-  };
-
-  const columns: ColumnsType<Vulnerability> = [
-    {
-      title: '漏洞编号',
-      dataIndex: 'id',
-      key: 'id',
+      title: '问题编号',
+      dataIndex: 'problemNumber',
       width: 150,
-      render: (text: string, record: Vulnerability) => (
+      editable: () => false,
+      render: (text: string, record: ProblemDocument) => (
         <div>
-          <Link to={`/vuln/${text}`} style={{ color: '#1890ff', textDecoration: 'underline' }}>
-            {text}
-          </Link>
+          <span style={{ color: '#1890ff', fontWeight: 600 }}>{text}</span>
           {record.isStaged && (
-            <Tag color="purple" size="small" style={{ marginLeft: 8 }}>
+            <Tag color="purple" style={{ marginLeft: 8, fontSize: '12px' }}>
               暂存
             </Tag>
           )}
@@ -574,79 +325,263 @@ const VulnerabilityList: React.FC = () => {
     },
     {
       title: '漏洞名称',
-      dataIndex: 'name',
-      key: 'name',
+      dataIndex: 'descriptionBrief',
       width: 200,
-      render: (text: string, record: Vulnerability) => (
-        <div>
-          <div>{text}</div>
-          {record.isStaged && record.stagedData?.name && (
-            <div style={{ fontSize: '12px', color: '#999', fontStyle: 'italic' }}>
-              → {record.stagedData.name}
-            </div>
-          )}
-        </div>
-      ),
+      valueType: 'text',
+      formItemProps: {
+        rules: [{ required: true, message: '请输入漏洞名称' }],
+      },
+      fieldProps: (text, record) => {
+        return {
+          placeholder: '请输入漏洞名称',
+        };
+      },
     },
     {
-      title: '漏洞来源',
-      dataIndex: 'source',
-      key: 'source',
-      width: 100,
+      title: '扫描项/来源',
+      dataIndex: 'scanItem',
+      width: 120,
+      editable: () => false,
+      valueType: 'text',
     },
     {
       title: '危害等级',
-      dataIndex: 'riskLevel',
-      key: 'riskLevel',
+      dataIndex: 'vulnerabilityLevel',
       width: 120,
-      render: (level: string, record: Vulnerability) => (
+      valueType: 'select',
+      valueEnum: {
+        1: { text: '严重', status: 'Error' },
+        2: { text: '高危', status: 'Warning' },
+        3: { text: '中危', status: 'Processing' },
+        4: { text: '低危', status: 'Success' },
+      },
+      formItemProps: {
+        rules: [{ required: true, message: '请选择危害等级' }],
+      },
+    },
+    {
+      title: '项目编号',
+      dataIndex: 'projectNumber',
+      width: 120,
+      editable: () => false,
+      valueType: 'text',
+    },
+    {
+      title: '预期解决时间',
+      dataIndex: 'expectedDate',
+      width: 180,
+      valueType: 'date',
+      fieldProps: {
+        placeholder: '请选择预期解决时间',
+      },
+    },
+    {
+      title: '组件名称',
+      dataIndex: 'componentName',
+      width: 150,
+      valueType: 'text',
+      fieldProps: {
+        placeholder: '请输入组件名称',
+      },
+    },
+    {
+      title: '组件版本',
+      dataIndex: 'componentVersion',
+      width: 120,
+      valueType: 'text',
+      fieldProps: {
+        placeholder: '请输入组件版本',
+      },
+    },
+    {
+      title: 'IP地址',
+      dataIndex: 'ip',
+      width: 120,
+      valueType: 'text',
+      fieldProps: {
+        placeholder: '请输入IP地址',
+      },
+    },
+    {
+      title: 'API接口',
+      dataIndex: 'api',
+      width: 150,
+      valueType: 'text',
+      fieldProps: {
+        placeholder: '请输入API接口',
+      },
+    },
+    {
+      title: '责任人',
+      dataIndex: 'responsiblePerson',
+      width: 120,
+      valueType: 'text',
+      formItemProps: {
+        rules: [{ required: true, message: '请输入责任人' }],
+      },
+      fieldProps: {
+        placeholder: '请输入责任人',
+      },
+    },
+    {
+      title: '详细描述',
+      dataIndex: 'descriptionDetailed',
+      width: 300,
+      valueType: 'textarea',
+      formItemProps: {
+        rules: [{ required: true, message: '请输入详细描述' }],
+      },
+      fieldProps: {
+        placeholder: '请输入详细描述',
+        autoSize: { minRows: 3, maxRows: 6 },
+        maxLength: 1000,
+      },
+    },
+  ];
+
+  // 检查是否可以创建审批单
+  const canCreateApproval = () => {
+    if (selectedRowKeys.length === 0) return false;
+
+    const selectedProblems = problems.filter(p => selectedRowKeys.includes(p.id));
+    const hasApprovalList = selectedProblems.some(p => p.approvalList && p.approvalList.length > 0);
+    const projects = [...new Set(selectedProblems.map(p => p.projectNumber))];
+
+    return !hasApprovalList && projects.length <= 1;
+  };
+
+  // 风险等级标签
+  const getRiskLevelTag = (level: number) => {
+    return (
+      <Tag color={getRiskLevelColor(level)}>
+        {ENUMS.VULNERABILITY_LEVEL[level]}
+      </Tag>
+    );
+  };
+
+  // 状态标签
+  const getStatusTag = (status: number) => {
+    const colorMap = {
+      1: 'blue',    // 已创建
+      2: 'orange',  // 处置中
+      3: 'purple',  // 审批中
+      4: 'green',   // 关闭
+    };
+    const color = colorMap[status] || 'default';
+    return (
+      <Tag color={color}>
+        {ENUMS.STATUS[status]}
+      </Tag>
+    );
+  };
+
+  const rowSelection = {
+    selectedRowKeys,
+    onChange: onSelectChange,
+    getCheckboxProps: (record: ProblemDocument) => ({
+      disabled: !!(record.approvalList && record.approvalList.length > 0), // 已关联审批单的漏洞不能选择
+    }),
+  };
+
+  const columns: ColumnsType<ProblemDocument> = [
+    {
+      title: '问题编号',
+      dataIndex: 'problemNumber',
+      key: 'problemNumber',
+      width: 150,
+      render: (text: string, record: ProblemDocument) => (
         <div>
-          {getRiskLevelTag(level)}
-          {record.isStaged && record.stagedData?.riskLevel && record.stagedData.riskLevel !== level && (
-            <div style={{ marginTop: 4 }}>
-              {getRiskLevelTag(record.stagedData.riskLevel)}
+          <Link to={`/vuln/${record.id}`} style={{ color: '#1890ff', textDecoration: 'underline' }}>
+            {text}
+          </Link>
+          {record.isStaged && (
+            <Tag color="purple" style={{ marginLeft: 8, fontSize: '12px' }}>
+              暂存
+            </Tag>
+          )}
+        </div>
+      ),
+    },
+    {
+      title: '漏洞名称',
+      dataIndex: 'descriptionBrief',
+      key: 'descriptionBrief',
+      width: 200,
+      render: (text: string, record: ProblemDocument) => (
+        <div>
+          <div>{text}</div>
+          {record.isStaged && record.stagedData?.descriptionBrief && record.stagedData.descriptionBrief !== text && (
+            <div style={{ fontSize: '12px', color: '#999', fontStyle: 'italic' }}>
+              → {record.stagedData.descriptionBrief}
             </div>
           )}
         </div>
       ),
     },
     {
-      title: '发现时间',
-      dataIndex: 'discoveryTime',
-      key: 'discoveryTime',
-      width: 180,
+      title: '扫描项/来源',
+      dataIndex: 'scanItem',
+      key: 'scanItem',
+      width: 120,
     },
     {
-      title: '预期拦截时间',
-      dataIndex: 'expectedBlockTime',
-      key: 'expectedBlockTime',
-      width: 180,
+      title: '危害等级',
+      dataIndex: 'vulnerabilityLevel',
+      key: 'vulnerabilityLevel',
+      width: 120,
+      render: (level: number, record: ProblemDocument) => (
+        <div>
+          {getRiskLevelTag(level)}
+          {record.isStaged && record.stagedData?.vulnerabilityLevel && record.stagedData.vulnerabilityLevel !== level && (
+            <div style={{ marginTop: 4 }}>
+              {getRiskLevelTag(record.stagedData.vulnerabilityLevel)}
+            </div>
+          )}
+        </div>
+      ),
+    },
+    {
+      title: '项目编号',
+      dataIndex: 'projectNumber',
+      key: 'projectNumber',
+      width: 120,
+    },
+    {
+      title: '预期解决时间',
+      dataIndex: 'expectedDate',
+      key: 'expectedDate',
+      width: 150,
     },
     {
       title: '当前状态',
       dataIndex: 'status',
       key: 'status',
       width: 120,
-      render: (status: string, record: Vulnerability) => (
-        <Link to={`/approval/${record.approvalId}`} style={{ textDecoration: 'none' }}>
-          {getStatusTag(status)}
-        </Link>
-      ),
+      render: (status: number, record: ProblemDocument) => {
+        const approvalId = record.approvalList && record.approvalList.length > 0 ? record.approvalList[0] : null;
+        return approvalId ? (
+          <Link to={`/approval/${approvalId}`} style={{ textDecoration: 'none' }}>
+            {getStatusTag(status)}
+          </Link>
+        ) : (
+          getStatusTag(status)
+        );
+      },
     },
     {
       title: '审批单',
-      dataIndex: 'approvalId',
-      key: 'approvalId',
+      dataIndex: 'approvalList',
+      key: 'approvalList',
       width: 150,
-      render: (approvalId: string, record: Vulnerability) => (
-        approvalId ? (
+      render: (approvalList: string[], record: ProblemDocument) => (
+        approvalList && approvalList.length > 0 ? (
           <Button
             type="link"
             size="small"
             icon={<LinkOutlined />}
-            onClick={() => history.push(`/approval/${approvalId}`)}
+            onClick={() => history.push(`/approval/${approvalList[0]}`)}
           >
-            {approvalId}
+            {approvalList[0]}
           </Button>
         ) : (
           <Tag color="default">未分配</Tag>
@@ -688,7 +623,7 @@ const VulnerabilityList: React.FC = () => {
           </Button>
           <Button
             icon={<ReloadOutlined />}
-            onClick={() => fetchVulnerabilities(current, pageSize)}
+            onClick={() => fetchProblems(current, pageSize)}
           >
             刷新
           </Button>
@@ -706,28 +641,27 @@ const VulnerabilityList: React.FC = () => {
             />
             <Select
               placeholder="风险等级"
-              value={riskLevelFilter}
-              onChange={setRiskLevelFilter}
+              value={vulnerabilityLevelFilter}
+              onChange={setVulnerabilityLevelFilter}
               style={{ width: 120 }}
               allowClear
             >
-              <Option value="critical">严重</Option>
-              <Option value="high">高危</Option>
-              <Option value="medium">中危</Option>
-              <Option value="low">低危</Option>
+              <Option value="1">严重</Option>
+              <Option value="2">高危</Option>
+              <Option value="3">中危</Option>
+              <Option value="4">低危</Option>
             </Select>
             <Select
-              placeholder="审批状态"
+              placeholder="状态"
               value={statusFilter}
               onChange={setStatusFilter}
               style={{ width: 120 }}
               allowClear
             >
-              <Option value="pending">待审批</Option>
-              <Option value="approved">已通过</Option>
-              <Option value="rejected">已拒绝</Option>
-              <Option value="processing">处理中</Option>
-              <Option value="unassigned">未分配</Option>
+              <Option value="1">已创建</Option>
+              <Option value="2">处置中</Option>
+              <Option value="3">审批中</Option>
+              <Option value="4">关闭</Option>
             </Select>
             <Button type="primary" icon={<SearchOutlined />} onClick={handleSearch}>
               搜索
@@ -739,7 +673,7 @@ const VulnerabilityList: React.FC = () => {
         {/* 表格 */}
         <Table
           columns={columns}
-          dataSource={vulnerabilities}
+          dataSource={problems}
           rowKey="id"
           loading={loading}
           rowSelection={rowSelection}
@@ -857,14 +791,14 @@ const VulnerabilityList: React.FC = () => {
               fontSize: '18px',
               fontWeight: 'bold'
             }}>
-              {selectedVulnsForEdit.length}
+              {selectedProblemsForEdit.length}
             </div>
             <div>
               <div style={{ fontSize: '16px', fontWeight: 600, color: '#262626' }}>
                 批量编辑漏洞
               </div>
               <div style={{ fontSize: '12px', color: '#8c8c8c' }}>
-                {selectedVulnsForEdit.length} 个漏洞正在编辑中 · 可快速编辑所有字段
+                {selectedProblemsForEdit.length} 个漏洞正在编辑中 · 可快速编辑所有字段
               </div>
             </div>
           </div>
@@ -874,22 +808,22 @@ const VulnerabilityList: React.FC = () => {
         footer={[
           <div key="footer" style={{ display: 'flex', justifyContent: 'space-between', width: '100%' }}>
             <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-              {selectedVulnsForEdit.filter(vuln => {
-                const editedData = editingVulnsData[vuln.id];
+              {selectedProblemsForEdit.filter(problem => {
+                const editedData = editingProblemsData[problem.id];
                 return editedData && Object.keys(editedData).some(key => {
-                  const newValue = editedData[key as keyof Vulnerability];
-                  const originalValue = vuln[key as keyof Vulnerability];
+                  const newValue = editedData[key as keyof ProblemDocument];
+                  const originalValue = problem[key as keyof ProblemDocument];
                   return newValue !== undefined && newValue !== originalValue;
                 });
               }).length > 0 && (
                 <div style={{ display: 'flex', alignItems: 'center', gap: 4, color: '#1890ff' }}>
                   <CheckCircleOutlined />
                   <span style={{ fontSize: '13px' }}>
-                    {selectedVulnsForEdit.filter(vuln => {
-                      const editedData = editingVulnsData[vuln.id];
+                    {selectedProblemsForEdit.filter(problem => {
+                      const editedData = editingProblemsData[problem.id];
                       return editedData && Object.keys(editedData).some(key => {
-                        const newValue = editedData[key as keyof Vulnerability];
-                        const originalValue = vuln[key as keyof Vulnerability];
+                        const newValue = editedData[key as keyof ProblemDocument];
+                        const originalValue = problem[key as keyof ProblemDocument];
                         return newValue !== undefined && newValue !== originalValue;
                       });
                     }).length} 个漏洞已修改
@@ -915,29 +849,29 @@ const VulnerabilityList: React.FC = () => {
                 }
                 onConfirm={() => {
                   // 收集修改的数据
-                  const vulnDataList: any[] = [];
+                  const problemDataList: any[] = [];
 
-                  selectedVulnsForEdit.forEach(vuln => {
-                    const editedData = editingVulnsData[vuln.id];
+                  selectedProblemsForEdit.forEach(problem => {
+                    const editedData = editingProblemsData[problem.id];
                     if (!editedData) return;
 
                     // 检查是否有修改
                     const hasChanges = Object.keys(editedData).some(key => {
-                      const newValue = editedData[key as keyof Vulnerability];
-                      const originalValue = vuln[key as keyof Vulnerability];
+                      const newValue = editedData[key as keyof ProblemDocument];
+                      const originalValue = problem[key as keyof ProblemDocument];
                       return newValue !== undefined && newValue !== originalValue;
                     });
 
                     if (hasChanges) {
-                      vulnDataList.push({
-                        id: vuln.id,
+                      problemDataList.push({
+                        id: problem.id,
                         ...editedData
                       });
                     }
                   });
 
-                  if (vulnDataList.length > 0) {
-                    submitBatchEdit(vulnDataList);
+                  if (problemDataList.length > 0) {
+                    submitBatchEdit(problemDataList);
                   } else {
                     message.warning('没有修改的数据');
                   }
@@ -1025,18 +959,56 @@ const VulnerabilityList: React.FC = () => {
           height: 'calc(100% - 100px)',
           overflow: 'auto'
         }}>
-          <Table
+          <EditableProTable
             columns={editableColumns}
-            dataSource={selectedVulnsForEdit}
+            value={selectedProblemsForEdit}
+            onChange={(data) => {
+              // 处理数据变更
+              setSelectedProblemsForEdit(data as ProblemDocument[]);
+            }}
+            editable={{
+              type: 'multiple',
+              editableKeys: selectedProblemsForEdit.map(item => item.id),
+              onSave: async (key, row) => {
+                // 保存编辑数据
+                const problemId = Number(key);
+                setEditingProblemsData(prev => ({
+                  ...prev,
+                  [problemId]: {
+                    ...prev[problemId],
+                    descriptionBrief: row.descriptionBrief,
+                    vulnerabilityLevel: row.vulnerabilityLevel,
+                    descriptionDetailed: row.descriptionDetailed,
+                    componentName: row.componentName,
+                    responsiblePerson: row.responsiblePerson,
+                    expectedDate: row.expectedDate,
+                    componentVersion: row.componentVersion,
+                    ip: row.ip,
+                    api: row.api,
+                  }
+                }));
+                return true;
+              },
+              actionRender: (row, config, dom) => [dom.save, dom.cancel],
+            }}
             rowKey="id"
             pagination={{
-              pageSize: 50,
+              pageSize: 20,
               showSizeChanger: true,
               pageSizeOptions: ['10', '20', '50', '100'],
               showTotal: (total) => `共 ${total} 条记录`,
               position: ['bottomCenter']
             }}
-            scroll={{ x: 1500, y: 'calc(75vh - 200px)' }}
+            search={false}
+            dateFormatter="string"
+            headerTitle="批量编辑漏洞列表"
+            options={{
+              density: false,
+              fullScreen: false,
+              reload: false,
+              setting: false,
+            }}
+            scroll={{ x: 1600, y: 'calc(75vh - 200px)' }}
             size="middle"
             className="editable-table-enhanced"
             style={{
@@ -1044,9 +1016,6 @@ const VulnerabilityList: React.FC = () => {
               borderRadius: '8px',
               boxShadow: '0 2px 12px rgba(0,0,0,0.08)'
             }}
-            rowClassName={(record, index) =>
-              index % 2 === 0 ? 'editable-row-even' : 'editable-row-odd'
-            }
           />
         </div>
       </Modal>

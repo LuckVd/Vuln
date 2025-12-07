@@ -256,6 +256,27 @@ export default {
     });
   },
 
+  // 根据问题编号获取问题单据详情
+  'GET /api/problem/number/:problemNumber': (req: any, res: any) => {
+    console.log('🔄 [Mock] API调用: GET /api/problem/number/:problemNumber');
+    const { problemNumber } = req.params;
+
+    const problem = mockProblemDocuments.find(p => p.problemNumber === problemNumber);
+
+    if (!problem) {
+      return res.json({
+        code: 404,
+        message: '问题单据不存在'
+      });
+    }
+
+    res.json({
+      code: 200,
+      message: '获取问题单据详情成功',
+      data: problem
+    });
+  },
+
   // 创建问题单据
   'POST /api/problem': (req: any, res: any) => {
     console.log('🔄 [Mock] API调用: POST /api/problem');
@@ -408,5 +429,41 @@ export default {
       data: unassignedProblems,
       total: unassignedProblems.length
     });
+  },
+
+  'POST /api/problem/stage/batch': (req: any, res: any) => {
+    console.log('🔄 [Mock] API调用: POST /api/problem/stage/batch');
+    console.log('📦 批量暂存数据:', req.body);
+
+    const { operations } = req.body;
+
+    if (!operations || !Array.isArray(operations)) {
+      return res.status(400).json({
+        code: 400,
+        message: '参数错误：operations必须是数组'
+      });
+    }
+
+    try {
+      // 模拟批量处理
+      const processedCount = operations.length;
+
+      console.log(`✅ 成功处理 ${processedCount} 个问题单据的暂存操作`);
+
+      res.json({
+        code: 200,
+        message: '批量暂存成功',
+        data: {
+          processedCount,
+          operations
+        }
+      });
+    } catch (error) {
+      console.error('❌ 批量暂存失败:', error);
+      res.status(500).json({
+        code: 500,
+        message: '批量暂存失败'
+      });
+    }
   }
 };

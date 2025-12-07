@@ -9,7 +9,7 @@ import {
   SendOutlined, UserOutlined, CommentOutlined, CalendarOutlined
 } from '@ant-design/icons';
 import type { ColumnsType } from 'antd/es/table';
-import { Approval, ApprovalHistory, Vulnerability } from '@/types';
+import { Approval, ApprovalHistory, ProblemDocument } from '@/types';
 
 const { Panel } = Collapse;
 const { Option } = Select;
@@ -19,14 +19,14 @@ const ApprovalDetail: React.FC = () => {
   const { id } = useParams<{ id: string }>();
   const [approval, setApproval] = useState<Approval | null>(null);
   const [history, setHistory] = useState<ApprovalHistory[]>([]);
-  const [vulnerabilities, setVulnerabilities] = useState<Vulnerability[]>([]);
+  const [problems, setProblems] = useState<ProblemDocument[]>([]);
   const [loading, setLoading] = useState(true);
 
   // 管理三个部分的折叠状态
   const [activeKeys, setActiveKeys] = useState<string[]>(['1', '2', '3']);
   // 分页状态
-  const [vulnCurrent, setVulnCurrent] = useState(1);
-  const [vulnPageSize, setVulnPageSize] = useState(10);
+  const [problemCurrent, setProblemCurrent] = useState(1);
+  const [problemPageSize, setProblemPageSize] = useState(10);
   // 审批表单状态
   const [submitLoading, setSubmitLoading] = useState(false);
   const [form] = Form.useForm();
@@ -56,9 +56,26 @@ const ApprovalDetail: React.FC = () => {
       const historyResponse = await fetch(`/api/approval/${approvalId}/history`);
       const historyResult = await historyResponse.json();
 
-      // 获取相关漏洞
-      const vulnResponse = await fetch(`/api/vuln?approvalId=${approvalId}`);
-      const vulnResult = await vulnResponse.json();
+      // 获取相关审批单的问题列表，然后获取详细的问题信息
+      const approval = approvalResult.data;
+      let problemsList: ProblemDocument[] = [];
+
+      if (approval && approval.problemList && approval.problemList.length > 0) {
+        // 根据问题编号获取问题的详细信息
+        const problemPromises = approval.problemList.map(async (problemNumber: string) => {
+          try {
+            const response = await fetch(`/api/problem/number/${problemNumber}`);
+            const result = await response.json();
+            return result.code === 200 ? result.data : null;
+          } catch (error) {
+            console.error(`获取问题 ${problemNumber} 详情失败:`, error);
+            return null;
+          }
+        });
+
+        const problemResults = await Promise.all(problemPromises);
+        problemsList = problemResults.filter(problem => problem !== null);
+      }
 
       if (approvalResult.code === 200) {
         setApproval(approvalResult.data);
@@ -72,17 +89,13 @@ const ApprovalDetail: React.FC = () => {
         setHistory([]);
       }
 
-      if (vulnResult.code === 200) {
-        setVulnerabilities(vulnResult.data);
-      } else {
-        setVulnerabilities([]);
-      }
+      setProblems(problemsList);
 
     } catch (error) {
       console.error('获取审批单详情失败:', error);
       setApproval(null);
       setHistory([]);
-      setVulnerabilities([]);
+      setProblems([]);
     } finally {
       setLoading(false);
     }
@@ -99,9 +112,9 @@ const ApprovalDetail: React.FC = () => {
     history.push('/approval');
   };
 
-  // 查看漏洞详情
-  const viewVulnerability = (vulnId: string) => {
-    history.push(`/vuln/${vulnId}`);
+  // 查看问题详情
+  const viewProblem = (problemId: string) => {
+    history.push(`/problem/${problemId}`);
   };
 
   // 状态标签
@@ -148,25 +161,25 @@ const ApprovalDetail: React.FC = () => {
       <div style={{ display: 'flex', justifyContent: 'space-around', padding: '16px' }}>
         <div style={{ textAlign: 'center' }}>
           <div style={{ fontSize: '20px', fontWeight: 'bold', color: '#ff4d4f' }}>
-            {vulnerabilities.filter(v => v.severity === '严重').length}
+            {problems.filter(p => p.vulnerabilityLevel === 1).length}
           </div>
           <div style={{ color: '#666', fontSize: '12px' }}>严重</div>
         </div>
         <div style={{ textAlign: 'center' }}>
           <div style={{ fontSize: '20px', fontWeight: 'bold', color: '#ff7a45' }}>
-            {vulnerabilities.filter(v => v.severity === '高危').length}
+            {problems.filter(p => p.vulnerabilityLevel === 2).length}
           </div>
           <div style={{ color: '#666', fontSize: '12px' }}>高危</div>
         </div>
         <div style={{ textAlign: 'center' }}>
           <div style={{ fontSize: '20px', fontWeight: 'bold', color: '#ffa940' }}>
-            {vulnerabilities.filter(v => v.severity === '中危').length}
+            {problems.filter(p => p.vulnerabilityLevel === 3).length}
           </div>
           <div style={{ color: '#666', fontSize: '12px' }}>中危</div>
         </div>
         <div style={{ textAlign: 'center' }}>
           <div style={{ fontSize: '20px', fontWeight: 'bold', color: '#52c41a' }}>
-            {vulnerabilities.filter(v => v.severity === '低危').length}
+            {problems.filter(p => p.vulnerabilityLevel === 4).length}
           </div>
           <div style={{ color: '#666', fontSize: '12px' }}>低危</div>
         </div>
@@ -210,125 +223,121 @@ const ApprovalDetail: React.FC = () => {
     }
   };
 
-  // 移除漏洞
-  const removeVulnerability = async (vulnId: string) => {
+  // 移除问题
+  const removeProblem = async (problemNumber: string) => {
     try {
-      const response = await fetch(`/api/approval/${id}/remove-vuln`, {
+      const response = await fetch(`/api/approval/${id}/remove-problem`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({
-          approvalId: id,
-          vulnerabilityId: vulnId,
+          problemNumber: problemNumber,
         }),
       });
 
       const result = await response.json();
 
       if (result.code === 200) {
-        message.success('漏洞移除成功');
+        message.success('问题移除成功');
 
         // 检查审批单是否被自动关闭
         if (result.data.approvalClosed) {
-          message.info('该审批单的所有漏洞已处理完毕，审批单已自动关闭');
+          message.info('该审批单的所有问题已处理完毕，审批单已自动关闭');
         }
 
-        // 立即从本地状态中移除该漏洞，提供即时UI反馈
-        setVulnerabilities(prev => prev.filter(v => v.id !== vulnId));
+        // 立即从本地状态中移除该问题，提供即时UI反馈
+        setProblems(prev => prev.filter(p => p.problemNumber !== problemNumber));
 
         // 同时重新从数据库获取最新数据以确保数据同步
         setTimeout(() => {
           fetchApprovalDetail(id!);
         }, 100); // 缩短延迟，确保数据库更新完成
       } else {
-        message.error(result.message || '漏洞移除失败');
+        message.error(result.message || '问题移除失败');
       }
     } catch (error) {
-      console.error('移除漏洞失败:', error);
+      console.error('移除问题失败:', error);
       message.error('网络错误，请重试');
     }
   };
 
-  // 确认移除漏洞
-  const confirmRemoveVulnerability = (vulnId: string, vulnName: string) => {
+  // 确认移除问题
+  const confirmRemoveProblem = (problemNumber: string, problemDescription: string) => {
     Modal.confirm({
-      title: '确认移除漏洞',
-      content: `确定要将漏洞 ${vulnName} 从此审批单中移除吗？`,
+      title: '确认移除问题',
+      content: `确定要将问题 ${problemNumber} 从此审批单中移除吗？\n\n${problemDescription}`,
       okText: '确认移除',
       cancelText: '取消',
       okType: 'danger',
-      onOk: () => removeVulnerability(vulnId),
+      onOk: () => removeProblem(problemNumber),
     });
   };
 
-  const vulnColumns: ColumnsType<Vulnerability> = [
+  const problemColumns: ColumnsType<ProblemDocument> = [
     {
-      title: '漏洞编号',
-      dataIndex: 'id',
-      key: 'id',
+      title: '问题编号',
+      dataIndex: 'problemNumber',
+      key: 'problemNumber',
       width: 150,
       render: (text: string) => (
         <Button
           type="link"
           size="small"
-          onClick={() => viewVulnerability(text)}
+          onClick={() => viewProblem(text)}
         >
           {text}
         </Button>
       ),
     },
     {
-      title: '漏洞名称',
-      dataIndex: 'name',
-      key: 'name',
-      width: 200,
+      title: '漏洞编号',
+      dataIndex: 'vulnerabilityNum',
+      key: 'vulnerabilityNum',
+      width: 180,
     },
     {
-      title: '漏洞来源',
-      dataIndex: 'source',
-      key: 'source',
-      width: 100,
+      title: '扫描项',
+      dataIndex: 'scanItem',
+      key: 'scanItem',
+      width: 120,
     },
     {
       title: '危害等级',
-      dataIndex: 'riskLevel',
-      key: 'riskLevel',
-      width: 120,
-      render: (level: string) => getRiskLevelTag(level),
+      dataIndex: 'vulnerabilityLevel',
+      key: 'vulnerabilityLevel',
+      width: 100,
+      render: (level: number) => getRiskLevelTag(level),
     },
     {
-      title: '发现时间',
-      dataIndex: 'discoveryTime',
-      key: 'discoveryTime',
-      width: 180,
+      title: '简要描述',
+      dataIndex: 'descriptionBrief',
+      key: 'descriptionBrief',
+      width: 200,
     },
     {
       title: '状态',
       dataIndex: 'status',
       key: 'status',
       width: 100,
-      render: (status: string) => {
-        const config = {
-          pending: { color: 'orange', text: '待审批' },
-          approved: { color: 'green', text: '已通过' },
-          rejected: { color: 'red', text: '已拒绝' },
-          processing: { color: 'blue', text: '处理中' },
-        };
-        const { color, text } = config[status] || { color: 'default', text: '未知' };
-        return <Tag color={color}>{text}</Tag>;
-      },
+      render: (status: number) => getStatusTag(status),
+    },
+    {
+      title: '责任人',
+      dataIndex: 'responsiblePerson',
+      key: 'responsiblePerson',
+      width: 100,
     },
     {
       title: '操作',
       key: 'action',
       width: 100,
-      render: (text: string, record: Vulnerability) => (
+      render: (text: string, record: ProblemDocument) => (
         <Button
           type="link"
           danger
           size="small"
-          onClick={() => confirmRemoveVulnerability(record.id, record.name)}
+          onClick={() => confirmRemoveProblem(record.problemNumber, record.descriptionBrief)}
         >
           移除
         </Button>
@@ -410,17 +419,17 @@ const ApprovalDetail: React.FC = () => {
               </Descriptions>
             </Panel>
 
-            {/* 相关漏洞部分（简化统计信息） */}
+            {/* 相关问题部分（简化统计信息） */}
             <Panel
               header={
                 <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
                   <BarChartOutlined />
-                  <span>相关漏洞 ({vulnerabilities.length})</span>
+                  <span>相关问题 ({problems.length})</span>
                   <div style={{ marginLeft: 'auto', display: 'flex', gap: '8px' }}>
-                    <Tag color="red">严重: {vulnerabilities.filter(v => v.severity === '严重').length}</Tag>
-                    <Tag color="orange">高危: {vulnerabilities.filter(v => v.severity === '高危').length}</Tag>
-                    <Tag color="gold">中危: {vulnerabilities.filter(v => v.severity === '中危').length}</Tag>
-                    <Tag color="green">低危: {vulnerabilities.filter(v => v.severity === '低危').length}</Tag>
+                    <Tag color="red">严重: {problems.filter(p => p.vulnerabilityLevel === 1).length}</Tag>
+                    <Tag color="orange">高危: {problems.filter(p => p.vulnerabilityLevel === 2).length}</Tag>
+                    <Tag color="gold">中危: {problems.filter(p => p.vulnerabilityLevel === 3).length}</Tag>
+                    <Tag color="green">低危: {problems.filter(p => p.vulnerabilityLevel === 4).length}</Tag>
                   </div>
                 </div>
               }
@@ -430,23 +439,23 @@ const ApprovalDetail: React.FC = () => {
                 {getStatisticsContent()}
               </div>
               <Table
-                columns={vulnColumns}
-                dataSource={vulnerabilities.slice(
-                  (vulnCurrent - 1) * vulnPageSize,
-                  vulnCurrent * vulnPageSize
+                columns={problemColumns}
+                dataSource={problems.slice(
+                  (problemCurrent - 1) * problemPageSize,
+                  problemCurrent * problemPageSize
                 )}
-                rowKey="id"
+                rowKey="problemNumber"
                 pagination={{
-                  current: vulnCurrent,
-                  pageSize: vulnPageSize,
-                  total: vulnerabilities.length,
+                  current: problemCurrent,
+                  pageSize: problemPageSize,
+                  total: problems.length,
                   showSizeChanger: true,
                   showQuickJumper: true,
                   showTotal: (total, range) => `第 ${range[0]}-${range[1]} 条，共 ${total} 条`,
                   pageSizeOptions: ['5', '10', '20', '50'],
                   onChange: (page, pageSize) => {
-                    setVulnCurrent(page);
-                    setVulnPageSize(pageSize || 10);
+                    setProblemCurrent(page);
+                    setProblemPageSize(pageSize || 10);
                   },
                 }}
                 scroll={{ x: 1000 }}

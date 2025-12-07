@@ -70,6 +70,12 @@ export interface ProjectProblemSnapshot {
   snapshotContent: any; // 快照内容 (JSON)
 }
 
+// 审批单据数据类型 (为了向后兼容，使用 ApprovalDocument 的别名)
+export type Approval = ApprovalDocument;
+
+// 审批历史记录数据类型 (为了向后兼容，使用 ApprovalRecord 的别名)
+export type ApprovalHistory = ApprovalRecord;
+
 // API 响应的通用类型
 export interface ApiResponse<T = any> {
   code: number;
@@ -121,9 +127,7 @@ export const ENUMS = {
   } as const
 };
 
-// 为了保持向后兼容，定义Vulnerability类型作为ProblemDocument的别名
-export type Vulnerability = ProblemDocument;
-export type Approval = ApprovalDocument;
+// 删除已废弃的类型别名，直接使用具体的类型名称
 
 // 前端显示用的枚举类型（字符串）
 export type VulnerabilityLevelString = 'critical' | 'high' | 'medium' | 'low';

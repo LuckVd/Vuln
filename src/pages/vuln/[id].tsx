@@ -1,12 +1,13 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, history } from 'umi';
 import { Card, Descriptions, Tag, Button, Space, Spin, Alert, Divider, Modal, Form, Input, Select, DatePicker, message, Popconfirm } from 'antd';
+const { Option } = Select;
 import { ArrowLeftOutlined, EyeOutlined, EditOutlined, SaveOutlined, CloudUploadOutlined } from '@ant-design/icons';
-import { Vulnerability } from '@/types';
+import { ProblemDocument, ENUMS, REVERSE_STRING_ENUMS } from '@/types';
 
 const VulnerabilityDetail: React.FC = () => {
   const { id } = useParams<{ id: string }>();
-  const [vulnerability, setVulnerability] = useState<Vulnerability | null>(null);
+  const [problem, setProblem] = useState<ProblemDocument | null>(null);
   const [loading, setLoading] = useState(true);
 
   // 暂存编辑相关状态
@@ -19,58 +20,21 @@ const VulnerabilityDetail: React.FC = () => {
   const [createApprovalForm] = Form.useForm();
   const [createApprovalLoading, setCreateApprovalLoading] = useState(false);
 
-  // 获取漏洞详情
-  const fetchVulnerabilityDetail = async (vulnId: string) => {
+  // 获取问题单据详情
+  const fetchProblemDetail = async (problemId: string) => {
     setLoading(true);
     try {
-      const response = await fetch(`/api/vuln/${vulnId}`);
+      const response = await fetch(`/api/problem/${problemId}`);
       const result = await response.json();
 
       if (result.code === 200) {
-        setVulnerability(result.data);
+        setProblem(result.data);
       } else {
-        // 如果API不存在，使用模拟数据
-        const mockVulnerabilities: Vulnerability[] = [
-          {
-            id: 'VUL-2024-001',
-            name: 'SQL注入漏洞',
-            source: 'IAST',
-            riskLevel: 'critical',
-            discoveryTime: '2024-01-15 10:30:00',
-            expectedBlockTime: '2024-01-20 00:00:00',
-            status: 'approved',
-            description: '在用户登录模块发现SQL注入漏洞，攻击者可以通过构造恶意SQL语句获取数据库敏感信息。该漏洞存在于登录表单的username参数处理逻辑中，未对用户输入进行充分的参数化处理。',
-            severity: '严重',
-            affectedComponent: 'user/login',
-            recommendation: '立即使用参数化查询替换字符串拼接，对所有用户输入进行严格验证，实施输入验证和输出编码。建议使用PreparedStatement或ORM框架来防止SQL注入攻击。',
-            approvalId: 'APP-2024-001'
-          },
-          {
-            id: 'VUL-2024-002',
-            name: 'XSS跨站脚本攻击',
-            source: 'DAST',
-            riskLevel: 'high',
-            discoveryTime: '2024-01-16 14:20:00',
-            expectedBlockTime: '2024-01-22 00:00:00',
-            status: 'processing',
-            description: '在评论功能中发现存储型XSS漏洞，攻击者可以注入恶意脚本在用户浏览器中执行。漏洞出现在评论提交和展示功能中，未对用户输入进行适当的HTML编码处理。',
-            severity: '高危',
-            affectedComponent: 'product/comments',
-            recommendation: '对用户输入进行HTML编码，使用CSP头部保护，实施内容安全策略。建议使用成熟的XSS防护库，如DOMPurify，对所有用户生成内容进行净化处理。',
-            approvalId: 'APP-2024-002'
-          }
-        ];
-
-        const vuln = mockVulnerabilities.find(item => item.id === vulnId);
-        if (vuln) {
-          setVulnerability(vuln);
-        } else {
-          setVulnerability(null);
-        }
+        setProblem(null);
       }
     } catch (error) {
-      console.error('获取漏洞详情失败:', error);
-      setVulnerability(null);
+      console.error('获取问题单据详情失败:', error);
+      setProblem(null);
     } finally {
       setLoading(false);
     }
@@ -78,7 +42,7 @@ const VulnerabilityDetail: React.FC = () => {
 
   useEffect(() => {
     if (id) {
-      fetchVulnerabilityDetail(id);
+      fetchProblemDetail(id);
     }
   }, [id]);
 
@@ -94,16 +58,30 @@ const VulnerabilityDetail: React.FC = () => {
 
   // 打开编辑模态框
   const openEditModal = () => {
-    if (!vulnerability) return;
+    if (!problem) return;
 
-    // 如果有暂存数据，使用暂存数据填充表单
+    // 填充表单数据
     const formData = {
-      name: vulnerability.stagedData?.name || vulnerability.name,
-      riskLevel: vulnerability.stagedData?.riskLevel || vulnerability.riskLevel,
-      description: vulnerability.stagedData?.description || vulnerability.description,
-      severity: vulnerability.stagedData?.severity || vulnerability.severity,
-      affectedComponent: vulnerability.stagedData?.affectedComponent || vulnerability.affectedComponent,
-      recommendation: vulnerability.stagedData?.recommendation || vulnerability.recommendation,
+      problemNumber: problem.problemNumber,
+      descriptionBrief: problem.descriptionBrief,
+      vulnerabilityLevel: problem.vulnerabilityLevel,
+      scanItem: problem.scanItem,
+      projectNumber: problem.projectNumber,
+      expectedDate: problem.expectedDate,
+      status: problem.status,
+      descriptionDetailed: problem.descriptionDetailed,
+      componentName: problem.componentName,
+      componentVersion: problem.componentVersion,
+      ip: problem.ip,
+      api: problem.api,
+      fixAddress: problem.fixAddress,
+      fixVersion: problem.fixVersion,
+      descriptionDisposal: problem.descriptionDisposal,
+      responsiblePerson: problem.responsiblePerson,
+      isRedLine: problem.isRedLine,
+      isSoftware: problem.isSoftware,
+      conclusion: problem.conclusion,
+      vulnerabilityNum: problem.vulnerabilityNum,
     };
 
     editForm.setFieldsValue(formData);
@@ -112,18 +90,20 @@ const VulnerabilityDetail: React.FC = () => {
 
   // 暂存编辑
   const submitStagedEdit = async (values: any) => {
-    if (!vulnerability) return;
+    if (!problem) return;
 
     setEditLoading(true);
     try {
-      const response = await fetch('/api/vuln/stage', {
+      const response = await fetch('/api/problem/stage/batch', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({
-          vulnId: vulnerability.id,
-          stagedData: values,
+          operations: [{
+            problemId: problem.id,
+            stagedData: values,
+          }],
         }),
       });
 
@@ -133,8 +113,8 @@ const VulnerabilityDetail: React.FC = () => {
         message.success('暂存成功');
         setEditModalVisible(false);
         editForm.resetFields();
-        // 刷新漏洞详情
-        fetchVulnerabilityDetail(vulnerability.id);
+        // 刷新问题单据详情
+        fetchProblemDetail(problem.id.toString());
       } else {
         message.error(result.message || '暂存失败');
       }
@@ -146,47 +126,36 @@ const VulnerabilityDetail: React.FC = () => {
     }
   };
 
-  // 应用暂存修改
-  const applyStagedChanges = async () => {
-    if (!vulnerability) return;
+  // 更新问题单据
+  const updateProblem = async (values: any) => {
+    if (!problem) return;
 
+    setEditLoading(true);
     try {
-      const response = await fetch(`/api/vuln/stage/apply/${vulnerability.id}`, {
-        method: 'POST',
+      const response = await fetch(`/api/problem/${problem.id}`, {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(values),
       });
 
       const result = await response.json();
 
       if (result.code === 200) {
-        message.success('暂存修改已应用');
-        fetchVulnerabilityDetail(vulnerability.id);
+        message.success('更新成功');
+        setEditModalVisible(false);
+        editForm.resetFields();
+        // 刷新问题单据详情
+        fetchProblemDetail(problem.id.toString());
       } else {
-        message.error(result.message || '应用失败');
+        message.error(result.message || '更新失败');
       }
     } catch (error) {
+      console.error('更新失败:', error);
       message.error('网络错误，请重试');
-    }
-  };
-
-  // 取消暂存修改
-  const cancelStagedChanges = async () => {
-    if (!vulnerability) return;
-
-    try {
-      const response = await fetch(`/api/vuln/stage/${vulnerability.id}`, {
-        method: 'DELETE',
-      });
-
-      const result = await response.json();
-
-      if (result.code === 200) {
-        message.success('暂存修改已取消');
-        fetchVulnerabilityDetail(vulnerability.id);
-      } else {
-        message.error(result.message || '取消失败');
-      }
-    } catch (error) {
-      message.error('网络错误，请重试');
+    } finally {
+      setEditLoading(false);
     }
   };
 
@@ -198,13 +167,13 @@ const VulnerabilityDetail: React.FC = () => {
 
   // 打开创建审批单模态框
   const openCreateApprovalModal = () => {
-    if (!vulnerability) return;
+    if (!problem) return;
     setCreateApprovalModalVisible(true);
   };
 
   // 创建审批单
   const submitCreateApproval = async (values: any) => {
-    if (!vulnerability) return;
+    if (!problem) return;
 
     setCreateApprovalLoading(true);
     try {
@@ -219,7 +188,7 @@ const VulnerabilityDetail: React.FC = () => {
           department: values.department,
           comments: values.comments,
           dueDate: values.dueDate?.format('YYYY-MM-DD HH:mm:ss'),
-          vulnerabilityIds: [vulnerability.id],
+          problemIds: [problem.id],
         }),
       });
 
@@ -229,8 +198,8 @@ const VulnerabilityDetail: React.FC = () => {
         message.success('审批单创建成功');
         setCreateApprovalModalVisible(false);
         createApprovalForm.resetFields();
-        // 刷新漏洞详情
-        fetchVulnerabilityDetail(vulnerability.id);
+        // 刷新问题单据详情
+        fetchProblemDetail(problem.id.toString());
       } else {
         message.error(result.message || '创建失败');
       }
@@ -248,27 +217,43 @@ const VulnerabilityDetail: React.FC = () => {
     createApprovalForm.resetFields();
   };
 
-  // 风险等级标签
-  const getRiskLevelTag = (level: string) => {
+  // 漏洞等级标签
+  const getVulnerabilityLevelTag = (level: number) => {
     const config = {
-      critical: { color: 'red', text: '严重' },
-      high: { color: 'orange', text: '高危' },
-      medium: { color: 'gold', text: '中危' },
-      low: { color: 'green', text: '低危' },
+      1: { color: 'red', text: '严重' },
+      2: { color: 'orange', text: '高危' },
+      3: { color: 'gold', text: '中危' },
+      4: { color: 'green', text: '低危' },
     };
     const { color, text } = config[level] || { color: 'default', text: '未知' };
     return <Tag color={color}>{text}</Tag>;
   };
 
   // 状态标签
-  const getStatusTag = (status: string) => {
+  const getStatusTag = (status: number) => {
     const config = {
-      pending: { color: 'orange', text: '待审批' },
-      approved: { color: 'green', text: '已通过' },
-      rejected: { color: 'red', text: '已拒绝' },
-      processing: { color: 'blue', text: '处理中' },
+      1: { color: 'blue', text: '已创建' },
+      2: { color: 'orange', text: '处置中' },
+      3: { color: 'purple', text: '审批中' },
+      4: { color: 'green', text: '关闭' },
     };
     const { color, text } = config[status] || { color: 'default', text: '未知' };
+    return <Tag color={color}>{text}</Tag>;
+  };
+
+  // 结论标签
+  const getConclusionTag = (conclusion?: number) => {
+    if (!conclusion) return <Tag color="default">未处理</Tag>;
+
+    const config = {
+      1: { color: 'gray', text: '误报' },
+      2: { color: 'cyan', text: '不受影响' },
+      3: { color: 'green', text: '版本升级修复' },
+      4: { color: 'blue', text: '补丁修复' },
+      5: { color: 'orange', text: '有修复方案接受风险' },
+      6: { color: 'red', text: '无修复方案接受风险' },
+    };
+    const { color, text } = config[conclusion] || { color: 'default', text: '未知' };
     return <Tag color={color}>{text}</Tag>;
   };
 
@@ -281,7 +266,7 @@ const VulnerabilityDetail: React.FC = () => {
     );
   }
 
-  if (!vulnerability) {
+  if (!problem) {
     return (
       <div>
         <Space style={{ marginBottom: 16 }}>
@@ -290,8 +275,8 @@ const VulnerabilityDetail: React.FC = () => {
           </Button>
         </Space>
         <Alert
-          message="漏洞不存在"
-          description="请检查漏洞编号是否正确，或返回漏洞列表重新选择。"
+          message="问题单据不存在"
+          description="请检查问题单据编号是否正确，或返回列表重新选择。"
           type="error"
           showIcon
         />
@@ -300,90 +285,72 @@ const VulnerabilityDetail: React.FC = () => {
   }
 
   return (
-    <div className="vulnerability-detail">
+    <div className="problem-detail">
       <Space style={{ marginBottom: 16 }}>
         <Button icon={<ArrowLeftOutlined />} onClick={goBack}>
           返回列表
         </Button>
-        {vulnerability.approvalId && (
+        {problem.approvalList && problem.approvalList.length > 0 && (
           <Button
             type="default"
             icon={<EyeOutlined />}
-            onClick={() => viewApproval(vulnerability.approvalId!)}
+            onClick={() => viewApproval(problem.approvalList[0])}
           >
             查看审批单
           </Button>
         )}
       </Space>
 
-      {/* 暂存状态提示 */}
-      {vulnerability.isStaged && (
-        <Alert
-          message="当前漏洞有暂存的修改"
-          description={`暂存时间: ${vulnerability.stageTime}`}
-          type="info"
-          showIcon
-          style={{ marginBottom: 16 }}
-        />
-      )}
-
       {/* 基本信息 */}
       <Card title="基本信息" style={{ marginBottom: 16 }}>
         <Descriptions column={2} bordered>
-          <Descriptions.Item label="漏洞编号">{vulnerability.id}</Descriptions.Item>
-          <Descriptions.Item label="漏洞名称">
-            <div>
-              <div>{vulnerability.name}</div>
-              {vulnerability.isStaged && vulnerability.stagedData?.name && (
-                <div style={{ fontSize: '12px', color: '#52c41a', fontStyle: 'italic' }}>
-                  → {vulnerability.stagedData.name}
-                </div>
-              )}
-            </div>
+          <Descriptions.Item label="问题编号">{problem.problemNumber}</Descriptions.Item>
+          <Descriptions.Item label="漏洞编号">{problem.vulnerabilityNum}</Descriptions.Item>
+          <Descriptions.Item label="项目编号">{problem.projectNumber}</Descriptions.Item>
+          <Descriptions.Item label="扫描项">{problem.scanItem}</Descriptions.Item>
+          <Descriptions.Item label="漏洞等级">
+            {getVulnerabilityLevelTag(problem.vulnerabilityLevel)}
           </Descriptions.Item>
-          <Descriptions.Item label="漏洞来源">{vulnerability.source}</Descriptions.Item>
-          <Descriptions.Item label="危害等级">
-            <div>
-              {getRiskLevelTag(vulnerability.riskLevel)}
-              {vulnerability.isStaged && vulnerability.stagedData?.riskLevel && vulnerability.stagedData.riskLevel !== vulnerability.riskLevel && (
-                <div style={{ marginTop: 4 }}>
-                  {getRiskLevelTag(vulnerability.stagedData.riskLevel)}
-                </div>
-              )}
-            </div>
+          <Descriptions.Item label="当前状态">
+            {getStatusTag(problem.status)}
           </Descriptions.Item>
-          <Descriptions.Item label="发现时间">{vulnerability.discoveryTime}</Descriptions.Item>
-          <Descriptions.Item label="预期拦截时间">{vulnerability.expectedBlockTime}</Descriptions.Item>
-          <Descriptions.Item label="当前状态">{getStatusTag(vulnerability.status)}</Descriptions.Item>
-          <Descriptions.Item label="严重程度">
-            <div>
-              <div>{vulnerability.severity || '未定义'}</div>
-              {vulnerability.isStaged && vulnerability.stagedData?.severity && (
-                <div style={{ fontSize: '12px', color: '#52c41a', fontStyle: 'italic' }}>
-                  → {vulnerability.stagedData.severity}
-                </div>
-              )}
-            </div>
+          <Descriptions.Item label="责任人">{problem.responsiblePerson}</Descriptions.Item>
+          <Descriptions.Item label="预期解决时间">{problem.expectedDate}</Descriptions.Item>
+          <Descriptions.Item label="是否红线">
+            {problem.isRedLine ? <Tag color="red">是</Tag> : <Tag color="green">否</Tag>}
           </Descriptions.Item>
-          <Descriptions.Item label="影响组件" span={2}>
-            <div>
-              <div>{vulnerability.affectedComponent || '未定义'}</div>
-              {vulnerability.isStaged && vulnerability.stagedData?.affectedComponent && (
-                <div style={{ fontSize: '12px', color: '#52c41a', fontStyle: 'italic' }}>
-                  → {vulnerability.stagedData.affectedComponent}
-                </div>
-              )}
-            </div>
+          <Descriptions.Item label="是否软件平台">
+            {problem.isSoftware ? <Tag color="blue">是</Tag> : <Tag color="default">否</Tag>}
           </Descriptions.Item>
-          <Descriptions.Item label="审批单ID" span={2}>
-            {vulnerability.approvalId ? (
-              <Button
-                type="link"
-                size="small"
-                onClick={() => viewApproval(vulnerability.approvalId!)}
-              >
-                {vulnerability.approvalId}
-              </Button>
+          <Descriptions.Item label="组件名称">
+            {problem.componentName || '无'}
+          </Descriptions.Item>
+          <Descriptions.Item label="组件版本">
+            {problem.componentVersion || '无'}
+          </Descriptions.Item>
+          <Descriptions.Item label="IP地址">
+            {problem.ip || '无'}
+          </Descriptions.Item>
+          <Descriptions.Item label="API接口">
+            {problem.api || '无'}
+          </Descriptions.Item>
+          <Descriptions.Item label="结论">
+            {getConclusionTag(problem.conclusion)}
+          </Descriptions.Item>
+          <Descriptions.Item label="审批单" span={2}>
+            {problem.approvalList && problem.approvalList.length > 0 ? (
+              <Space>
+                {problem.approvalList.map((approvalId, index) => (
+                  <Button
+                    key={index}
+                    type="link"
+                    size="small"
+                    onClick={() => viewApproval(approvalId)}
+                  >
+                    {approvalId}
+                  </Button>
+                ))}
+              </Space>
             ) : (
               '未关联'
             )}
@@ -391,99 +358,82 @@ const VulnerabilityDetail: React.FC = () => {
         </Descriptions>
       </Card>
 
-      {/* 漏洞描述 */}
-      <Card title="漏洞描述" style={{ marginBottom: 16 }}>
+      {/* 漏洞简要描述 */}
+      <Card title="漏洞简要描述" style={{ marginBottom: 16 }}>
         <div>
           <p style={{ lineHeight: 1.8, fontSize: 14 }}>
-            {vulnerability.description || '暂无详细描述'}
+            {problem.descriptionBrief || '暂无简要描述'}
           </p>
-          {vulnerability.isStaged && vulnerability.stagedData?.description && (
-            <div style={{
-              background: '#f6ffed',
-              border: '1px solid #b7eb8f',
-              borderRadius: '6px',
-              padding: '12px',
-              marginTop: '12px'
-            }}>
-              <div style={{ fontSize: '12px', color: '#52c41a', fontWeight: 'bold', marginBottom: '4px' }}>
-                暂存的修改:
-              </div>
-              <p style={{ margin: 0, lineHeight: 1.6, fontSize: 13 }}>
-                {vulnerability.stagedData.description}
-              </p>
-            </div>
-          )}
         </div>
       </Card>
 
-      {/* 修复建议 */}
-      <Card title="修复建议" style={{ marginBottom: 16 }}>
+      {/* 漏洞详细描述 */}
+      <Card title="详细描述" style={{ marginBottom: 16 }}>
         <div>
-          {vulnerability.recommendation ? (
-            <div style={{
-              background: '#f6ffed',
-              border: '1px solid #b7eb8f',
-              borderRadius: '6px',
-              padding: '16px'
-            }}>
-              <p style={{ margin: 0, lineHeight: 1.8, fontSize: 14 }}>
-                {vulnerability.recommendation}
-              </p>
-            </div>
-          ) : (
-            <p style={{ color: '#999', fontStyle: 'italic' }}>暂无修复建议</p>
-          )}
-          {vulnerability.isStaged && vulnerability.stagedData?.recommendation && (
-            <div style={{
-              background: '#fff7e6',
-              border: '1px solid #ffd591',
-              borderRadius: '6px',
-              padding: '12px',
-              marginTop: '12px'
-            }}>
-              <div style={{ fontSize: '12px', color: '#fa8c16', fontWeight: 'bold', marginBottom: '4px' }}>
-                暂存的修改:
-              </div>
-              <p style={{ margin: 0, lineHeight: 1.6, fontSize: 13 }}>
-                {vulnerability.stagedData.recommendation}
-              </p>
-            </div>
-          )}
+          <p style={{ lineHeight: 1.8, fontSize: 14 }}>
+            {problem.descriptionDetailed || '暂无详细描述'}
+          </p>
         </div>
       </Card>
 
-      {/* 风险评估 */}
-      <Card title="风险评估">
+      {/* 修复信息 */}
+      <Card title="修复信息" style={{ marginBottom: 16 }}>
+        <Descriptions column={2} bordered>
+          <Descriptions.Item label="修复地址">
+            {problem.fixAddress ? (
+              <a href={problem.fixAddress} target="_blank" rel="noopener noreferrer">
+                {problem.fixAddress}
+              </a>
+            ) : (
+              '无'
+            )}
+          </Descriptions.Item>
+          <Descriptions.Item label="修复版本">
+            {problem.fixVersion || '无'}
+          </Descriptions.Item>
+          <Descriptions.Item label="处置描述" span={2}>
+            {problem.descriptionDisposal || '暂无处置描述'}
+          </Descriptions.Item>
+        </Descriptions>
+      </Card>
+
+      {/* 状态评估 */}
+      <Card title="状态评估">
         <div style={{ display: 'flex', gap: '16px', alignItems: 'center' }}>
           <div>
-            <div style={{ fontSize: '14px', color: '#666', marginBottom: '8px' }}>风险等级</div>
-            <div>{getRiskLevelTag(vulnerability.riskLevel)}</div>
+            <div style={{ fontSize: '14px', color: '#666', marginBottom: '8px' }}>漏洞等级</div>
+            <div>{getVulnerabilityLevelTag(problem.vulnerabilityLevel)}</div>
           </div>
           <Divider type="vertical" style={{ height: '60px' }} />
           <div>
             <div style={{ fontSize: '14px', color: '#666', marginBottom: '8px' }}>处理状态</div>
-            <div>{getStatusTag(vulnerability.status)}</div>
+            <div>{getStatusTag(problem.status)}</div>
           </div>
           <Divider type="vertical" style={{ height: '60px' }} />
           <div>
-            <div style={{ fontSize: '14px', color: '#666', marginBottom: '8px' }}>时间限制</div>
+            <div style={{ fontSize: '14px', color: '#666', marginBottom: '8px' }}>预期解决时间</div>
             <div style={{ fontSize: '16px', fontWeight: 'bold', color: '#1890ff' }}>
-              {vulnerability.expectedBlockTime}
+              {problem.expectedDate}
             </div>
+          </div>
+          <Divider type="vertical" style={{ height: '60px' }} />
+          <div>
+            <div style={{ fontSize: '14px', color: '#666', marginBottom: '8px' }}>结论</div>
+            <div>{getConclusionTag(problem.conclusion)}</div>
           </div>
         </div>
       </Card>
 
       {/* 操作按钮区域 */}
-      {!vulnerability.approvalId && (
+      {(!problem.approvalList || problem.approvalList.length === 0) && (
         <Card style={{ marginTop: 16 }}>
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
             <div>
               <div style={{ fontSize: '16px', fontWeight: 600, color: '#262626', marginBottom: '4px' }}>
-                漏洞操作
+                问题单据操作
               </div>
               <div style={{ fontSize: '13px', color: '#666' }}>
-                {!vulnerability.isStaged ? '修改漏洞信息并暂存，或直接创建审批单' : '已暂存修改，可继续编辑或创建审批单'}
+                修改问题单据信息，或直接创建审批单
               </div>
             </div>
             <Space size="large">
@@ -492,42 +442,8 @@ const VulnerabilityDetail: React.FC = () => {
                 onClick={openEditModal}
                 size="large"
               >
-                {vulnerability.isStaged ? '继续编辑' : '修改漏洞'}
+                编辑问题单据
               </Button>
-              {vulnerability.isStaged && (
-                <>
-                  <Popconfirm
-                    title="确定要应用暂存的修改吗？"
-                    description="应用后漏洞信息将被更新"
-                    onConfirm={applyStagedChanges}
-                    okText="确认"
-                    cancelText="取消"
-                  >
-                    <Button
-                      type="default"
-                      icon={<SaveOutlined />}
-                      size="large"
-                    >
-                      应用修改
-                    </Button>
-                  </Popconfirm>
-                  <Popconfirm
-                    title="确定要取消暂存的修改吗？"
-                    description="取消后将丢失所有未应用的修改"
-                    onConfirm={cancelStagedChanges}
-                    okText="确认"
-                    cancelText="取消"
-                  >
-                    <Button
-                      danger
-                      icon={<CloseOutlined />}
-                      size="large"
-                    >
-                      取消暂存
-                    </Button>
-                  </Popconfirm>
-                </>
-              )}
               <Button
                 type="primary"
                 icon={<CloudUploadOutlined />}
@@ -548,72 +464,197 @@ const VulnerabilityDetail: React.FC = () => {
 
       {/* 编辑模态框 */}
       <Modal
-        title={vulnerability.isStaged ? '编辑暂存' : '编辑漏洞'}
+        title="编辑问题单据"
         open={editModalVisible}
         onCancel={cancelEdit}
         footer={null}
-        width={700}
+        width={800}
         destroyOnClose
       >
         <Form
           form={editForm}
           layout="vertical"
-          onFinish={submitStagedEdit}
+          onFinish={updateProblem}
         >
           <Form.Item
-            name="name"
-            label="漏洞名称"
-            rules={[{ required: true, message: '请输入漏洞名称' }]}
+            name="problemNumber"
+            label="问题编号"
+            rules={[{ required: true, message: '请输入问题编号' }]}
           >
-            <Input placeholder="请输入漏洞名称" />
+            <Input placeholder="请输入问题编号" />
           </Form.Item>
 
           <Form.Item
-            name="riskLevel"
-            label="风险等级"
-            rules={[{ required: true, message: '请选择风险等级' }]}
+            name="vulnerabilityNum"
+            label="漏洞编号"
+            rules={[{ required: true, message: '请输入漏洞编号' }]}
           >
-            <Select placeholder="请选择风险等级">
-              <Select.Option value="critical">严重</Select.Option>
-              <Select.Option value="high">高危</Select.Option>
-              <Select.Option value="medium">中危</Select.Option>
-              <Select.Option value="low">低危</Select.Option>
+            <Input placeholder="请输入漏洞编号" />
+          </Form.Item>
+
+          <Form.Item
+            name="projectNumber"
+            label="项目编号"
+            rules={[{ required: true, message: '请输入项目编号' }]}
+          >
+            <Input placeholder="请输入项目编号" />
+          </Form.Item>
+
+          <Form.Item
+            name="scanItem"
+            label="扫描项"
+            rules={[{ required: true, message: '请输入扫描项' }]}
+          >
+            <Input placeholder="请输入扫描项" />
+          </Form.Item>
+
+          <Form.Item
+            name="vulnerabilityLevel"
+            label="漏洞等级"
+            rules={[{ required: true, message: '请选择漏洞等级' }]}
+          >
+            <Select placeholder="请选择漏洞等级">
+              <Select.Option value={1}>严重</Select.Option>
+              <Select.Option value={2}>高危</Select.Option>
+              <Select.Option value={3}>中危</Select.Option>
+              <Select.Option value={4}>低危</Select.Option>
             </Select>
           </Form.Item>
 
           <Form.Item
-            name="description"
-            label="漏洞描述"
-            rules={[{ required: true, message: '请输入漏洞描述' }]}
+            name="status"
+            label="状态"
+            rules={[{ required: true, message: '请选择状态' }]}
+          >
+            <Select placeholder="请选择状态">
+              <Select.Option value={1}>已创建</Select.Option>
+              <Select.Option value={2}>处置中</Select.Option>
+              <Select.Option value={3}>审批中</Select.Option>
+              <Select.Option value={4}>关闭</Select.Option>
+            </Select>
+          </Form.Item>
+
+          <Form.Item
+            name="responsiblePerson"
+            label="责任人"
+            rules={[{ required: true, message: '请输入责任人' }]}
+          >
+            <Input placeholder="请输入责任人" />
+          </Form.Item>
+
+          <Form.Item
+            name="expectedDate"
+            label="预期解决时间"
+            rules={[{ required: true, message: '请选择预期解决时间' }]}
+          >
+            <Input placeholder="请输入预期解决时间（YYYY-MM-DD）" />
+          </Form.Item>
+
+          <Form.Item
+            name="isRedLine"
+            label="是否红线"
+          >
+            <Select placeholder="请选择是否红线">
+              <Select.Option value={0}>否</Select.Option>
+              <Select.Option value={1}>是</Select.Option>
+            </Select>
+          </Form.Item>
+
+          <Form.Item
+            name="isSoftware"
+            label="是否软件平台"
+          >
+            <Select placeholder="请选择是否软件平台">
+              <Select.Option value={0}>否</Select.Option>
+              <Select.Option value={1}>是</Select.Option>
+            </Select>
+          </Form.Item>
+
+          <Form.Item
+            name="descriptionBrief"
+            label="简要描述"
+            rules={[{ required: true, message: '请输入简要描述' }]}
           >
             <Input.TextArea
-              rows={4}
-              placeholder="请详细描述漏洞的情况..."
+              rows={3}
+              placeholder="请输入简要描述..."
             />
           </Form.Item>
 
           <Form.Item
-            name="severity"
-            label="严重程度"
-          >
-            <Input placeholder="请输入严重程度" />
-          </Form.Item>
-
-          <Form.Item
-            name="affectedComponent"
-            label="影响组件"
-          >
-            <Input placeholder="请输入影响组件" />
-          </Form.Item>
-
-          <Form.Item
-            name="recommendation"
-            label="修复建议"
+            name="descriptionDetailed"
+            label="详细描述"
           >
             <Input.TextArea
               rows={4}
-              placeholder="请输入修复建议..."
+              placeholder="请输入详细描述..."
             />
+          </Form.Item>
+
+          <Form.Item
+            name="componentName"
+            label="组件名称"
+          >
+            <Input placeholder="请输入组件名称" />
+          </Form.Item>
+
+          <Form.Item
+            name="componentVersion"
+            label="组件版本"
+          >
+            <Input placeholder="请输入组件版本" />
+          </Form.Item>
+
+          <Form.Item
+            name="ip"
+            label="IP地址"
+          >
+            <Input placeholder="请输入IP地址" />
+          </Form.Item>
+
+          <Form.Item
+            name="api"
+            label="API接口"
+          >
+            <Input placeholder="请输入API接口" />
+          </Form.Item>
+
+          <Form.Item
+            name="fixAddress"
+            label="修复地址"
+          >
+            <Input placeholder="请输入修复地址" />
+          </Form.Item>
+
+          <Form.Item
+            name="fixVersion"
+            label="修复版本"
+          >
+            <Input placeholder="请输入修复版本" />
+          </Form.Item>
+
+          <Form.Item
+            name="descriptionDisposal"
+            label="处置描述"
+          >
+            <Input.TextArea
+              rows={3}
+              placeholder="请输入处置描述..."
+            />
+          </Form.Item>
+
+          <Form.Item
+            name="conclusion"
+            label="结论"
+          >
+            <Select placeholder="请选择结论" allowClear>
+              <Select.Option value={1}>误报</Select.Option>
+              <Select.Option value={2}>不受影响</Select.Option>
+              <Select.Option value={3}>版本升级修复</Select.Option>
+              <Select.Option value={4}>补丁修复</Select.Option>
+              <Select.Option value={5}>有修复方案接受风险</Select.Option>
+              <Select.Option value={6}>无修复方案接受风险</Select.Option>
+            </Select>
           </Form.Item>
 
           <Form.Item>
@@ -626,7 +667,7 @@ const VulnerabilityDetail: React.FC = () => {
                 htmlType="submit"
                 loading={editLoading}
               >
-                暂存修改
+                更新
               </Button>
             </Space>
           </Form.Item>
@@ -651,7 +692,7 @@ const VulnerabilityDetail: React.FC = () => {
             name="title"
             label="审批标题"
             rules={[{ required: true, message: '请输入审批标题' }]}
-            initialValue={`${vulnerability?.name || '漏洞'} - 修复审批`}
+            initialValue={`${problem?.descriptionBrief || '问题单据'} - 修复审批`}
           >
             <Input placeholder="请输入审批标题" />
           </Form.Item>
@@ -663,9 +704,9 @@ const VulnerabilityDetail: React.FC = () => {
             initialValue="normal"
           >
             <Select placeholder="请选择优先级">
-              <Option value="urgent">紧急</Option>
-              <Option value="normal">普通</Option>
-              <Option value="low">低优先级</Option>
+              <Select.Option value="urgent">紧急</Select.Option>
+              <Select.Option value="normal">普通</Select.Option>
+              <Select.Option value="low">低优先级</Select.Option>
             </Select>
           </Form.Item>
 
