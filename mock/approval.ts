@@ -1,486 +1,406 @@
-import { Approval, ApprovalHistory } from '@/types';
-import { __mockVulnerabilities } from './vuln';
+import { ApprovalDocument, ApprovalRecord, ApiResponse, PaginatedData } from '@/types';
 
-// Mock 审批单数据
-const mockApprovals: Approval[] = [
+// Mock 审批单据数据
+let mockApprovalDocuments: ApprovalDocument[] = [
   {
-    id: 'APP-2024-001',
-    title: '紧急漏洞修复审批',
-    status: 'completed',
-    createTime: '2024-01-15 11:00:00',
-    updateTime: '2024-01-20 16:30:00',
-    approver: '张三',
-    priority: 'urgent',
-    department: '安全部',
-    comments: '本次漏洞涉及SQL注入和CSRF两个高危漏洞，需要紧急处理',
-    vulnerabilities: __mockVulnerabilities.filter(v => v.approvalId === 'APP-2024-001')
+    id: 1,
+    approvalNumber: 'APP-2024-001',
+    problemList: ['PROB-2024-001'],
+    conclusion: '补丁修复',
+    status: '审批中',
+    vulnerabilityLevel: '严重',
+    descriptionDisposal: '已修复SQL注入漏洞，使用参数化查询替换字符串拼接，并增加了输入验证机制。修复方案经过充分测试，不会影响现有功能。',
+    approvalPerson: '张经理',
+    softwarePerson: '李专家',
+    createTime: '2024-01-15 09:30:00',
+    createPerson: '张三'
   },
   {
-    id: 'APP-2024-002',
-    title: 'XSS漏洞修复审批',
-    status: 'completed',
-    createTime: '2024-01-16 15:00:00',
-    updateTime: '2024-01-22 14:20:00',
-    approver: '李四',
-    priority: 'normal',
-    department: '开发部',
-    comments: '评论功能XSS漏洞，需要尽快修复',
-    vulnerabilities: __mockVulnerabilities.filter(v => v.approvalId === 'APP-2024-002')
+    id: 2,
+    approvalNumber: 'APP-2024-002',
+    problemList: ['PROB-2024-003'],
+    conclusion: '版本升级修复',
+    status: '处置中',
+    vulnerabilityLevel: '中危',
+    descriptionDisposal: '已升级前端框架到最新版本，并集成了XSS过滤中间件。升级后系统性能有轻微提升，兼容性测试通过。',
+    approvalPerson: '王主管',
+    softwarePerson: '陈专家',
+    createTime: '2024-01-16 14:20:00',
+    createPerson: '王五'
   },
   {
-    id: 'APP-2024-003',
-    title: '敏感信息泄露修复审批',
-    status: 'completed',
-    createTime: '2024-01-17 10:00:00',
-    updateTime: '2024-01-25 17:00:00',
-    approver: '王五',
-    priority: 'normal',
-    department: '产品部',
-    comments: 'API接口敏感信息泄露问题',
-    vulnerabilities: __mockVulnerabilities.filter(v => v.approvalId === 'APP-2024-003')
+    id: 3,
+    approvalNumber: 'APP-2024-003',
+    problemList: ['PROB-2024-004'],
+    conclusion: '误报',
+    status: '关闭',
+    vulnerabilityLevel: '低危',
+    descriptionDisposal: '经安全专家确认，该调试接口仅在测试环境使用，生产环境已通过配置文件禁用，不构成实际安全威胁。',
+    approvalPerson: '赵总监',
+    softwarePerson: '周专家',
+    createTime: '2024-01-17 10:15:00',
+    createPerson: '赵六'
   },
   {
-    id: 'APP-2024-004',
-    title: '密码策略优化审批',
-    status: 'completed',
-    createTime: '2024-01-19 12:00:00',
-    updateTime: '2024-01-30 18:00:00',
-    approver: '赵六',
-    priority: 'low',
-    department: '运维部',
-    comments: '用户密码策略需要加强',
-    vulnerabilities: __mockVulnerabilities.filter(v => v.approvalId === 'APP-2024-004')
-  },
-  {
-    id: 'APP-2024-005',
-    title: '文件上传安全修复审批',
-    status: 'completed',
-    createTime: '2024-01-20 14:00:00',
-    updateTime: '2024-01-28 16:45:00',
-    approver: '钱七',
-    priority: 'urgent',
-    department: '安全部',
-    comments: '头像上传功能存在严重安全隐患',
-    vulnerabilities: __mockVulnerabilities.filter(v => v.approvalId === 'APP-2024-005')
-  },
-  {
-    id: 'APP-2024-006',
-    title: '访问控制漏洞修复审批',
-    status: 'completed',
-    createTime: '2024-01-21 16:00:00',
-    updateTime: '2024-01-29 17:30:00',
-    approver: '孙八',
-    priority: 'normal',
-    department: '开发部',
-    comments: '订单详情接口存在越权访问问题',
-    vulnerabilities: __mockVulnerabilities.filter(v => v.approvalId === 'APP-2024-006')
-  },
-  {
-    id: 'APP-2024-007',
-    title: 'Log4j漏洞紧急修复审批',
-    status: 'completed',
-    createTime: '2024-01-22 11:00:00',
-    updateTime: '2024-01-23 20:00:00',
-    approver: '周九',
-    priority: 'urgent',
-    department: '运维部',
-    comments: 'Log4j远程代码执行漏洞，需要立即处理',
-    vulnerabilities: __mockVulnerabilities.filter(v => v.approvalId === 'APP-2024-007')
+    id: 4,
+    approvalNumber: 'APP-2024-004',
+    problemList: ['PROB-2024-007'],
+    conclusion: '补丁修复',
+    status: '已创建',
+    vulnerabilityLevel: '严重',
+    descriptionDisposal: '已修复权限验证逻辑中的缺陷，增加了多层次的权限检查机制，包括角色验证、资源权限验证和操作权限验证。修复方案已通过回归测试。',
+    approvalPerson: '钱经理',
+    softwarePerson: undefined,
+    createTime: '2024-01-18 16:45:00',
+    createPerson: '周九'
   }
 ];
 
-// Mock 审批历史记录
-let mockApprovalHistory: ApprovalHistory[] = [
+// Mock 审批记录数据
+let mockApprovalRecords: ApprovalRecord[] = [
   {
-    id: 'HIS-2024-001-01',
-    approvalId: 'APP-2024-001',
-    step: '提交申请',
-    operator: '张三',
-    operation: '提交',
-    time: '2024-01-15 11:00:00',
-    comments: '发现SQL注入和CSRF漏洞，申请紧急修复'
+    id: 1,
+    approvalNumber: 'APP-2024-001',
+    approvalNode: '安全专家审核',
+    approvalPerson: '李专家',
+    approvalResult: '通过',
+    approvalComments: '修复方案合理，测试充分，同意处置结论。',
+    approvalTime: '2024-01-15 11:00:00'
   },
   {
-    id: 'HIS-2024-001-02',
-    approvalId: 'APP-2024-001',
-    step: '安全评估',
-    operator: '李四',
-    operation: '审核通过',
-    time: '2024-01-16 10:00:00',
-    comments: '漏洞确实存在，风险等级评估准确'
+    id: 2,
+    approvalNumber: 'APP-2024-001',
+    approvalNode: '技术主管审核',
+    approvalPerson: '张经理',
+    approvalResult: '审核中',
+    approvalComments: '正在评估修复方案对系统性能的影响。',
+    approvalTime: undefined
   },
   {
-    id: 'HIS-2024-001-03',
-    approvalId: 'APP-2024-001',
-    step: '技术方案评审',
-    operator: '王五',
-    operation: '审核通过',
-    time: '2024-01-17 14:00:00',
-    comments: '修复方案可行，建议立即实施'
+    id: 3,
+    approvalNumber: 'APP-2024-002',
+    approvalNode: '安全专家审核',
+    approvalPerson: '陈专家',
+    approvalResult: '通过',
+    approvalComments: '版本升级方案可行，已确认新版本不存在其他已知漏洞。',
+    approvalTime: '2024-01-16 15:30:00'
   },
   {
-    id: 'HIS-2024-001-04',
-    approvalId: 'APP-2024-001',
-    step: '最终审批',
-    operator: '赵六',
-    operation: '审批完成',
-    time: '2024-01-20 16:30:00',
-    comments: '审批通过，请立即开始修复工作'
+    id: 4,
+    approvalNumber: 'APP-2024-002',
+    approvalNode: '技术主管审核',
+    approvalPerson: '王主管',
+    approvalResult: '通过',
+    approvalComments: '同意处置，请安排上线部署。',
+    approvalTime: '2024-01-16 16:00:00'
   },
   {
-    id: 'HIS-2024-002-01',
-    approvalId: 'APP-2024-002',
-    step: '提交申请',
-    operator: '李四',
-    operation: '提交',
-    time: '2024-01-16 15:00:00',
-    comments: '评论功能XSS漏洞需要修复'
+    id: 5,
+    approvalNumber: 'APP-2024-003',
+    approvalNode: '安全专家审核',
+    approvalPerson: '周专家',
+    approvalResult: '通过',
+    approvalComments: '确认误报，建议完善文档说明。',
+    approvalTime: '2024-01-17 10:30:00'
   },
   {
-    id: 'HIS-2024-002-02',
-    approvalId: 'APP-2024-002',
-    step: '安全评估',
-    operator: '张三',
-    operation: '审核通过',
-    time: '2024-01-17 09:00:00',
-    comments: 'XSS漏洞确认，建议使用HTML编码'
-  },
-  {
-    id: 'HIS-2024-002-03',
-    approvalId: 'APP-2024-002',
-    step: '最终审批',
-    operator: '钱七',
-    operation: '审批完成',
-    time: '2024-01-22 14:20:00',
-    comments: '审批通过，请注意测试验证'
-  },
-  {
-    id: 'HIS-2024-003-01',
-    approvalId: 'APP-2024-003',
-    step: '提交申请',
-    operator: '王五',
-    operation: '提交',
-    time: '2024-01-17 10:00:00',
-    comments: 'API接口敏感信息泄露问题'
-  },
-  {
-    id: 'HIS-2024-003-02',
-    approvalId: 'APP-2024-003',
-    step: '安全评估',
-    operator: '张三',
-    operation: '审核通过',
-    time: '2024-01-18 09:00:00',
-    comments: '信息泄露确实存在'
-  },
-  {
-    id: 'HIS-2024-003-03',
-    approvalId: 'APP-2024-003',
-    step: '最终审批',
-    operator: '王五',
-    operation: '审批完成',
-    time: '2024-01-25 17:00:00',
-    comments: '审批通过，请立即移除敏感信息'
-  },
-  {
-    id: 'HIS-2024-004-01',
-    approvalId: 'APP-2024-004',
-    step: '提交申请',
-    operator: '赵六',
-    operation: '提交',
-    time: '2024-01-19 12:00:00',
-    comments: '用户密码策略过于简单，容易被暴力破解'
-  },
-  {
-    id: 'HIS-2024-004-02',
-    approvalId: 'APP-2024-004',
-    step: '技术方案评审',
-    operator: '孙八',
-    operation: '审核通过',
-    time: '2024-01-20 16:00:00',
-    comments: '密码策略改进方案可行'
-  },
-  {
-    id: 'HIS-2024-004-03',
-    approvalId: 'APP-2024-004',
-    step: '最终审批',
-    operator: '赵六',
-    operation: '审批完成',
-    time: '2024-01-30 18:00:00',
-    comments: '审批通过，请实施强密码策略'
-  },
-  {
-    id: 'HIS-2024-005-01',
-    approvalId: 'APP-2024-005',
-    step: '提交申请',
-    operator: '钱七',
-    operation: '提交',
-    time: '2024-01-20 14:00:00',
-    comments: '文件上传功能缺少类型和大小限制'
-  },
-  {
-    id: 'HIS-2024-005-02',
-    approvalId: 'APP-2024-005',
-    step: '安全评估',
-    operator: '李四',
-    operation: '审核通过',
-    time: '2024-01-21 10:00:00',
-    comments: '上传漏洞确实存在，风险严重'
-  },
-  {
-    id: 'HIS-2024-005-03',
-    approvalId: 'APP-2024-005',
-    step: '最终审批',
-    operator: '钱七',
-    operation: '审批完成',
-    time: '2024-01-28 16:45:00',
-    comments: '审批通过，请立即修复文件上传安全'
-  },
-  {
-    id: 'HIS-2024-006-01',
-    approvalId: 'APP-2024-006',
-    step: '提交申请',
-    operator: '孙八',
-    operation: '提交',
-    time: '2024-01-21 16:00:00',
-    comments: '订单详情接口存在越权访问漏洞'
-  },
-  {
-    id: 'HIS-2024-006-02',
-    approvalId: 'APP-2024-006',
-    step: '技术方案评审',
-    operator: '张三',
-    operation: '审核通过',
-    time: '2024-01-22 10:00:00',
-    comments: '访问控制问题确实存在，修复方案可行'
-  },
-  {
-    id: 'HIS-2024-006-03',
-    approvalId: 'APP-2024-006',
-    step: '最终审批',
-    operator: '孙八',
-    operation: '审批完成',
-    time: '2024-01-29 17:30:00',
-    comments: '审批通过，请立即实施访问控制修复'
-  },
-  {
-    id: 'HIS-2024-007-01',
-    approvalId: 'APP-2024-007',
-    step: '提交申请',
-    operator: '周九',
-    operation: '提交',
-    time: '2024-01-22 11:00:00',
-    comments: '检测到Log4j远程代码执行漏洞(CVE-2021-44228)'
-  },
-  {
-    id: 'HIS-2024-007-02',
-    approvalId: 'APP-2024-007',
-    step: '安全评估',
-    operator: '周九',
-    operation: '审核通过',
-    time: '2024-01-22 15:00:00',
-    comments: 'Log4j漏洞风险极高，需要立即处理'
-  },
-  {
-    id: 'HIS-2024-007-03',
-    approvalId: 'APP-2024-007',
-    step: '最终审批',
-    operator: '周九',
-    operation: '审批完成',
-    time: '2024-01-23 20:00:00',
-    comments: '审批通过，请立即升级Log4j到安全版本'
+    id: 6,
+    approvalNumber: 'APP-2024-003',
+    approvalNode: '技术总监审核',
+    approvalPerson: '赵总监',
+    approvalResult: '通过',
+    approvalComments: '同意关闭该问题。',
+    approvalTime: '2024-01-17 11:00:00'
   }
 ];
 
-// 用于生成新的审批记录ID
-let nextHistoryId = 100;
+// 用于生成新的审批单据ID
+let nextApprovalId = 5;
+let nextRecordId = 7;
 
-// API 模拟
+// 生成审批单据编号
+function generateApprovalNumber(): string {
+  const date = new Date();
+  const year = date.getFullYear();
+  const month = String(date.getMonth() + 1).padStart(2, '0');
+  const sequence = String(mockApprovalDocuments.length + 1).padStart(3, '0');
+  return `APP-${year}-${month}-${sequence}`;
+}
+
 export default {
-  // 获取审批单列表
+  // 获取审批单据列表
   'GET /api/approval': (req: any, res: any) => {
-    const { page = 1, pageSize = 10, status } = req.query;
+    console.log('🔄 [Mock] API调用: GET /api/approval');
 
-    let filteredData = mockApprovals;
+    const { current = 1, pageSize = 10, status, vulnerabilityLevel } = req.query;
 
-    // 状态过滤
+    let filteredApprovals = [...mockApprovalDocuments];
+
+    // 按状态过滤
     if (status) {
-      filteredData = mockApprovals.filter(item => item.status === status);
+      filteredApprovals = filteredApprovals.filter(a => a.status === status);
     }
 
-    // 只返回已完成的审批单
-    filteredData = filteredData.filter(item => item.status === 'completed');
+    // 按漏洞等级过滤
+    if (vulnerabilityLevel) {
+      filteredApprovals = filteredApprovals.filter(a => a.vulnerabilityLevel === vulnerabilityLevel);
+    }
 
     // 分页
-    const startIndex = (page - 1) * pageSize;
-    const endIndex = startIndex + parseInt(pageSize);
-    const paginatedData = filteredData.slice(startIndex, endIndex);
+    const startIndex = (current - 1) * pageSize;
+    const endIndex = startIndex + pageSize;
+    const paginatedData = filteredApprovals.slice(startIndex, endIndex);
+
+    const response: ApiResponse<PaginatedData<ApprovalDocument>> = {
+      code: 200,
+      message: '获取审批单据列表成功',
+      data: {
+        list: paginatedData,
+        total: filteredApprovals.length,
+        current: parseInt(current),
+        pageSize: parseInt(pageSize)
+      }
+    };
+
+    res.json(response);
+  },
+
+  // 获取审批单据详情
+  'GET /api/approval/:id': (req: any, res: any) => {
+    console.log('🔄 [Mock] API调用: GET /api/approval/:id');
+    const { id } = req.params;
+
+    const approval = mockApprovalDocuments.find(a => a.id === parseInt(id));
+
+    if (!approval) {
+      return res.json({
+        code: 404,
+        message: '审批单据不存在'
+      });
+    }
 
     res.json({
       code: 200,
-      data: paginatedData,
-      total: filteredData.length,
-      page: parseInt(page),
-      pageSize: parseInt(pageSize)
+      message: '获取审批单据详情成功',
+      data: approval
     });
   },
 
-  // 根据ID获取审批单详情
-  'GET /api/approval/:id': (req: any, res: any) => {
-    const { id } = req.params;
-    const approval = mockApprovals.find(item => item.id === id);
+  // 创建审批单据
+  'POST /api/approval/create': (req: any, res: any) => {
+    console.log('🔄 [Mock] API调用: POST /api/approval/create');
+    const {
+      problemNumbers,
+      conclusion,
+      vulnerabilityLevel,
+      descriptionDisposal,
+      approvalPerson,
+      softwarePerson,
+      createPerson
+    } = req.body;
 
-    if (approval) {
-      res.json({
-        code: 200,
-        data: approval
-      });
-    } else {
-      res.json({
-        code: 404,
-        message: '审批单不存在'
-      });
-    }
-  },
+    const newApproval: ApprovalDocument = {
+      id: nextApprovalId++,
+      approvalNumber: generateApprovalNumber(),
+      problemList: problemNumbers,
+      conclusion,
+      status: '已创建',
+      vulnerabilityLevel,
+      descriptionDisposal,
+      approvalPerson,
+      softwarePerson,
+      createTime: new Date().toISOString().replace('T', ' ').substring(0, 19),
+      createPerson
+    };
 
-  // 获取审批单历史记录
-  'GET /api/approval/:id/history': (req: any, res: any) => {
-    const { id } = req.params;
-    const history = mockApprovalHistory.filter(item => item.approvalId === id);
+    mockApprovalDocuments.push(newApproval);
+
+    // 创建第一条审批记录
+    const firstRecord: ApprovalRecord = {
+      id: nextRecordId++,
+      approvalNumber: newApproval.approvalNumber,
+      approvalNode: '安全专家审核',
+      approvalPerson: softwarePerson || '待分配',
+      approvalResult: '待审核',
+      approvalComments: '等待安全专家审核',
+      approvalTime: undefined
+    };
+
+    mockApprovalRecords.push(firstRecord);
 
     res.json({
       code: 200,
-      data: history
+      message: '创建审批单据成功',
+      data: newApproval
+    });
+  },
+
+  // 更新审批单据
+  'PUT /api/approval/:id': (req: any, res: any) => {
+    console.log('🔄 [Mock] API调用: PUT /api/approval/:id');
+    const { id } = req.params;
+    const updateData = req.body;
+
+    const index = mockApprovalDocuments.findIndex(a => a.id === parseInt(id));
+
+    if (index === -1) {
+      return res.json({
+        code: 404,
+        message: '审批单据不存在'
+      });
+    }
+
+    mockApprovalDocuments[index] = { ...mockApprovalDocuments[index], ...updateData };
+
+    res.json({
+      code: 200,
+      message: '更新审批单据成功',
+      data: mockApprovalDocuments[index]
     });
   },
 
   // 提交审批
   'POST /api/approval/:id/submit': (req: any, res: any) => {
+    console.log('🔄 [Mock] API调用: POST /api/approval/:id/submit');
     const { id } = req.params;
-    const { result, assignTo, comment, dueDate } = req.body;
+    const { approvalNode, approvalPerson, approvalResult, approvalComments } = req.body;
 
-    // 获取当前时间
-    const now = new Date();
-    const timeStr = now.toISOString().replace('T', ' ').substring(0, 19);
+    const approvalIndex = mockApprovalDocuments.findIndex(a => a.id === parseInt(id));
 
-    // 创建新的审批记录
-    const newHistory: ApprovalHistory = {
-      id: `HIS-${id}-${nextHistoryId}`,
-      approvalId: id,
-      step: '用户审批',
-      operator: '当前用户',
-      operation: getOperationText(result),
-      time: timeStr,
-      comments: comment
+    if (approvalIndex === -1) {
+      return res.json({
+        code: 404,
+        message: '审批单据不存在'
+      });
+    }
+
+    // 创建审批记录
+    const newRecord: ApprovalRecord = {
+      id: nextRecordId++,
+      approvalNumber: mockApprovalDocuments[approvalIndex].approvalNumber,
+      approvalNode,
+      approvalPerson,
+      approvalResult,
+      approvalComments,
+      approvalTime: new Date().toISOString().replace('T', ' ').substring(0, 19)
     };
 
-    // 添加到审批历史
-    mockApprovalHistory.push(newHistory);
-    nextHistoryId++;
+    mockApprovalRecords.push(newRecord);
 
     // 更新审批单状态
-    const approval = mockApprovals.find(item => item.id === id);
-    if (approval) {
-      approval.updateTime = timeStr;
-      approval.comments = `${approval.comments || ''}\n\n最新审批:\n结果: ${getOperationText(result)}\n转派给: ${assignTo}\n截止日期: ${dueDate}\n意见: ${comment}`;
+    if (approvalResult === '通过') {
+      // 判断是否还有后续节点
+      const nextNodeMap: { [key: string]: string } = {
+        '安全专家审核': '技术主管审核',
+        '技术主管审核': '安全总监审核',
+        '安全总监审核': '关闭'
+      };
+
+      const nextNode = nextNodeMap[approvalNode];
+      if (nextNode) {
+        mockApprovalDocuments[approvalIndex].status = nextNode === '关闭' ? '关闭' : '审批中';
+        mockApprovalDocuments[approvalIndex].approvalPerson = nextNode === '关闭' ? approvalPerson : '待分配';
+      } else {
+        mockApprovalDocuments[approvalIndex].status = '关闭';
+      }
+    } else if (approvalResult === '驳回') {
+      mockApprovalDocuments[approvalIndex].status = '处置中';
     }
 
     res.json({
       code: 200,
       message: '审批提交成功',
-      data: newHistory
+      data: {
+        approval: mockApprovalDocuments[approvalIndex],
+        record: newRecord
+      }
     });
   },
 
-  // 移除漏洞
-  'POST /api/approval/:id/remove-vuln': (req: any, res: any) => {
+  // 获取审批历史记录
+  'GET /api/approval/:id/history': (req: any, res: any) => {
+    console.log('🔄 [Mock] API调用: GET /api/approval/:id/history');
     const { id } = req.params;
-    const { vulnerabilityId } = req.body;
 
-    // 获取当前时间
-    const now = new Date();
-    const timeStr = now.toISOString().replace('T', ' ').substring(0, 19);
+    const approval = mockApprovalDocuments.find(a => a.id === parseInt(id));
 
-    // 查找审批单
-    const approval = mockApprovals.find(item => item.id === id);
     if (!approval) {
       return res.json({
         code: 404,
-        message: '审批单不存在'
+        message: '审批单据不存在'
       });
     }
 
-    // 查找并更新对应的漏洞数据
-    const targetVuln = __mockVulnerabilities.find(v => v.id === vulnerabilityId);
-    if (!targetVuln) {
-      return res.json({
-        code: 404,
-        message: '漏洞不存在'
-      });
-    }
-
-    // 检查漏洞是否确实属于该审批单
-    if (targetVuln.approvalId !== id) {
-      return res.json({
-        code: 400,
-        message: '漏洞不属于该审批单'
-      });
-    }
-
-    // 真正更新漏洞数据：移除审批单关联，更新状态为未分配
-    targetVuln.approvalId = undefined;
-    targetVuln.status = 'unassigned';
-    console.log(`✅ 漏洞 ${vulnerabilityId} 已从审批单 ${id} 中移除，状态更新为未分配`);
-
-    // 创建移除操作记录
-    const removeHistory: ApprovalHistory = {
-      id: `HIS-${id}-${nextHistoryId}`,
-      approvalId: id,
-      step: '漏洞移除',
-      operator: '当前用户',
-      operation: '移除',
-      time: timeStr,
-      comments: `已将漏洞 ${vulnerabilityId} 从审批单中移除，漏洞状态已更新为未分配`
-    };
-
-    mockApprovalHistory.push(removeHistory);
-    nextHistoryId++;
-
-    // 更新审批单的备注和时间
-    approval.updateTime = timeStr;
-    approval.comments = `${approval.comments || ''}\n\n[${timeStr}] 漏洞移除操作：${vulnerabilityId}`;
-
-    // 检查是否还有其他漏洞与此审批单关联
-    const remainingVulns = __mockVulnerabilities.filter(v => v.approvalId === id);
-    const shouldCloseApproval = remainingVulns.length === 0;
-
-    if (shouldCloseApproval) {
-      // 如果没有漏洞了，关闭审批单
-      approval.status = 'closed';
-      approval.comments += `\n[${timeStr}] 所有漏洞已处理完毕，审批单自动关闭`;
-      console.log(`✅ 审批单 ${id} 已自动关闭（所有漏洞已移除）`);
-    }
+    const records = mockApprovalRecords.filter(r => r.approvalNumber === approval.approvalNumber);
 
     res.json({
       code: 200,
-      message: '漏洞移除成功',
+      message: '获取审批历史成功',
+      data: records,
+      total: records.length
+    });
+  },
+
+  // 从审批单中移除问题单据
+  'POST /api/approval/:id/remove-problem': (req: any, res: any) => {
+    console.log('🔄 [Mock] API调用: POST /api/approval/:id/remove-problem');
+    const { id } = req.params;
+    const { problemNumber } = req.body;
+
+    const approvalIndex = mockApprovalDocuments.findIndex(a => a.id === parseInt(id));
+
+    if (approvalIndex === -1) {
+      return res.json({
+        code: 404,
+        message: '审批单据不存在'
+      });
+    }
+
+    const approval = mockApprovalDocuments[approvalIndex];
+    const problemIndex = approval.problemList.indexOf(problemNumber);
+
+    if (problemIndex === -1) {
+      return res.json({
+        code: 404,
+        message: '问题单据不在该审批单中'
+      });
+    }
+
+    approval.problemList.splice(problemIndex, 1);
+
+    res.json({
+      code: 200,
+      message: '移除问题单据成功',
+      data: approval
+    });
+  },
+
+  // 批量分配审批单据
+  'POST /api/approval/batch-assign': (req: any, res: any) => {
+    console.log('🔄 [Mock] API调用: POST /api/approval/batch-assign');
+    const { approvalIds, approvalPerson } = req.body;
+
+    let successCount = 0;
+    const failedIds: number[] = [];
+
+    approvalIds.forEach((id: number) => {
+      const index = mockApprovalDocuments.findIndex(a => a.id === id);
+      if (index !== -1) {
+        mockApprovalDocuments[index].approvalPerson = approvalPerson;
+        successCount++;
+      } else {
+        failedIds.push(id);
+      }
+    });
+
+    res.json({
+      code: 200,
+      message: '批量分配完成',
       data: {
-        removedVulnId: vulnerabilityId,
-        removeTime: timeStr,
-        approvalClosed: shouldCloseApproval,
-        remainingVulnCount: remainingVulns.length,
-        // 告知前端数据已真正同步
-        dataSynced: true
+        successCount,
+        failedCount: failedIds.length,
+        failedIds
       }
     });
   }
 };
-
-// 获取操作结果文本
-function getOperationText(result: string): string {
-  const operationMap = {
-    'approved': '通过',
-    'rejected': '拒绝',
-    'returned': '退回修改'
-  };
-  return operationMap[result] || '未知操作';
-}
