@@ -57,110 +57,32 @@ const ApprovalDetail: React.FC = () => {
       const historyResult = await historyResponse.json();
 
       // 获取相关漏洞
-      const vulnResponse = await fetch(`/api/vuln/approval/${approvalId}`);
+      const vulnResponse = await fetch(`/api/vuln?approvalId=${approvalId}`);
       const vulnResult = await vulnResponse.json();
 
       if (approvalResult.code === 200) {
         setApproval(approvalResult.data);
       } else {
-        // 使用模拟数据
-        const mockApproval: Approval = {
-          id: 'APP-2024-001',
-          title: '紧急漏洞修复审批',
-          status: 'completed',
-          createTime: '2024-01-15 11:00:00',
-          updateTime: '2024-01-20 16:30:00',
-          approver: '张三',
-          priority: 'urgent',
-          department: '安全部',
-          comments: '本次漏洞涉及SQL注入和CSRF两个高危漏洞，需要紧急处理。请开发团队立即组织修复，测试团队重点验证。',
-        };
-        setApproval(mockApproval);
+        setApproval(null);
       }
 
       if (historyResult.code === 200) {
         setHistory(historyResult.data);
       } else {
-        // 使用模拟数据
-        const mockHistory: ApprovalHistory[] = [
-          {
-            id: 'HIS-2024-001-01',
-            approvalId: approvalId,
-            step: '提交申请',
-            operator: '张三',
-            operation: '提交',
-            time: '2024-01-15 11:00:00',
-            comments: '发现SQL注入和CSRF漏洞，申请紧急修复'
-          },
-          {
-            id: 'HIS-2024-001-02',
-            approvalId: approvalId,
-            step: '安全评估',
-            operator: '李四',
-            operation: '审核通过',
-            time: '2024-01-16 10:00:00',
-            comments: '漏洞确实存在，风险等级评估准确'
-          },
-          {
-            id: 'HIS-2024-001-03',
-            approvalId: approvalId,
-            step: '技术方案评审',
-            operator: '王五',
-            operation: '审核通过',
-            time: '2024-01-17 14:00:00',
-            comments: '修复方案可行，建议立即实施'
-          },
-          {
-            id: 'HIS-2024-001-04',
-            approvalId: approvalId,
-            step: '最终审批',
-            operator: '赵六',
-            operation: '审批完成',
-            time: '2024-01-20 16:30:00',
-            comments: '审批通过，请立即开始修复工作'
-          }
-        ];
-        setHistory(mockHistory);
+        setHistory([]);
       }
 
       if (vulnResult.code === 200) {
         setVulnerabilities(vulnResult.data);
       } else {
-        // 使用模拟数据
-        const mockVulns: Vulnerability[] = [
-          {
-            id: 'VUL-2024-001',
-            name: 'SQL注入漏洞',
-            source: 'IAST',
-            riskLevel: 'critical',
-            discoveryTime: '2024-01-15 10:30:00',
-            expectedBlockTime: '2024-01-20 00:00:00',
-            status: 'approved',
-            description: '在用户登录模块发现SQL注入漏洞',
-            severity: '严重',
-            affectedComponent: 'user/login',
-            approvalId: approvalId
-          },
-          {
-            id: 'VUL-2024-004',
-            name: 'CSRF跨站请求伪造',
-            source: 'IAST',
-            riskLevel: 'medium',
-            discoveryTime: '2024-01-18 16:45:00',
-            expectedBlockTime: '2024-01-26 00:00:00',
-            status: 'approved',
-            description: '关键业务操作缺少CSRF保护',
-            severity: '中危',
-            affectedComponent: 'user/settings',
-            approvalId: approvalId
-          }
-        ];
-        setVulnerabilities(mockVulns);
+        setVulnerabilities([]);
       }
 
     } catch (error) {
       console.error('获取审批单详情失败:', error);
       setApproval(null);
+      setHistory([]);
+      setVulnerabilities([]);
     } finally {
       setLoading(false);
     }
@@ -182,54 +104,69 @@ const ApprovalDetail: React.FC = () => {
     history.push(`/vuln/${vulnId}`);
   };
 
-  // 优先级标签
-  const getPriorityTag = (priority: string) => {
-    const config = {
-      urgent: { color: 'red', text: '紧急' },
-      normal: { color: 'blue', text: '普通' },
-      low: { color: 'green', text: '低优先级' },
+  // 状态标签
+  const getStatusTag = (status: number) => {
+    const statusMap = {
+      1: { color: 'blue', text: '已创建' },
+      2: { color: 'orange', text: '处置中' },
+      3: { color: 'purple', text: '审批中' },
+      4: { color: 'green', text: '关闭' }
     };
-    const { color, text } = config[priority] || { color: 'default', text: '未知' };
+    const { color, text } = statusMap[status] || { color: 'default', text: '未知' };
     return <Tag color={color}>{text}</Tag>;
   };
 
-  // 风险等级标签
-  const getRiskLevelTag = (level: string) => {
-    const config = {
-      critical: { color: 'red', text: '严重' },
-      high: { color: 'orange', text: '高危' },
-      medium: { color: 'gold', text: '中危' },
-      low: { color: 'green', text: '低危' },
+  // 漏洞等级标签
+  const getRiskLevelTag = (level: number) => {
+    const levelMap = {
+      1: { color: 'red', text: '严重' },
+      2: { color: 'orange', text: '高危' },
+      3: { color: 'gold', text: '中危' },
+      4: { color: 'green', text: '低危' }
     };
-    const { color, text } = config[level] || { color: 'default', text: '未知' };
+    const { color, text } = levelMap[level] || { color: 'default', text: '未知' };
     return <Tag color={color}>{text}</Tag>;
   };
 
-  // 生成统计信息（简化版，仅显示风险等级分布）
+  // 结论标签
+  const getConclusionTag = (conclusion: number) => {
+    const conclusionMap = {
+      1: { color: 'green', text: '误报' },
+      2: { color: 'blue', text: '不受影响' },
+      3: { color: 'cyan', text: '版本升级' },
+      4: { color: 'purple', text: '补丁修复' },
+      5: { color: 'orange', text: '接受风险' },
+      6: { color: 'volcano', text: '无修复方案' }
+    };
+    const { color, text } = conclusionMap[conclusion] || { color: 'default', text: '未知' };
+    return <Tag color={color}>{text}</Tag>;
+  };
+
+  // 生成统计信息（适配数字等级）
   const getStatisticsContent = () => {
     return (
       <div style={{ display: 'flex', justifyContent: 'space-around', padding: '16px' }}>
         <div style={{ textAlign: 'center' }}>
           <div style={{ fontSize: '20px', fontWeight: 'bold', color: '#ff4d4f' }}>
-            {vulnerabilities.filter(v => v.riskLevel === 'critical').length}
+            {vulnerabilities.filter(v => v.severity === '严重').length}
           </div>
           <div style={{ color: '#666', fontSize: '12px' }}>严重</div>
         </div>
         <div style={{ textAlign: 'center' }}>
           <div style={{ fontSize: '20px', fontWeight: 'bold', color: '#ff7a45' }}>
-            {vulnerabilities.filter(v => v.riskLevel === 'high').length}
+            {vulnerabilities.filter(v => v.severity === '高危').length}
           </div>
           <div style={{ color: '#666', fontSize: '12px' }}>高危</div>
         </div>
         <div style={{ textAlign: 'center' }}>
           <div style={{ fontSize: '20px', fontWeight: 'bold', color: '#ffa940' }}>
-            {vulnerabilities.filter(v => v.riskLevel === 'medium').length}
+            {vulnerabilities.filter(v => v.severity === '中危').length}
           </div>
           <div style={{ color: '#666', fontSize: '12px' }}>中危</div>
         </div>
         <div style={{ textAlign: 'center' }}>
           <div style={{ fontSize: '20px', fontWeight: 'bold', color: '#52c41a' }}>
-            {vulnerabilities.filter(v => v.riskLevel === 'low').length}
+            {vulnerabilities.filter(v => v.severity === '低危').length}
           </div>
           <div style={{ color: '#666', fontSize: '12px' }}>低危</div>
         </div>
@@ -452,18 +389,23 @@ const ApprovalDetail: React.FC = () => {
               key="1"
             >
               <Descriptions column={2} bordered>
-                <Descriptions.Item label="审批单号">{approval.id}</Descriptions.Item>
-                <Descriptions.Item label="审批标题">{approval.title}</Descriptions.Item>
-                <Descriptions.Item label="优先级">{getPriorityTag(approval.priority)}</Descriptions.Item>
-                <Descriptions.Item label="状态">
-                  <Tag color="green" icon={<CheckCircleOutlined />}>已完成</Tag>
+                <Descriptions.Item label="审批单号">{approval.approvalNumber}</Descriptions.Item>
+                <Descriptions.Item label="关联问题数量">{approval.problemList?.length || 0}个</Descriptions.Item>
+                <Descriptions.Item label="风险等级">
+                  {getRiskLevelTag(approval.vulnerabilityLevel)}
                 </Descriptions.Item>
-                <Descriptions.Item label="审批人">{approval.approver}</Descriptions.Item>
-                <Descriptions.Item label="所属部门">{approval.department || '未指定'}</Descriptions.Item>
+                <Descriptions.Item label="当前状态">
+                  {getStatusTag(approval.status)}
+                </Descriptions.Item>
+                <Descriptions.Item label="审批人">{approval.approvalPerson}</Descriptions.Item>
+                <Descriptions.Item label="软研专家">{approval.softwarePerson || '未分配'}</Descriptions.Item>
+                <Descriptions.Item label="创建人">{approval.createPerson}</Descriptions.Item>
                 <Descriptions.Item label="创建时间">{approval.createTime}</Descriptions.Item>
-                <Descriptions.Item label="更新时间">{approval.updateTime}</Descriptions.Item>
-                <Descriptions.Item label="备注说明" span={2}>
-                  {approval.comments || '无'}
+                <Descriptions.Item label="处置结论" span={2}>
+                  {getConclusionTag(approval.conclusion)}
+                </Descriptions.Item>
+                <Descriptions.Item label="处置说明" span={2}>
+                  {approval.descriptionDisposal || '无'}
                 </Descriptions.Item>
               </Descriptions>
             </Panel>
@@ -475,10 +417,10 @@ const ApprovalDetail: React.FC = () => {
                   <BarChartOutlined />
                   <span>相关漏洞 ({vulnerabilities.length})</span>
                   <div style={{ marginLeft: 'auto', display: 'flex', gap: '8px' }}>
-                    <Tag color="red">严重: {vulnerabilities.filter(v => v.riskLevel === 'critical').length}</Tag>
-                    <Tag color="orange">高危: {vulnerabilities.filter(v => v.riskLevel === 'high').length}</Tag>
-                    <Tag color="gold">中危: {vulnerabilities.filter(v => v.riskLevel === 'medium').length}</Tag>
-                    <Tag color="green">低危: {vulnerabilities.filter(v => v.riskLevel === 'low').length}</Tag>
+                    <Tag color="red">严重: {vulnerabilities.filter(v => v.severity === '严重').length}</Tag>
+                    <Tag color="orange">高危: {vulnerabilities.filter(v => v.severity === '高危').length}</Tag>
+                    <Tag color="gold">中危: {vulnerabilities.filter(v => v.severity === '中危').length}</Tag>
+                    <Tag color="green">低危: {vulnerabilities.filter(v => v.severity === '低危').length}</Tag>
                   </div>
                 </div>
               }

@@ -309,7 +309,7 @@ const VulnerabilityList: React.FC = () => {
     {
       title: '漏洞编号',
       dataIndex: 'id',
-      width: 140,
+      width: 160,
       fixed: 'left',
       render: (text: string, record: Vulnerability) => (
         <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
@@ -321,11 +321,14 @@ const VulnerabilityList: React.FC = () => {
               fontWeight: 'bold'
             }}
           >
-            {record.id.slice(-2)}
+            {String(record.id).slice(-2)}
           </Avatar>
           <div>
             <div style={{ fontWeight: 600, fontSize: '13px', color: '#262626' }}>{text}</div>
-            <div style={{ fontSize: '11px', color: '#8c8c8c' }}>{record.source}</div>
+            <div style={{ fontSize: '11px', color: '#8c8c8c' }}>
+              {record.source} · {record.status}
+              {record.isStaged && <Tag color="purple" size="small" style={{ marginLeft: 4 }}>暂存</Tag>}
+            </div>
           </div>
         </div>
       ),
@@ -412,6 +415,26 @@ const VulnerabilityList: React.FC = () => {
             border: editingVulnsData[record.id]?.severity && editingVulnsData[record.id].severity !== record.severity ? '2px solid #1890ff' : '1px solid #d9d9d9'
           }}
         />
+      ),
+    },
+    {
+      title: '发现时间',
+      dataIndex: 'discoveryTime',
+      width: 180,
+      render: (text: string) => (
+        <div style={{ fontSize: '13px', color: '#666' }}>
+          {text || '-'}
+        </div>
+      ),
+    },
+    {
+      title: '预期拦截时间',
+      dataIndex: 'expectedBlockTime',
+      width: 180,
+      render: (text: string) => (
+        <div style={{ fontSize: '13px', color: '#666' }}>
+          {text || '-'}
+        </div>
       ),
     },
     {
@@ -818,7 +841,7 @@ const VulnerabilityList: React.FC = () => {
         </Form>
       </Modal>
 
-      {/* 批量编辑模态框 - 美化版本 */}
+      {/* 批量编辑模态框 - 全屏可编辑列表 */}
       <Modal
         title={
           <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
@@ -841,7 +864,7 @@ const VulnerabilityList: React.FC = () => {
                 批量编辑漏洞
               </div>
               <div style={{ fontSize: '12px', color: '#8c8c8c' }}>
-                {selectedVulnsForEdit.length} 个漏洞正在编辑中
+                {selectedVulnsForEdit.length} 个漏洞正在编辑中 · 可快速编辑所有字段
               </div>
             </div>
           </div>
@@ -940,15 +963,18 @@ const VulnerabilityList: React.FC = () => {
             </div>
           </div>
         ]}
-        width={1500}
+        width="95%"
         style={{
           top: 20,
+          maxWidth: '1800px',
           borderRadius: '12px',
           overflow: 'hidden'
         }}
         bodyStyle={{
           padding: 0,
-          background: '#fafafa'
+          background: '#fafafa',
+          height: '75vh',
+          maxHeight: '800px'
         }}
       >
         <div style={{
@@ -972,10 +998,10 @@ const VulnerabilityList: React.FC = () => {
               </div>
               <div>
                 <div style={{ fontSize: '15px', fontWeight: 600, color: '#262626', marginBottom: '4px' }}>
-                  批量编辑模式
+                  全屏批量编辑模式
                 </div>
                 <div style={{ fontSize: '13px', color: '#666' }}>
-                  💡 直接在表格中编辑漏洞信息，蓝色边框表示该字段已修改
+                  💡 在表格中快速编辑所有漏洞信息，蓝色边框表示该字段已修改
                 </div>
               </div>
             </div>
@@ -994,13 +1020,23 @@ const VulnerabilityList: React.FC = () => {
           </div>
         </div>
 
-        <div style={{ padding: '24px' }}>
+        <div style={{
+          padding: '20px',
+          height: 'calc(100% - 100px)',
+          overflow: 'auto'
+        }}>
           <Table
             columns={editableColumns}
             dataSource={selectedVulnsForEdit}
             rowKey="id"
-            pagination={false}
-            scroll={{ x: 1300, y: 500 }}
+            pagination={{
+              pageSize: 50,
+              showSizeChanger: true,
+              pageSizeOptions: ['10', '20', '50', '100'],
+              showTotal: (total) => `共 ${total} 条记录`,
+              position: ['bottomCenter']
+            }}
+            scroll={{ x: 1500, y: 'calc(75vh - 200px)' }}
             size="middle"
             className="editable-table-enhanced"
             style={{

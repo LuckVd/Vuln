@@ -81,9 +81,8 @@ const ApprovalList: React.FC = () => {
     setLoading(true);
     try {
       const params = new URLSearchParams({
-        page: page.toString(),
-        pageSize: size.toString(),
-        status: 'completed' // 只获取已完成的审批单
+        current: page.toString(),
+        pageSize: size.toString()
       });
 
       const response = await fetch(`/api/approval?${params}`);
@@ -124,57 +123,104 @@ const ApprovalList: React.FC = () => {
   };
 
   
+  // 状态标签
+  const getStatusTag = (status: number) => {
+    const statusMap = {
+      1: { color: 'blue', text: '已创建' },
+      2: { color: 'orange', text: '处置中' },
+      3: { color: 'purple', text: '审批中' },
+      4: { color: 'green', text: '关闭' }
+    };
+    const { color, text } = statusMap[status] || { color: 'default', text: '未知' };
+    return <Tag color={color}>{text}</Tag>;
+  };
+
+  // 漏洞等级标签
+  const getLevelTag = (level: number) => {
+    const levelMap = {
+      1: { color: 'red', text: '严重' },
+      2: { color: 'orange', text: '高危' },
+      3: { color: 'gold', text: '中危' },
+      4: { color: 'green', text: '低危' }
+    };
+    const { color, text } = levelMap[level] || { color: 'default', text: '未知' };
+    return <Tag color={color}>{text}</Tag>;
+  };
+
+  // 结论标签
+  const getConclusionTag = (conclusion: number) => {
+    const conclusionMap = {
+      1: { color: 'green', text: '误报' },
+      2: { color: 'blue', text: '不受影响' },
+      3: { color: 'cyan', text: '版本升级' },
+      4: { color: 'purple', text: '补丁修复' },
+      5: { color: 'orange', text: '接受风险' },
+      6: { color: 'volcano', text: '无修复方案' }
+    };
+    const { color, text } = conclusionMap[conclusion] || { color: 'default', text: '未知' };
+    return <Tag color={color}>{text}</Tag>;
+  };
+
   const columns: ColumnsType<Approval> = [
     {
       title: '审批单号',
-      dataIndex: 'id',
-      key: 'id',
+      dataIndex: 'approvalNumber',
+      key: 'approvalNumber',
       width: 150,
-      render: (text: string) => (
-        <Link to={`/approval/${text}`} style={{ color: '#1890ff', textDecoration: 'underline' }}>
+      render: (text: string, record: Approval) => (
+        <Link to={`/approval/${record.id}`} style={{ color: '#1890ff', textDecoration: 'underline' }}>
           {text}
         </Link>
       ),
     },
     {
-      title: '审批标题',
-      dataIndex: 'title',
-      key: 'title',
-      width: 250,
+      title: '关联问题',
+      dataIndex: 'problemList',
+      key: 'problemList',
+      width: 120,
+      render: (problems: string[]) => (
+        <Tag color="blue">{problems.length}个问题</Tag>
+      ),
     },
     {
-      title: '优先级',
-      dataIndex: 'priority',
-      key: 'priority',
+      title: '风险等级',
+      dataIndex: 'vulnerabilityLevel',
+      key: 'vulnerabilityLevel',
       width: 100,
-      render: (priority: string) => getPriorityTag(priority),
+      render: (level: number) => getLevelTag(level),
     },
     {
       title: '状态',
       dataIndex: 'status',
       key: 'status',
       width: 100,
-      render: () => <Tag color="green">已完成</Tag>,
+      render: (status: number) => getStatusTag(status),
     },
     {
-      title: '漏洞统计',
-      key: 'vulnerabilityStats',
-      width: 200,
-      render: (_, record: Approval) => (
-        <VulnerabilityStats approvalId={record.id} />
-      ),
+      title: '结论',
+      dataIndex: 'conclusion',
+      key: 'conclusion',
+      width: 120,
+      render: (conclusion: number) => getConclusionTag(conclusion),
     },
     {
       title: '审批人',
-      dataIndex: 'approver',
-      key: 'approver',
+      dataIndex: 'approvalPerson',
+      key: 'approvalPerson',
       width: 120,
     },
     {
-      title: '部门',
-      dataIndex: 'department',
-      key: 'department',
+      title: '软研专家',
+      dataIndex: 'softwarePerson',
+      key: 'softwarePerson',
       width: 120,
+      render: (person: string) => person || <Tag color="default">未分配</Tag>,
+    },
+    {
+      title: '创建人',
+      dataIndex: 'createPerson',
+      key: 'createPerson',
+      width: 100,
     },
     {
       title: '创建时间',
@@ -183,15 +229,10 @@ const ApprovalList: React.FC = () => {
       width: 180,
     },
     {
-      title: '更新时间',
-      dataIndex: 'updateTime',
-      key: 'updateTime',
-      width: 180,
-    },
-    {
       title: '操作',
       key: 'action',
       width: 120,
+      fixed: 'right',
       render: (_, record: Approval) => (
         <Button
           type="primary"
@@ -220,7 +261,7 @@ const ApprovalList: React.FC = () => {
         <div style={{ marginBottom: 16 }}>
           <Space>
             <span style={{ color: '#666' }}>
-              注：仅显示已完成的审批单
+              显示所有状态的审批单（已创建、处置中、审批中、关闭）
             </span>
           </Space>
         </div>

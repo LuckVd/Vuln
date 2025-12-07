@@ -1,4 +1,4 @@
-import { Project, ProjectProblemSnapshot, ApiResponse, PaginatedData } from '@/types';
+import { Project, ProjectProblemSnapshot, ApiResponse, PaginatedData } from '../src/types';
 
 // Mock 项目数据
 let mockProjects: Project[] = [
@@ -7,7 +7,7 @@ let mockProjects: Project[] = [
     projectNumber: 'PRJ-001',
     planningVersion: 'v1.0.0',
     manager: '张经理',
-    status: '处置中',
+    status: 2,
     createTime: '2024-01-01 09:00:00',
     completionTime: undefined
   },
@@ -16,7 +16,7 @@ let mockProjects: Project[] = [
     projectNumber: 'PRJ-002',
     planningVersion: 'v2.1.0',
     manager: '李主管',
-    status: '处置中',
+    status: 2,
     createTime: '2024-01-05 14:30:00',
     completionTime: undefined
   },
@@ -25,7 +25,7 @@ let mockProjects: Project[] = [
     projectNumber: 'PRJ-003',
     planningVersion: 'v3.0.0',
     manager: '王总监',
-    status: '已创建',
+    status: 1, // 已创建
     createTime: '2024-01-10 10:15:00',
     completionTime: undefined
   },
@@ -34,7 +34,7 @@ let mockProjects: Project[] = [
     projectNumber: 'PRJ-004',
     planningVersion: 'v1.5.0',
     manager: '陈经理',
-    status: '关闭',
+    status: 4,
     createTime: '2023-12-15 16:45:00',
     completionTime: '2024-01-12 11:20:00'
   },
@@ -43,7 +43,7 @@ let mockProjects: Project[] = [
     projectNumber: 'PRJ-005',
     planningVersion: 'v2.5.0',
     manager: '赵主管',
-    status: '审批中',
+    status: 3,
     createTime: '2024-01-18 13:20:00',
     completionTime: undefined
   }
@@ -134,18 +134,12 @@ export default {
     const endIndex = startIndex + pageSize;
     const paginatedData = filteredProjects.slice(startIndex, endIndex);
 
-    const response: ApiResponse<PaginatedData<Project>> = {
+    res.json({
       code: 200,
       message: '获取项目列表成功',
-      data: {
-        list: paginatedData,
-        total: filteredProjects.length,
-        current: parseInt(current),
-        pageSize: parseInt(pageSize)
-      }
-    };
-
-    res.json(response);
+      data: paginatedData,
+      total: filteredProjects.length
+    });
   },
 
   // 获取项目详情
