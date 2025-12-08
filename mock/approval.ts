@@ -486,6 +486,36 @@ export default {
     });
   },
 
+  // 获取审批单据的问题统计
+  'GET /api/approval/:id/stats': (req: any, res: any) => {
+    console.log('🔄 [Mock] API调用: GET /api/approval/:id/stats');
+    const { id } = req.params;
+
+    const approval = mockApprovalDocuments.find(a => a.id === parseInt(id));
+
+    if (!approval) {
+      return res.json({
+        code: 404,
+        message: '审批单据不存在'
+      });
+    }
+
+    // 基于审批单的漏洞等级生成统计
+    const stats = {
+      total: approval.problemList.length,
+      critical: approval.vulnerabilityLevel === 1 ? approval.problemList.length : 0,
+      high: approval.vulnerabilityLevel === 2 ? approval.problemList.length : 0,
+      medium: approval.vulnerabilityLevel === 3 ? approval.problemList.length : 0,
+      low: approval.vulnerabilityLevel === 4 ? approval.problemList.length : 0,
+    };
+
+    res.json({
+      code: 200,
+      message: '获取问题统计成功',
+      data: stats
+    });
+  },
+
   // 批量分配审批单据
   'POST /api/approval/batch-assign': (req: any, res: any) => {
     console.log('🔄 [Mock] API调用: POST /api/approval/batch-assign');

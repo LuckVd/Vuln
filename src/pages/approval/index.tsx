@@ -5,8 +5,8 @@ import { Link } from 'umi';
 import type { ColumnsType } from 'antd/es/table';
 import { Approval } from '@/types';
 
-// 漏洞统计组件
-const VulnerabilityStats: React.FC<{ approvalId: string }> = ({ approvalId }) => {
+// 问题统计组件
+const ProblemStats: React.FC<{ approvalId: string }> = ({ approvalId }) => {
   const [stats, setStats] = useState<any>(null);
   const [loading, setLoading] = useState(false);
 
@@ -14,22 +14,30 @@ const VulnerabilityStats: React.FC<{ approvalId: string }> = ({ approvalId }) =>
     const fetchStats = async () => {
       setLoading(true);
       try {
-        const response = await fetch(`/api/vuln/approval/${approvalId}`);
+        const response = await fetch(`/api/approval/${approvalId}/stats`);
         const result = await response.json();
 
         if (result.code === 200) {
-          const vulns = result.data;
-          const newStats = {
-            total: vulns.length,
-            critical: vulns.filter((v: any) => v.riskLevel === 'critical').length,
-            high: vulns.filter((v: any) => v.riskLevel === 'high').length,
-            medium: vulns.filter((v: any) => v.riskLevel === 'medium').length,
-            low: vulns.filter((v: any) => v.riskLevel === 'low').length,
-          };
-          setStats(newStats);
+          setStats(result.data);
+        } else {
+          // 如果API不存在，返回默认统计
+          setStats({
+            total: 0,
+            critical: 0,
+            high: 0,
+            medium: 0,
+            low: 0,
+          });
         }
       } catch (error) {
-        console.error('获取漏洞统计失败:', error);
+        console.error('获取问题统计失败:', error);
+        setStats({
+          total: 0,
+          critical: 0,
+          high: 0,
+          medium: 0,
+          low: 0,
+        });
       } finally {
         setLoading(false);
       }
@@ -61,7 +69,7 @@ const VulnerabilityStats: React.FC<{ approvalId: string }> = ({ approvalId }) =>
   }
 
   return (
-    <Tooltip title={`总计 ${stats.total} 个漏洞`}>
+    <Tooltip title={`总计 ${stats.total} 个问题`}>
       <Space size="small" wrap>
         {riskTags}
       </Space>
