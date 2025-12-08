@@ -1,5 +1,4 @@
 import { ProblemDocument, ApiResponse, PaginatedData, ENUMS } from '../src/types';
-
 // Mock 问题单据数据 (使用新的数字类型枚举)
 export let mockProblemDocuments: ProblemDocument[] = [
   {
@@ -171,10 +170,8 @@ export let mockProblemDocuments: ProblemDocument[] = [
     approvalList: ['APP-2024-004']
   }
 ];
-
 // 用于生成新的问题单据ID
 let nextProblemId = 8;
-
 // 生成问题单据编号
 function generateProblemNumber(): string {
   const date = new Date();
@@ -183,44 +180,34 @@ function generateProblemNumber(): string {
   const sequence = String(mockProblemDocuments.length + 1).padStart(3, '0');
   return `PROB-${year}-${month}-${sequence}`;
 }
-
 // 生成漏洞编号
 function generateVulnerabilityNum(): string {
   const sequence = String(mockProblemDocuments.length + 1).padStart(3, '0');
   return `VULN-${sequence}`;
 }
-
 export default {
   // 获取问题单据列表
   'GET /api/problem': (req: any, res: any) => {
-    console.log('🔄 [Mock] API调用: GET /api/problem');
-
     const { current = 1, pageSize = 10, projectNumber, status, vulnerabilityLevel } = req.query;
-
     let filteredProblems = [...mockProblemDocuments];
-
     // 按项目编号过滤
     if (projectNumber) {
       filteredProblems = filteredProblems.filter(p => p.projectNumber === projectNumber);
     }
-
     // 按状态过滤
     if (status) {
       const statusNum = parseInt(status);
       filteredProblems = filteredProblems.filter(p => p.status === statusNum);
     }
-
     // 按漏洞等级过滤
     if (vulnerabilityLevel) {
       const levelNum = parseInt(vulnerabilityLevel);
       filteredProblems = filteredProblems.filter(p => p.vulnerabilityLevel === levelNum);
     }
-
     // 分页
     const startIndex = (current - 1) * pageSize;
     const endIndex = startIndex + pageSize;
     const paginatedData = filteredProblems.slice(startIndex, endIndex);
-
     const response: ApiResponse<PaginatedData<ProblemDocument>> = {
       code: 200,
       message: '获取问题单据列表成功',
@@ -231,55 +218,42 @@ export default {
         pageSize: parseInt(pageSize)
       }
     };
-
     res.json(response);
   },
-
   // 获取问题单据详情
   'GET /api/problem/:id': (req: any, res: any) => {
-    console.log('🔄 [Mock] API调用: GET /api/problem/:id');
     const { id } = req.params;
-
     const problem = mockProblemDocuments.find(p => p.id === parseInt(id));
-
     if (!problem) {
       return res.json({
         code: 404,
         message: '问题单据不存在'
       });
     }
-
     res.json({
       code: 200,
       message: '获取问题单据详情成功',
       data: problem
     });
   },
-
   // 根据问题编号获取问题单据详情
   'GET /api/problem/number/:problemNumber': (req: any, res: any) => {
-    console.log('🔄 [Mock] API调用: GET /api/problem/number/:problemNumber');
     const { problemNumber } = req.params;
-
     const problem = mockProblemDocuments.find(p => p.problemNumber === problemNumber);
-
     if (!problem) {
       return res.json({
         code: 404,
         message: '问题单据不存在'
       });
     }
-
     res.json({
       code: 200,
       message: '获取问题单据详情成功',
       data: problem
     });
   },
-
   // 创建问题单据
   'POST /api/problem': (req: any, res: any) => {
-    console.log('🔄 [Mock] API调用: POST /api/problem');
     const {
       projectNumber,
       vulnerabilityLevel,
@@ -295,7 +269,6 @@ export default {
       isSoftware = 0,
       responsiblePerson
     } = req.body;
-
     const newProblem: ProblemDocument = {
       id: nextProblemId++,
       problemNumber: generateProblemNumber(),
@@ -320,31 +293,24 @@ export default {
       responsiblePerson,
       approvalList: []
     };
-
     mockProblemDocuments.push(newProblem);
-
     res.json({
       code: 200,
       message: '创建问题单据成功',
       data: newProblem
     });
   },
-
   // 更新问题单据
   'PUT /api/problem/:id': (req: any, res: any) => {
-    console.log('🔄 [Mock] API调用: PUT /api/problem/:id');
     const { id } = req.params;
     const updateData = req.body;
-
     const index = mockProblemDocuments.findIndex(p => p.id === parseInt(id));
-
     if (index === -1) {
       return res.json({
         code: 404,
         message: '问题单据不存在'
       });
     }
-
     // 转换字符串枚举为数字
     if (updateData.vulnerabilityLevel) {
       updateData.vulnerabilityLevel = parseInt(updateData.vulnerabilityLevel);
@@ -355,47 +321,35 @@ export default {
     if (updateData.conclusion) {
       updateData.conclusion = parseInt(updateData.conclusion);
     }
-
     mockProblemDocuments[index] = { ...mockProblemDocuments[index], ...updateData };
-
     res.json({
       code: 200,
       message: '更新问题单据成功',
       data: mockProblemDocuments[index]
     });
   },
-
   // 删除问题单据
   'DELETE /api/problem/:id': (req: any, res: any) => {
-    console.log('🔄 [Mock] API调用: DELETE /api/problem/:id');
     const { id } = req.params;
-
     const index = mockProblemDocuments.findIndex(p => p.id === parseInt(id));
-
     if (index === -1) {
       return res.json({
         code: 404,
         message: '问题单据不存在'
       });
     }
-
     const deletedProblem = mockProblemDocuments.splice(index, 1)[0];
-
     res.json({
       code: 200,
       message: '删除问题单据成功',
       data: deletedProblem
     });
   },
-
   // 批量分配问题单据
   'POST /api/problem/batch-assign': (req: any, res: any) => {
-    console.log('🔄 [Mock] API调用: POST /api/problem/batch-assign');
     const { problemIds, responsiblePerson } = req.body;
-
     let successCount = 0;
     const failedIds: number[] = [];
-
     problemIds.forEach((id: number) => {
       const index = mockProblemDocuments.findIndex(p => p.id === id);
           if (index !== -1) {
@@ -405,7 +359,6 @@ export default {
         failedIds.push(id);
       }
     });
-
     res.json({
       code: 200,
       message: '批量分配完成',
@@ -416,13 +369,9 @@ export default {
       }
     });
   },
-
   // 获取未分配的问题单据
   'GET /api/problem/unassigned': (req: any, res: any) => {
-    console.log('🔄 [Mock] API调用: GET /api/problem/unassigned');
-
     const unassignedProblems = mockProblemDocuments.filter(p => !p.responsiblePerson || p.responsiblePerson === '');
-
     res.json({
       code: 200,
       message: '获取未分配问题单据成功',
@@ -430,26 +379,17 @@ export default {
       total: unassignedProblems.length
     });
   },
-
   'POST /api/problem/stage/batch': (req: any, res: any) => {
-    console.log('🔄 [Mock] API调用: POST /api/problem/stage/batch');
-    console.log('📦 批量暂存数据:', req.body);
-
     const { operations } = req.body;
-
     if (!operations || !Array.isArray(operations)) {
       return res.status(400).json({
         code: 400,
         message: '参数错误：operations必须是数组'
       });
     }
-
     try {
       // 模拟批量处理
       const processedCount = operations.length;
-
-      console.log(`✅ 成功处理 ${processedCount} 个问题单据的暂存操作`);
-
       res.json({
         code: 200,
         message: '批量暂存成功',

@@ -114,7 +114,16 @@ const ApprovalDetail: React.FC = () => {
 
   // 查看问题详情
   const viewProblem = (problemId: string) => {
-    history.push(`/problem/${problemId}`);
+    // 如果是问题编号格式，需要找到对应的数字ID
+    if (problemId.startsWith('PROB-')) {
+      const problem = problems.find(p => p.problemNumber === problemId);
+      if (problem) {
+        history.push(`/vuln/${problem.id}`);
+        return;
+      }
+    }
+    // 如果是数字ID，直接跳转
+    history.push(`/vuln/${problemId}`);
   };
 
   // 状态标签
@@ -579,20 +588,25 @@ const ApprovalDetail: React.FC = () => {
                 children: (
                   <div>
                     <div style={{ fontWeight: 'bold', marginBottom: '4px', fontSize: '14px' }}>
-                      {item.step}
+                      {item.approvalNode}
                     </div>
                     <div style={{ color: '#666', fontSize: '12px', marginBottom: '4px' }}>
-                      {item.operator}
+                      审批人：{item.approvalPerson}
                     </div>
                     <div style={{ color: '#666', fontSize: '12px', marginBottom: '4px' }}>
-                      {item.time}
+                      {item.approvalTime}
                     </div>
-                    <div style={{ color: '#1890ff', fontSize: '12px' }}>
-                      {item.operation}
+                    <div style={{
+                      fontSize: '12px',
+                      marginBottom: '4px',
+                      color: item.approvalResult === '通过' ? '#52c41a' :
+                             item.approvalResult === '驳回' ? '#ff4d4f' : '#fa8c16'
+                    }}>
+                      审批结果：{item.approvalResult}
                     </div>
-                    {item.comments && (
+                    {item.approvalComments && (
                       <div style={{ color: '#666', marginTop: '4px', fontSize: '12px' }}>
-                        {item.comments}
+                        审批意见：{item.approvalComments}
                       </div>
                     )}
                   </div>

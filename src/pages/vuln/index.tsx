@@ -1,13 +1,14 @@
 import React, { useState, useEffect } from 'react';
-import { Table, Input, Select, Space, Tag, Button, Card, message, Modal, Form, DatePicker, Input as AntInput, Divider, Popconfirm, Badge, Avatar } from 'antd';
+import { Table, Input, Select, Space, Tag, Button, Card, message, Modal, Form, DatePicker, Popconfirm, Badge, Avatar } from 'antd';
 import { SearchOutlined, ReloadOutlined, PlusOutlined, LinkOutlined, EditOutlined, SaveOutlined, CloseOutlined, WarningOutlined, CheckCircleOutlined } from '@ant-design/icons';
 import { Link, history } from 'umi';
 import type { ColumnsType } from 'antd/es/table';
 import { EditableProTable } from '@ant-design/pro-table';
 import { ProblemDocument, ENUMS, REVERSE_STRING_ENUMS } from '@/types';
+import { renderVulnerabilityLevelTag, renderStatusTag, renderConclusionTag } from '@/utils/tagRenderers';
 
 const { Option } = Select;
-const { TextArea } = AntInput;
+const { TextArea } = Input;
 
 const VulnerabilityList: React.FC = () => {
   const [problems, setProblems] = useState<ProblemDocument[]>([]);
@@ -592,19 +593,7 @@ const VulnerabilityList: React.FC = () => {
 
   return (
     <div className="vulnerability-list">
-      <style jsx>{`
-        .editable-row-even td {
-          background-color: #fafafa !important;
-        }
-        .editable-row-odd td {
-          background-color: #ffffff !important;
-        }
-        .editable-row-even:hover td,
-        .editable-row-odd:hover td {
-          background-color: #f0f8ff !important;
-        }
-      `}</style>
-      <Card title="漏洞管理" extra={
+        <Card title="漏洞管理" extra={
         <Space>
           <Button
             type="primary"
@@ -710,7 +699,7 @@ const VulnerabilityList: React.FC = () => {
             label="审批标题"
             rules={[{ required: true, message: '请输入审批标题' }]}
           >
-            <AntInput placeholder="请输入审批标题" />
+            <Input placeholder="请输入审批标题" />
           </Form.Item>
 
           <Form.Item
@@ -732,7 +721,7 @@ const VulnerabilityList: React.FC = () => {
             rules={[{ required: true, message: '请输入负责部门' }]}
             initialValue="开发部"
           >
-            <AntInput placeholder="请输入负责部门" />
+            <Input placeholder="请输入负责部门" />
           </Form.Item>
 
           <Form.Item
@@ -897,66 +886,23 @@ const VulnerabilityList: React.FC = () => {
             </div>
           </div>
         ]}
-        width="95%"
+        width="98%"
         style={{
-          top: 20,
-          maxWidth: '1800px',
+          top: 10,
+          maxWidth: 'none',
           borderRadius: '12px',
           overflow: 'hidden'
         }}
         bodyStyle={{
           padding: 0,
           background: '#fafafa',
-          height: '75vh',
-          maxHeight: '800px'
+          height: 'calc(100vh - 180px)',
+          minHeight: '700px'
         }}
       >
         <div style={{
-          background: 'linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%)',
-          padding: '20px 24px',
-          borderBottom: '1px solid #e8e8e8'
-        }}>
-          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-            <div style={{ display: 'flex', alignItems: 'center', gap: 16 }}>
-              <div style={{
-                width: '48px',
-                height: '48px',
-                borderRadius: '12px',
-                background: 'white',
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                boxShadow: '0 2px 8px rgba(0,0,0,0.1)'
-              }}>
-                <EditOutlined style={{ fontSize: '20px', color: '#1890ff' }} />
-              </div>
-              <div>
-                <div style={{ fontSize: '15px', fontWeight: 600, color: '#262626', marginBottom: '4px' }}>
-                  全屏批量编辑模式
-                </div>
-                <div style={{ fontSize: '13px', color: '#666' }}>
-                  💡 在表格中快速编辑所有漏洞信息，蓝色边框表示该字段已修改
-                </div>
-              </div>
-            </div>
-            <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
-              <div style={{
-                padding: '8px 16px',
-                background: 'white',
-                borderRadius: '20px',
-                fontSize: '12px',
-                color: '#666',
-                boxShadow: '0 2px 8px rgba(0,0,0,0.1)'
-              }}>
-                编辑状态: <span style={{ color: '#1890ff', fontWeight: 600 }}>实时</span>
-              </div>
-            </div>
-          </div>
-        </div>
-
-        <div style={{
-          padding: '20px',
-          height: 'calc(100% - 100px)',
+          padding: '16px',
+          height: 'calc(100vh - 180px)',
           overflow: 'auto'
         }}>
           <EditableProTable
@@ -990,26 +936,30 @@ const VulnerabilityList: React.FC = () => {
                 return true;
               },
               actionRender: (row, config, dom) => [dom.save, dom.cancel],
+              editableKeys: selectedProblemsForEdit.map(item => item.id),
+              toolbar: false,
             }}
+            recordCreatorProps={false}
             rowKey="id"
             pagination={{
-              pageSize: 20,
+              pageSize: 25,
               showSizeChanger: true,
-              pageSizeOptions: ['10', '20', '50', '100'],
-              showTotal: (total) => `共 ${total} 条记录`,
-              position: ['bottomCenter']
+              pageSizeOptions: ['20', '50', '100', '200'],
+              showTotal: (total, range) => `第 ${range[0]}-${range[1]} 条，共 ${total} 条`,
+              position: ['bottomCenter'],
+              size: 'small'
             }}
             search={false}
             dateFormatter="string"
             headerTitle="批量编辑漏洞列表"
             options={{
               density: false,
-              fullScreen: false,
+              fullScreen: true,
               reload: false,
               setting: false,
             }}
-            scroll={{ x: 1600, y: 'calc(75vh - 200px)' }}
-            size="middle"
+            scroll={{ x: 1600, y: 'calc(100vh - 380px)' }}
+            size="small"
             className="editable-table-enhanced"
             style={{
               background: 'white',
@@ -1018,6 +968,14 @@ const VulnerabilityList: React.FC = () => {
             }}
           />
         </div>
+        <style jsx>{`
+          :global(.editable-table-enhanced .ant-pro-table-list-toolbar-title) {
+            display: none !important;
+          }
+          :global(.editable-table-enhanced .ant-pro-table-list-toolbar-container) {
+            display: none !important;
+          }
+        `}</style>
       </Modal>
     </div>
   );

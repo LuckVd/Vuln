@@ -1,5 +1,4 @@
 import { ApprovalDocument, ApprovalRecord, ApiResponse, PaginatedData } from '../src/types';
-
 // Mock 审批单据数据 (使用新的数字类型枚举)
 let mockApprovalDocuments: ApprovalDocument[] = [
   {
@@ -159,7 +158,6 @@ let mockApprovalDocuments: ApprovalDocument[] = [
     createPerson: '王八'
   }
 ];
-
 // Mock 审批记录数据
 let mockApprovalRecords: ApprovalRecord[] = [
   {
@@ -217,11 +215,9 @@ let mockApprovalRecords: ApprovalRecord[] = [
     approvalTime: '2024-01-17 11:00:00'
   }
 ];
-
 // 用于生成新的审批单据ID
 let nextApprovalId = 13;
 let nextRecordId = 7;
-
 // 生成审批单据编号
 function generateApprovalNumber(): string {
   const date = new Date();
@@ -230,33 +226,25 @@ function generateApprovalNumber(): string {
   const sequence = String(mockApprovalDocuments.length + 1).padStart(3, '0');
   return `APP-${year}-${month}-${sequence}`;
 }
-
 export default {
   // 获取审批单据列表
   'GET /api/approval': (req: any, res: any) => {
-    console.log('🔄 [Mock] API调用: GET /api/approval');
-
     const { current = 1, pageSize = 10, status, vulnerabilityLevel } = req.query;
-
     let filteredApprovals = [...mockApprovalDocuments];
-
     // 按状态过滤
     if (status) {
       const statusNum = parseInt(status);
       filteredApprovals = filteredApprovals.filter(a => a.status === statusNum);
     }
-
     // 按漏洞等级过滤
     if (vulnerabilityLevel) {
       const levelNum = parseInt(vulnerabilityLevel);
       filteredApprovals = filteredApprovals.filter(a => a.vulnerabilityLevel === levelNum);
     }
-
     // 分页
     const startIndex = (current - 1) * pageSize;
     const endIndex = startIndex + pageSize;
     const paginatedData = filteredApprovals.slice(startIndex, endIndex);
-
     res.json({
       code: 200,
       message: '获取审批单据列表成功',
@@ -264,31 +252,45 @@ export default {
       total: filteredApprovals.length
     });
   },
-
   // 获取审批单据详情
   'GET /api/approval/:id': (req: any, res: any) => {
-    console.log('🔄 [Mock] API调用: GET /api/approval/:id');
     const { id } = req.params;
-
-    const approval = mockApprovalDocuments.find(a => a.id === parseInt(id));
-
+    // 先尝试按数字ID查找
+    let approval = mockApprovalDocuments.find(a => a.id === parseInt(id));
+    // 如果数字ID找不到，尝试按审批编号查找
+    if (!approval) {
+      approval = mockApprovalDocuments.find(a => a.approvalNumber === id);
+    }
     if (!approval) {
       return res.json({
         code: 404,
         message: '审批单据不存在'
       });
     }
-
     res.json({
       code: 200,
       message: '获取审批单据详情成功',
       data: approval
     });
   },
-
+  // 根据审批编号获取审批单据详情
+  'GET /api/approval/number/:approvalNumber': (req: any, res: any) => {
+    const { approvalNumber } = req.params;
+    const approval = mockApprovalDocuments.find(a => a.approvalNumber === approvalNumber);
+    if (!approval) {
+      return res.json({
+        code: 404,
+        message: '审批单据不存在'
+      });
+    }
+    res.json({
+      code: 200,
+      message: '获取审批单据详情成功',
+      data: approval
+    });
+  },
   // 创建审批单据
   'POST /api/approval/create': (req: any, res: any) => {
-    console.log('🔄 [Mock] API调用: POST /api/approval/create');
     const {
       problemNumbers,
       conclusion,
@@ -298,7 +300,6 @@ export default {
       softwarePerson,
       createPerson
     } = req.body;
-
     const newApproval: ApprovalDocument = {
       id: nextApprovalId++,
       approvalNumber: generateApprovalNumber(),
@@ -312,9 +313,7 @@ export default {
       createTime: new Date().toISOString().replace('T', ' ').substring(0, 19),
       createPerson
     };
-
     mockApprovalDocuments.push(newApproval);
-
     // 创建第一条审批记录
     const firstRecord: ApprovalRecord = {
       id: nextRecordId++,
@@ -325,31 +324,24 @@ export default {
       approvalComments: '等待安全专家审核',
       approvalTime: undefined
     };
-
     mockApprovalRecords.push(firstRecord);
-
     res.json({
       code: 200,
       message: '创建审批单据成功',
       data: newApproval
     });
   },
-
   // 更新审批单据
   'PUT /api/approval/:id': (req: any, res: any) => {
-    console.log('🔄 [Mock] API调用: PUT /api/approval/:id');
     const { id } = req.params;
     const updateData = req.body;
-
     const index = mockApprovalDocuments.findIndex(a => a.id === parseInt(id));
-
     if (index === -1) {
       return res.json({
         code: 404,
         message: '审批单据不存在'
       });
     }
-
     // 转换字符串枚举为数字
     if (updateData.conclusion) {
       updateData.conclusion = parseInt(updateData.conclusion);
@@ -360,31 +352,24 @@ export default {
     if (updateData.vulnerabilityLevel) {
       updateData.vulnerabilityLevel = parseInt(updateData.vulnerabilityLevel);
     }
-
     mockApprovalDocuments[index] = { ...mockApprovalDocuments[index], ...updateData };
-
     res.json({
       code: 200,
       message: '更新审批单据成功',
       data: mockApprovalDocuments[index]
     });
   },
-
   // 提交审批
   'POST /api/approval/:id/submit': (req: any, res: any) => {
-    console.log('🔄 [Mock] API调用: POST /api/approval/:id/submit');
     const { id } = req.params;
     const { approvalNode, approvalPerson, approvalResult, approvalComments } = req.body;
-
     const approvalIndex = mockApprovalDocuments.findIndex(a => a.id === parseInt(id));
-
     if (approvalIndex === -1) {
       return res.json({
         code: 404,
         message: '审批单据不存在'
       });
     }
-
     // 创建审批记录
     const newRecord: ApprovalRecord = {
       id: nextRecordId++,
@@ -395,9 +380,7 @@ export default {
       approvalComments,
       approvalTime: new Date().toISOString().replace('T', ' ').substring(0, 19)
     };
-
     mockApprovalRecords.push(newRecord);
-
     // 更新审批单状态
     if (approvalResult === '通过') {
       // 判断是否还有后续节点
@@ -406,7 +389,6 @@ export default {
         '技术主管审核': '安全总监审核',
         '安全总监审核': '关闭'
       };
-
       const nextNode = nextNodeMap[approvalNode];
       if (nextNode) {
         mockApprovalDocuments[approvalIndex].status = nextNode === '关闭' ? 4 : 3; // 4关闭, 3审批中
@@ -417,7 +399,6 @@ export default {
     } else if (approvalResult === '驳回') {
       mockApprovalDocuments[approvalIndex].status = 2; // 处置中
     }
-
     res.json({
       code: 200,
       message: '审批提交成功',
@@ -427,23 +408,22 @@ export default {
       }
     });
   },
-
   // 获取审批历史记录
   'GET /api/approval/:id/history': (req: any, res: any) => {
-    console.log('🔄 [Mock] API调用: GET /api/approval/:id/history');
     const { id } = req.params;
-
-    const approval = mockApprovalDocuments.find(a => a.id === parseInt(id));
-
+    // 先尝试按数字ID查找
+    let approval = mockApprovalDocuments.find(a => a.id === parseInt(id));
+    // 如果数字ID找不到，尝试按审批编号查找
+    if (!approval) {
+      approval = mockApprovalDocuments.find(a => a.approvalNumber === id);
+    }
     if (!approval) {
       return res.json({
         code: 404,
         message: '审批单据不存在'
       });
     }
-
     const records = mockApprovalRecords.filter(r => r.approvalNumber === approval.approvalNumber);
-
     res.json({
       code: 200,
       message: '获取审批历史成功',
@@ -451,55 +431,42 @@ export default {
       total: records.length
     });
   },
-
   // 从审批单中移除问题单据
   'POST /api/approval/:id/remove-problem': (req: any, res: any) => {
-    console.log('🔄 [Mock] API调用: POST /api/approval/:id/remove-problem');
     const { id } = req.params;
     const { problemNumber } = req.body;
-
     const approvalIndex = mockApprovalDocuments.findIndex(a => a.id === parseInt(id));
-
     if (approvalIndex === -1) {
       return res.json({
         code: 404,
         message: '审批单据不存在'
       });
     }
-
     const approval = mockApprovalDocuments[approvalIndex];
     const problemIndex = approval.problemList.indexOf(problemNumber);
-
     if (problemIndex === -1) {
       return res.json({
         code: 404,
         message: '问题单据不在该审批单中'
       });
     }
-
     approval.problemList.splice(problemIndex, 1);
-
     res.json({
       code: 200,
       message: '移除问题单据成功',
       data: approval
     });
   },
-
   // 获取审批单据的问题统计
   'GET /api/approval/:id/stats': (req: any, res: any) => {
-    console.log('🔄 [Mock] API调用: GET /api/approval/:id/stats');
     const { id } = req.params;
-
     const approval = mockApprovalDocuments.find(a => a.id === parseInt(id));
-
     if (!approval) {
       return res.json({
         code: 404,
         message: '审批单据不存在'
       });
     }
-
     // 基于审批单的漏洞等级生成统计
     const stats = {
       total: approval.problemList.length,
@@ -508,22 +475,17 @@ export default {
       medium: approval.vulnerabilityLevel === 3 ? approval.problemList.length : 0,
       low: approval.vulnerabilityLevel === 4 ? approval.problemList.length : 0,
     };
-
     res.json({
       code: 200,
       message: '获取问题统计成功',
       data: stats
     });
   },
-
   // 批量分配审批单据
   'POST /api/approval/batch-assign': (req: any, res: any) => {
-    console.log('🔄 [Mock] API调用: POST /api/approval/batch-assign');
     const { approvalIds, approvalPerson } = req.body;
-
     let successCount = 0;
     const failedIds: number[] = [];
-
     approvalIds.forEach((id: number) => {
       const index = mockApprovalDocuments.findIndex(a => a.id === id);
       if (index !== -1) {
@@ -533,7 +495,6 @@ export default {
         failedIds.push(id);
       }
     });
-
     res.json({
       code: 200,
       message: '批量分配完成',

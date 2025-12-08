@@ -70,11 +70,6 @@ export interface ProjectProblemSnapshot {
   snapshotContent: any; // 快照内容 (JSON)
 }
 
-// 审批单据数据类型 (为了向后兼容，使用 ApprovalDocument 的别名)
-export type Approval = ApprovalDocument;
-
-// 审批历史记录数据类型 (为了向后兼容，使用 ApprovalRecord 的别名)
-export type ApprovalHistory = ApprovalRecord;
 
 // API 响应的通用类型
 export interface ApiResponse<T = any> {
