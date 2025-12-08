@@ -9,7 +9,7 @@ import {
   SendOutlined, UserOutlined, CommentOutlined, CalendarOutlined
 } from '@ant-design/icons';
 import type { ColumnsType } from 'antd/es/table';
-import { Approval, ApprovalHistory, ProblemDocument } from '@/types';
+import { ApprovalDocument, ApprovalRecord as ApprovalHistory, ProblemDocument } from '@/types';
 
 const { Panel } = Collapse;
 const { Option } = Select;
@@ -17,8 +17,8 @@ const { TextArea } = Input;
 
 const ApprovalDetail: React.FC = () => {
   const { id } = useParams<{ id: string }>();
-  const [approval, setApproval] = useState<Approval | null>(null);
-  const [history, setHistory] = useState<ApprovalHistory[]>([]);
+  const [approval, setApproval] = useState<ApprovalDocument | null>(null);
+  const [approvalHistory, setApprovalHistory] = useState<ApprovalHistory[]>([]);
   const [problems, setProblems] = useState<ProblemDocument[]>([]);
   const [loading, setLoading] = useState(true);
 
@@ -37,7 +37,7 @@ const ApprovalDetail: React.FC = () => {
       const response = await fetch(`/api/approval/${approvalId}/history`);
       const result = await response.json();
       if (result.code === 200) {
-        setHistory(result.data);
+        setApprovalHistory(result.data);
       }
     } catch (error) {
       console.error('获取审批历史失败:', error);
@@ -84,9 +84,9 @@ const ApprovalDetail: React.FC = () => {
       }
 
       if (historyResult.code === 200) {
-        setHistory(historyResult.data);
+        setApprovalHistory(historyResult.data);
       } else {
-        setHistory([]);
+        setApprovalHistory([]);
       }
 
       setProblems(problemsList);
@@ -94,7 +94,7 @@ const ApprovalDetail: React.FC = () => {
     } catch (error) {
       console.error('获取审批单详情失败:', error);
       setApproval(null);
-      setHistory([]);
+      setApprovalHistory([]);
       setProblems([]);
     } finally {
       setLoading(false);
@@ -583,7 +583,7 @@ const ApprovalDetail: React.FC = () => {
           <Card title="审批流程" style={{ position: 'sticky', top: '16px' }}>
             <Timeline
               mode="left"
-              items={history.map((item) => ({
+              items={approvalHistory.map((item) => ({
                 dot: <ClockCircleOutlined style={{ color: '#1890ff' }} />,
                 children: (
                   <div>
