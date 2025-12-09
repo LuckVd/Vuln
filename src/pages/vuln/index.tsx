@@ -185,7 +185,7 @@ const VulnerabilityList: React.FC = () => {
     const initialEditData: Record<number, Partial<ProblemDocument>> = {};
     selectedProblemsForEdit.forEach(problem => {
       initialEditData[problem.id] = {
-        descriptionBrief: problem.descriptionBrief,
+        descriptionRief: problem.descriptionRief,
         vulnerabilityLevel: problem.vulnerabilityLevel,
         descriptionDetailed: problem.descriptionDetailed,
         componentName: problem.componentName,
@@ -210,7 +210,7 @@ const VulnerabilityList: React.FC = () => {
       const operations = problemDataList.map(problem => ({
         problemId: problem.id,
         stagedData: {
-          ...(problem.descriptionBrief && { descriptionBrief: problem.descriptionBrief }),
+          ...(problem.descriptionRief && { descriptionRief: problem.descriptionRief }),
           ...(problem.descriptionDetailed && { descriptionDetailed: problem.descriptionDetailed }),
           ...(problem.vulnerabilityLevel && { vulnerabilityLevel: problem.vulnerabilityLevel }),
           ...(problem.componentName && { componentName: problem.componentName }),
@@ -326,7 +326,7 @@ const VulnerabilityList: React.FC = () => {
     },
     {
       title: '漏洞名称',
-      dataIndex: 'descriptionBrief',
+      dataIndex: 'descriptionRief',
       width: 200,
       valueType: 'text',
       formItemProps: {
@@ -505,15 +505,15 @@ const VulnerabilityList: React.FC = () => {
     },
     {
       title: '漏洞名称',
-      dataIndex: 'descriptionBrief',
-      key: 'descriptionBrief',
+      dataIndex: 'descriptionRief',
+      key: 'descriptionRief',
       width: 200,
       render: (text: string, record: ProblemDocument) => (
         <div>
           <div>{text}</div>
-          {record.isStaged && record.stagedData?.descriptionBrief && record.stagedData.descriptionBrief !== text && (
+          {record.isStaged && record.stagedData?.descriptionRief && record.stagedData.descriptionRief !== text && (
             <div style={{ fontSize: '12px', color: '#999', fontStyle: 'italic' }}>
-              → {record.stagedData.descriptionBrief}
+              → {record.stagedData.descriptionRief}
             </div>
           )}
         </div>
@@ -922,7 +922,7 @@ const VulnerabilityList: React.FC = () => {
                   ...prev,
                   [problemId]: {
                     ...prev[problemId],
-                    descriptionBrief: row.descriptionBrief,
+                    descriptionRief: row.descriptionRief,
                     vulnerabilityLevel: row.vulnerabilityLevel,
                     descriptionDetailed: row.descriptionDetailed,
                     componentName: row.componentName,

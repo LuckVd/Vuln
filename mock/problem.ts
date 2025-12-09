@@ -14,7 +14,7 @@ export let mockProblemDocuments: ProblemDocument[] = [
     componentVersion: undefined,
     ip: '192.168.1.100',
     api: '/api/user/login',
-    descriptionBrief: '登录接口存在SQL注入漏洞',
+    descriptionRief: '登录接口存在SQL注入漏洞',
     descriptionDetailed: '登录接口对用户输入的参数未进行充分的过滤和验证，导致攻击者可以通过构造恶意SQL语句来获取或修改数据库中的敏感信息。该漏洞可能导致用户数据泄露、系统被控制等严重后果。',
     expectedDate: '2024-02-15',
     status: 2, // 处置中
@@ -38,7 +38,7 @@ export let mockProblemDocuments: ProblemDocument[] = [
     componentVersion: '2.14.1',
     ip: undefined,
     api: undefined,
-    descriptionBrief: 'Log4j组件存在远程代码执行漏洞',
+    descriptionRief: 'Log4j组件存在远程代码执行漏洞',
     descriptionDetailed: '项目使用的Log4j版本存在CVE-2021-44228漏洞，攻击者可以通过构造恶意的JNDI查询字符串来触发远程代码执行，可能导致服务器被完全控制。',
     expectedDate: '2024-02-10',
     status: 1, // 已创建
@@ -62,7 +62,7 @@ export let mockProblemDocuments: ProblemDocument[] = [
     componentVersion: undefined,
     ip: '192.168.1.200',
     api: '/api/comment',
-    descriptionBrief: '评论功能存在存储型XSS漏洞',
+    descriptionRief: '评论功能存在存储型XSS漏洞',
     descriptionDetailed: '用户评论内容未进行HTML编码和过滤，攻击者可以在评论中插入恶意脚本，当其他用户查看评论时，恶意脚本会在用户浏览器中执行，可能导致用户会话劫持、数据窃取等。',
     expectedDate: '2024-02-20',
     status: 3, // 审批中
@@ -86,7 +86,7 @@ export let mockProblemDocuments: ProblemDocument[] = [
     componentVersion: undefined,
     ip: '192.168.1.201',
     api: '/api/debug/info',
-    descriptionBrief: '调试接口泄露敏感信息',
+    descriptionRief: '调试接口泄露敏感信息',
     descriptionDetailed: '调试接口在生产环境中仍然开放，返回了系统内部信息包括数据库连接字符串、API密钥等敏感信息，可能被攻击者利用进行进一步攻击。',
     expectedDate: '2024-02-25',
     status: 4, // 关闭
@@ -110,7 +110,7 @@ export let mockProblemDocuments: ProblemDocument[] = [
     componentVersion: '5.3.15',
     ip: undefined,
     api: undefined,
-    descriptionBrief: 'Spring框架存在SpEL表达式注入漏洞',
+    descriptionRief: 'Spring框架存在SpEL表达式注入漏洞',
     descriptionDetailed: '项目使用的Spring Framework版本存在CVE-2022-22965漏洞，攻击者可以通过构造恶意的SpEL表达式来执行任意代码，可能导致服务器被完全控制。',
     expectedDate: '2024-02-08',
     status: 2, // 处置中
@@ -134,7 +134,7 @@ export let mockProblemDocuments: ProblemDocument[] = [
     componentVersion: undefined,
     ip: '192.168.1.300',
     api: '/api/admin/settings',
-    descriptionBrief: '管理员设置接口存在CSRF漏洞',
+    descriptionRief: '管理员设置接口存在CSRF漏洞',
     descriptionDetailed: '管理员设置接口未实施CSRF防护机制，攻击者可以诱导已登录的管理员访问恶意网站，从而在管理员不知情的情况下执行恶意操作，如修改系统设置、创建管理员账户等。',
     expectedDate: '2024-02-18',
     status: 1, // 已创建
@@ -158,7 +158,7 @@ export let mockProblemDocuments: ProblemDocument[] = [
     componentVersion: undefined,
     ip: '192.168.1.400',
     api: '/api/admin/delete-user',
-    descriptionBrief: '用户删除接口存在权限绕过漏洞',
+    descriptionRief: '用户删除接口存在权限绕过漏洞',
     descriptionDetailed: '用户删除接口的权限验证逻辑存在缺陷，普通用户可以通过构造特殊请求来删除其他用户的账户，包括管理员账户，可能导致系统权限混乱和数据丢失。',
     expectedDate: '2024-02-05',
     status: 3, // 审批中
@@ -262,7 +262,7 @@ export default {
       componentVersion,
       ip,
       api,
-      descriptionBrief,
+      descriptionRief,
       descriptionDetailed,
       expectedDate,
       isRedLine = 0,
@@ -282,7 +282,7 @@ export default {
       componentVersion,
       ip,
       api,
-      descriptionBrief,
+      descriptionRief,
       descriptionDetailed,
       expectedDate,
       status: 1, // 已创建

@@ -63,7 +63,7 @@ const VulnerabilityDetail: React.FC = () => {
     // 填充表单数据
     const formData = {
       problemNumber: problem.problemNumber,
-      descriptionBrief: problem.descriptionBrief,
+      descriptionRief: problem.descriptionRief,
       vulnerabilityLevel: problem.vulnerabilityLevel,
       scanItem: problem.scanItem,
       projectNumber: problem.projectNumber,
@@ -362,7 +362,7 @@ const VulnerabilityDetail: React.FC = () => {
       <Card title="漏洞简要描述" style={{ marginBottom: 16 }}>
         <div>
           <p style={{ lineHeight: 1.8, fontSize: 14 }}>
-            {problem.descriptionBrief || '暂无简要描述'}
+            {problem.descriptionRief || '暂无简要描述'}
           </p>
         </div>
       </Card>
@@ -571,7 +571,7 @@ const VulnerabilityDetail: React.FC = () => {
           </Form.Item>
 
           <Form.Item
-            name="descriptionBrief"
+            name="descriptionRief"
             label="简要描述"
             rules={[{ required: true, message: '请输入简要描述' }]}
           >
@@ -692,7 +692,7 @@ const VulnerabilityDetail: React.FC = () => {
             name="title"
             label="审批标题"
             rules={[{ required: true, message: '请输入审批标题' }]}
-            initialValue={`${problem?.descriptionBrief || '问题单据'} - 修复审批`}
+            initialValue={`${problem?.descriptionRief || '问题单据'} - 修复审批`}
           >
             <Input placeholder="请输入审批标题" />
           </Form.Item>

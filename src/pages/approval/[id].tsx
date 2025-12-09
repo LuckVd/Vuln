@@ -320,8 +320,8 @@ const ApprovalDetail: React.FC = () => {
     },
     {
       title: '简要描述',
-      dataIndex: 'descriptionBrief',
-      key: 'descriptionBrief',
+      dataIndex: 'descriptionRief',
+      key: 'descriptionRief',
       width: 200,
     },
     {
@@ -346,7 +346,7 @@ const ApprovalDetail: React.FC = () => {
           type="link"
           danger
           size="small"
-          onClick={() => confirmRemoveProblem(record.problemNumber, record.descriptionBrief)}
+          onClick={() => confirmRemoveProblem(record.problemNumber, record.descriptionRief)}
         >
           移除
         </Button>

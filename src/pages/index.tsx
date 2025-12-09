@@ -7,7 +7,8 @@ import {
   CheckCircleOutlined,
   ClockCircleOutlined,
   ExclamationCircleOutlined,
-  ArrowRightOutlined
+  ArrowRightOutlined,
+  ProjectOutlined
 } from '@ant-design/icons';
 
 const HomePage: React.FC = () => {
@@ -18,6 +19,8 @@ const HomePage: React.FC = () => {
     processingVulns: 23,
     completedApprovals: 89,
     pendingApprovals: 12,
+    totalProjects: 5,
+    activeProjects: 3,
   };
 
   const quickLinks = [
@@ -34,6 +37,13 @@ const HomePage: React.FC = () => {
       icon: <AuditOutlined style={{ fontSize: '24px', color: '#52c41a' }} />,
       link: '/approval',
       color: '#52c41a'
+    },
+    {
+      title: '项目管理',
+      description: '管理项目信息和问题快照',
+      icon: <ProjectOutlined style={{ fontSize: '24px', color: '#722ed1' }} />,
+      link: '/project',
+      color: '#722ed1'
     }
   ];
 
@@ -41,7 +51,7 @@ const HomePage: React.FC = () => {
     <div className="home-page">
       {/* 统计概览 */}
       <Row gutter={[16, 16]} style={{ marginBottom: 24 }}>
-        <Col xs={24} sm={12} md={8} lg={6}>
+        <Col xs={24} sm={12} md={8} lg={4}>
           <Card>
             <Statistic
               title="总漏洞数"
@@ -51,7 +61,7 @@ const HomePage: React.FC = () => {
             />
           </Card>
         </Col>
-        <Col xs={24} sm={12} md={8} lg={6}>
+        <Col xs={24} sm={12} md={8} lg={4}>
           <Card>
             <Statistic
               title="严重漏洞"
@@ -61,7 +71,7 @@ const HomePage: React.FC = () => {
             />
           </Card>
         </Col>
-        <Col xs={24} sm={12} md={8} lg={6}>
+        <Col xs={24} sm={12} md={8} lg={4}>
           <Card>
             <Statistic
               title="处理中"
@@ -71,13 +81,33 @@ const HomePage: React.FC = () => {
             />
           </Card>
         </Col>
-        <Col xs={24} sm={12} md={8} lg={6}>
+        <Col xs={24} sm={12} md={8} lg={4}>
           <Card>
             <Statistic
               title="已完成审批"
               value={stats.completedApprovals}
               prefix={<CheckCircleOutlined />}
               valueStyle={{ color: '#52c41a' }}
+            />
+          </Card>
+        </Col>
+        <Col xs={24} sm={12} md={8} lg={4}>
+          <Card>
+            <Statistic
+              title="总项目数"
+              value={stats.totalProjects}
+              prefix={<ProjectOutlined />}
+              valueStyle={{ color: '#722ed1' }}
+            />
+          </Card>
+        </Col>
+        <Col xs={24} sm={12} md={8} lg={4}>
+          <Card>
+            <Statistic
+              title="活跃项目"
+              value={stats.activeProjects}
+              prefix={<ProjectOutlined />}
+              valueStyle={{ color: '#13c2c2' }}
             />
           </Card>
         </Col>
@@ -133,6 +163,8 @@ const HomePage: React.FC = () => {
                 <li>漏洞信息管理和查询</li>
                 <li>漏洞详情查看和跟踪</li>
                 <li>审批流程管理</li>
+                <li>项目信息管理</li>
+                <li>问题快照创建和管理</li>
                 <li>多维度统计分析</li>
                 <li>权限控制和操作日志</li>
               </ul>
@@ -140,7 +172,7 @@ const HomePage: React.FC = () => {
               <h4>使用说明</h4>
               <p style={{ lineHeight: 1.8, color: '#666' }}>
                 通过左侧导航菜单可以快速访问各个功能模块。点击漏洞编号可以查看详细信息，
-                点击状态可以查看相关的审批单信息。
+                点击状态可以查看相关的审批单信息。项目管理模块提供项目信息管理和问题快照功能。
               </p>
             </div>
           </Card>

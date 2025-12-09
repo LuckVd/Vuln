@@ -9,6 +9,8 @@ export default {
         { path: '/vuln/:id', component: './vuln/[id]' },
         { path: '/approval', component: './approval/index' },
         { path: '/approval/:id', component: './approval/[id]' },
+        { path: '/project', component: './project/index' },
+        { path: '/project/:id', component: './project/[id]' },
       ],
     },
   ],

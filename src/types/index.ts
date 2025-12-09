@@ -1,73 +1,73 @@
 // 问题单据数据类型 (对应 problem_document 表)
 export interface ProblemDocument {
   id: number;
-  problemNumber: string; // 问题单据编号
-  projectNumber: string; // 关联项目编号
-  vulnerabilityLevel: 1 | 2 | 3 | 4; // 漏洞等级(1严重,2高危,3中危,4低危)
-  vulnerabilityNum: string; // 漏洞编号
-  isRedLine: 0 | 1; // 是否红线(0否,1是)
-  isSoftware?: 0 | 1; // 是否软件平台(0否,1是)
-  scanItem: string; // 扫描项
-  componentName?: string; // 开源组件名称
-  componentVersion?: string; // 开源组件版本
+  problemNumber: string; // 对应 problem_number
+  projectNumber: string; // 对应 project_number
+  vulnerabilityLevel: 1 | 2 | 3 | 4; // 对应 vulnerability_level
+  vulnerabilityNum: string; // 对应 vulnerability_num
+  isRedLine: 0 | 1; // 对应 is_red_line
+  isSoftware?: 0 | 1; // 对应 is_software
+  scanItem: string; // 对应 scan_item
+  componentName?: string; // 对应 component_name
+  componentVersion?: string; // 对应 component_version
   ip?: string; // IP地址
   api?: string; // API
-  descriptionBrief: string; // 简要描述 (注意：数据库中是description_rief)
-  descriptionDetailed: string; // 详细描述
-  expectedDate: string; // 期望解决日期
-  status: 1 | 2 | 3 | 4; // 当前节点状态(1已创建,2处置中,3审批中,4关闭)
-  conclusion?: 1 | 2 | 3 | 4 | 5 | 6; // 结论(1误报,2不受影响,3版本升级修复,4补丁修复,5有修复方案接受风险,6无修复方案接受风险)
-  fixAddress?: string; // 修复地址
-  fixVersion?: string; // 修复版本
-  descriptionDisposal?: string; // 处置描述
-  responsiblePerson: string; // 责任人
-  approvalList?: string[]; // 关联审批单据
+  descriptionRief: string; // 对应 description_rief
+  descriptionDetailed: string; // 对应 description_detailed
+  expectedDate: string; // 对应 expected_date
+  status: 1 | 2 | 3 | 4; // 对应 status
+  conclusion?: 1 | 2 | 3 | 4 | 5 | 6; // 对应 conclusion
+  fixAddress?: string; // 对应 fix_address
+  fixVersion?: string; // 对应 fix_version
+  descriptionDisposal?: string; // 对应 description_disposal
+  responsiblePerson: string; // 对应 responsible_person
+  approvalList?: string[]; // 对应 approval_list
 }
 
 // 审批单据数据类型 (对应 approval_document 表)
 export interface ApprovalDocument {
   id: number;
-  approvalNumber: string; // 审批单据编号
-  problemList: string[]; // 关联问题单据
-  conclusion: 1 | 2 | 3 | 4 | 5 | 6; // 结论(1误报,2不受影响,3版本升级修复,4补丁修复,5有修复方案接受风险,6无修复方案接受风险)
-  status: 1 | 2 | 3 | 4; // 当前节点状态(1已创建,2处置中,3审批中,4关闭)
-  vulnerabilityLevel: 1 | 2 | 3 | 4; // 漏洞等级(1严重,2高危,3中危,4低危)
-  descriptionDisposal: string; // 处置描述
-  approvalPerson: string; // 当前审批人
-  softwarePerson?: string; // 软研安全专家
-  createTime: string; // 创建时间
-  createPerson: string; // 创建者
+  approvalNumber: string; // 对应 approval_number
+  problemList: string[]; // 对应 problem_list
+  conclusion: 1 | 2 | 3 | 4 | 5 | 6; // 对应 conclusion
+  status: 1 | 2 | 3 | 4; // 对应 status
+  vulnerabilityLevel: 1 | 2 | 3 | 4; // 对应 vulnerability_level
+  descriptionDisposal: string; // 对应 description_disposal
+  approvalPerson: string; // 对应 approval_person
+  softwarePerson?: string; // 对应 software_person
+  createTime: string; // 对应 create_time
+  createPerson: string; // 对应 create_person
 }
 
 // 审批记录数据类型 (对应 approval_record 表)
 export interface ApprovalRecord {
   id: number;
-  approvalNumber: string; // 审批单据编号
-  approvalNode: string; // 当前审批节点
-  approvalPerson: string; // 当前审批人
-  approvalResult: string; // 审批结果
-  approvalComments: string; // 审批意见
-  approvalTime?: string; // 审批时间
+  approvalNumber: string; // 对应 approval_number
+  approvalNode: string; // 对应 approval_node
+  approvalPerson: string; // 对应 approval_person
+  approvalResult: string; // 对应 approval_result
+  approvalComments: string; // 对应 approval_comments
+  approvalTime?: string; // 对应 approval_time
 }
 
 // 项目数据类型 (对应 projects 表)
 export interface Project {
   id: number;
-  projectNumber: string; // 项目编号
-  planningVersion?: string; // 规划版本
+  projectNumber: string; // 对应 project_number
+  planningVersion?: string; // 对应 planning_version
   manager: string; // 项目经理
-  status: 1 | 2 | 3 | 4; // 状态(1已创建,2处置中,3审批中,4关闭)
-  createTime: string; // 创建时间
-  completionTime?: string; // 结项时间
+  status: 1 | 2 | 3 | 4; // 对应 status(1已创建,2处置中,3审批中,4关闭)
+  createTime: string; // 对应 create_time
+  completionTime?: string; // 对应 completion_time
 }
 
 // 项目问题单快照数据类型 (对应 project_problem_snapshot 表)
 export interface ProjectProblemSnapshot {
   id: number;
-  projectNumber: string; // 关联项目编号
-  tr6Number: string; // TR6单据号
-  createTime: string; // 创建时间
-  snapshotContent: any; // 快照内容 (JSON)
+  projectNumber: string; // 对应 project_number
+  tr6Number: string; // 对应 tr6_number
+  createTime: string; // 对应 create_time
+  snapshotContent: any; // 对应 snapshot_content (JSON)
 }
 
 

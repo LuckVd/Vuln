@@ -8,7 +8,8 @@ import {
   EyeOutlined,
   ArrowLeftOutlined,
   ArrowRightOutlined,
-  CheckCircleOutlined
+  CheckCircleOutlined,
+  ProjectOutlined
 } from '@ant-design/icons';
 import './index.less';
 
@@ -29,6 +30,11 @@ const BasicLayout: React.FC = () => {
       label: <Link to="/approval">审批管理</Link>,
     },
     {
+      key: '/project',
+      icon: <ProjectOutlined />,
+      label: <Link to="/project">项目管理</Link>,
+    },
+    {
       key: '/',
       icon: <DashboardOutlined />,
       label: <Link to="/">首页</Link>,
@@ -41,6 +47,9 @@ const BasicLayout: React.FC = () => {
     }
     if (location.pathname.startsWith('/approval')) {
       return '/approval';
+    }
+    if (location.pathname.startsWith('/project')) {
+      return '/project';
     }
     return '/';
   };

@@ -7,7 +7,7 @@ let mockProjects: Project[] = [
     projectNumber: 'PRJ-001',
     planningVersion: 'v1.0.0',
     manager: '张经理',
-    status: 2,
+    status: 2, // 处置中
     createTime: '2024-01-01 09:00:00',
     completionTime: undefined
   },
@@ -16,7 +16,7 @@ let mockProjects: Project[] = [
     projectNumber: 'PRJ-002',
     planningVersion: 'v2.1.0',
     manager: '李主管',
-    status: 2,
+    status: 2, // 处置中
     createTime: '2024-01-05 14:30:00',
     completionTime: undefined
   },
@@ -43,7 +43,7 @@ let mockProjects: Project[] = [
     projectNumber: 'PRJ-005',
     planningVersion: 'v2.5.0',
     manager: '赵主管',
-    status: 3,
+    status: 3, // 审批中
     createTime: '2024-01-18 13:20:00',
     completionTime: undefined
   }
@@ -113,7 +113,6 @@ function generateProjectNumber(): string {
 export default {
   // 获取项目列表
   'GET /api/project': (req: any, res: any) => {
-    console.log('🔄 [Mock] API调用: GET /api/project');
 
     const { current = 1, pageSize = 10, status, manager } = req.query;
 
@@ -144,7 +143,6 @@ export default {
 
   // 获取项目详情
   'GET /api/project/:id': (req: any, res: any) => {
-    console.log('🔄 [Mock] API调用: GET /api/project/:id');
     const { id } = req.params;
 
     const project = mockProjects.find(p => p.id === parseInt(id));
@@ -165,11 +163,10 @@ export default {
 
   // 创建项目
   'POST /api/project': (req: any, res: any) => {
-    console.log('🔄 [Mock] API调用: POST /api/project');
     const {
       planningVersion,
       manager,
-      status = '已创建'
+      status = 1
     } = req.body;
 
     const newProject: Project = {
@@ -193,7 +190,6 @@ export default {
 
   // 更新项目
   'PUT /api/project/:id': (req: any, res: any) => {
-    console.log('🔄 [Mock] API调用: PUT /api/project/:id');
     const { id } = req.params;
     const updateData = req.body;
 
@@ -217,7 +213,6 @@ export default {
 
   // 删除项目
   'DELETE /api/project/:id': (req: any, res: any) => {
-    console.log('🔄 [Mock] API调用: DELETE /api/project/:id');
     const { id } = req.params;
 
     const index = mockProjects.findIndex(p => p.id === parseInt(id));
@@ -240,7 +235,6 @@ export default {
 
   // 项目结项
   'POST /api/project/:id/complete': (req: any, res: any) => {
-    console.log('🔄 [Mock] API调用: POST /api/project/:id/complete');
     const { id } = req.params;
 
     const index = mockProjects.findIndex(p => p.id === parseInt(id));
@@ -252,7 +246,7 @@ export default {
       });
     }
 
-    mockProjects[index].status = '关闭';
+    mockProjects[index].status = 4; // 关闭
     mockProjects[index].completionTime = new Date().toISOString().replace('T', ' ').substring(0, 19);
 
     res.json({
@@ -264,18 +258,17 @@ export default {
 
   // 获取项目统计信息
   'GET /api/project/statistics': (req: any, res: any) => {
-    console.log('🔄 [Mock] API调用: GET /api/project/statistics');
 
     const statistics = {
       totalProjects: mockProjects.length,
-      activeProjects: mockProjects.filter(p => p.status === '处置中' || p.status === '审批中').length,
-      completedProjects: mockProjects.filter(p => p.status === '关闭').length,
-      createdProjects: mockProjects.filter(p => p.status === '已创建').length,
+      activeProjects: mockProjects.filter(p => p.status === 2 || p.status === 3).length,
+      completedProjects: mockProjects.filter(p => p.status === 4).length,
+      createdProjects: mockProjects.filter(p => p.status === 1).length,
       projectsByStatus: {
-        '已创建': mockProjects.filter(p => p.status === '已创建').length,
-        '处置中': mockProjects.filter(p => p.status === '处置中').length,
-        '审批中': mockProjects.filter(p => p.status === '审批中').length,
-        '关闭': mockProjects.filter(p => p.status === '关闭').length
+        created: mockProjects.filter(p => p.status === 1).length,
+        processing: mockProjects.filter(p => p.status === 2).length,
+        approving: mockProjects.filter(p => p.status === 3).length,
+        closed: mockProjects.filter(p => p.status === 4).length
       }
     };
 
@@ -288,7 +281,6 @@ export default {
 
   // 获取项目问题单快照列表
   'GET /api/project/:id/snapshots': (req: any, res: any) => {
-    console.log('🔄 [Mock] API调用: GET /api/project/:id/snapshots');
     const { id } = req.params;
 
     const project = mockProjects.find(p => p.id === parseInt(id));
@@ -312,7 +304,6 @@ export default {
 
   // 创建项目问题单快照
   'POST /api/project/:id/snapshot': (req: any, res: any) => {
-    console.log('🔄 [Mock] API调用: POST /api/project/:id/snapshot');
     const { id } = req.params;
     const { tr6Number, snapshotContent } = req.body;
 
@@ -344,7 +335,6 @@ export default {
 
   // 删除项目问题单快照
   'DELETE /api/project/snapshot/:snapshotId': (req: any, res: any) => {
-    console.log('🔄 [Mock] API调用: DELETE /api/project/snapshot/:snapshotId');
     const { snapshotId } = req.params;
 
     const index = mockProjectSnapshots.findIndex(s => s.id === parseInt(snapshotId));
@@ -367,7 +357,6 @@ export default {
 
   // 批量分配项目经理
   'POST /api/project/batch-assign': (req: any, res: any) => {
-    console.log('🔄 [Mock] API调用: POST /api/project/batch-assign');
     const { projectIds, manager } = req.body;
 
     let successCount = 0;
