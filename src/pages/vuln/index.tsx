@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Table, Input, Select, Space, Tag, Button, Card, message, Modal, Form, DatePicker, Popconfirm, Badge, Avatar } from 'antd';
+import { Table, Input, Select, Space, Tag, Button, Card, message, Modal, Form, DatePicker, Popconfirm, Badge, Avatar, Divider, Row, Col } from 'antd';
 import { SearchOutlined, ReloadOutlined, PlusOutlined, LinkOutlined, EditOutlined, SaveOutlined, CloseOutlined, WarningOutlined, CheckCircleOutlined } from '@ant-design/icons';
 import { Link, history } from 'umi';
 import type { ColumnsType } from 'antd/es/table';
@@ -23,6 +23,7 @@ const VulnerabilityList: React.FC = () => {
   const [createModalVisible, setCreateModalVisible] = useState(false);
   const [createLoading, setCreateLoading] = useState(false);
   const [createForm] = Form.useForm();
+  const [editingProblemsForApproval, setEditingProblemsForApproval] = useState<ProblemDocument[]>([]);
 
   // 暂存相关状态
   const [batchEditModalVisible, setBatchEditModalVisible] = useState(false);
@@ -106,6 +107,8 @@ const VulnerabilityList: React.FC = () => {
     const selectedProblems = problems.filter(p => selectedRowKeys.includes(p.id));
     const hasApprovalList = selectedProblems.some(p => p.approvalList && p.approvalList.length > 0);
     const projects = [...new Set(selectedProblems.map(p => p.projectNumber))];
+    const scanItems = [...new Set(selectedProblems.map(p => p.scanItem))];
+    const vulnerabilityLevels = [...new Set(selectedProblems.map(p => p.vulnerabilityLevel))];
 
     if (hasApprovalList) {
       message.error('选择的漏洞中包含已关联审批单的漏洞，请取消选择');
@@ -117,6 +120,30 @@ const VulnerabilityList: React.FC = () => {
       return;
     }
 
+    if (scanItems.length > 1) {
+      message.error('只能选择相同扫描项的漏洞创建审批单');
+      return;
+    }
+
+    if (vulnerabilityLevels.length > 1) {
+      message.error('只能选择相同危险等级的漏洞创建审批单');
+      return;
+    }
+
+    // 设置编辑的漏洞数据
+    setEditingProblemsForApproval(selectedProblems);
+
+    // 设置表单默认值
+    createForm.setFieldsValue({
+      scan_item: scanItems[0],
+      is_software: selectedProblems[0]?.isSoftware || 0,
+      vulnerability_level: vulnerabilityLevels[0],
+      approval_person: '',
+      software_person: '',
+      conclusion: 7,
+      description_disposal: ''
+    });
+
     setCreateModalVisible(true);
   };
 
@@ -127,21 +154,46 @@ const VulnerabilityList: React.FC = () => {
       return;
     }
 
+    // 验证每个问题项的必填字段
+    for (const problem of editingProblemsForApproval) {
+      if (!problem.fixAddress?.trim()) {
+        message.error(`请填写问题 ${problem.problemNumber} 的修复地址`);
+        return;
+      }
+      if (!problem.fixVersion?.trim()) {
+        message.error(`请填写问题 ${problem.problemNumber} 的修复版本`);
+        return;
+      }
+      if (!problem.descriptionDisposal?.trim()) {
+        message.error(`请填写问题 ${problem.problemNumber} 的处置说明`);
+        return;
+      }
+    }
+
     setCreateLoading(true);
     try {
+      const submitData = {
+        scan_item: values.scan_item,
+        is_software: values.is_software,
+        problem_list: editingProblemsForApproval.map(problem => ({
+          problem_number: problem.problemNumber,
+          fix_address: problem.fixAddress || '',
+          fix_version: problem.fixVersion || '',
+          description_disposal: problem.descriptionDisposal || ''
+        })),
+        conclusion: values.conclusion,
+        vulnerability_level: values.vulnerability_level,
+        description_disposal: values.description_disposal,
+        approval_person: values.approval_person,
+        software_person: values.software_person
+      };
+
       const response = await fetch('/api/approval/create', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify({
-          title: values.title,
-          priority: values.priority,
-          department: values.department,
-          comments: values.comments,
-          dueDate: values.dueDate?.format('YYYY-MM-DD HH:mm:ss'),
-          problemIds: selectedRowKeys,
-        }),
+        body: JSON.stringify(submitData),
       });
 
       const result = await response.json();
@@ -151,6 +203,7 @@ const VulnerabilityList: React.FC = () => {
         setCreateModalVisible(false);
         createForm.resetFields();
         setSelectedRowKeys([]);
+        setEditingProblemsForApproval([]);
         // 刷新列表
         fetchProblems(current, pageSize);
       } else {
@@ -168,6 +221,18 @@ const VulnerabilityList: React.FC = () => {
   const cancelCreateApproval = () => {
     setCreateModalVisible(false);
     createForm.resetFields();
+    setEditingProblemsForApproval([]);
+  };
+
+  // 更新问题项数据
+  const updateProblemForApproval = (problemId: number, field: string, value: string) => {
+    setEditingProblemsForApproval(prev =>
+      prev.map(problem =>
+        problem.id === problemId
+          ? { ...problem, [field]: value }
+          : problem
+      )
+    );
   };
 
   // 批量编辑漏洞
@@ -682,86 +747,270 @@ const VulnerabilityList: React.FC = () => {
 
       {/* 创建审批单模态框 */}
       <Modal
-        title="创建审批单"
+        title={
+          <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+            <div style={{
+              width: '40px',
+              height: '40px',
+              borderRadius: '8px',
+              background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              color: 'white',
+              fontSize: '18px',
+              fontWeight: 'bold'
+            }}>
+              {editingProblemsForApproval.length}
+            </div>
+            <div>
+              <div style={{ fontSize: '16px', fontWeight: 600, color: '#262626' }}>
+                创建审批单
+              </div>
+              <div style={{ fontSize: '12px', color: '#8c8c8c' }}>
+                {editingProblemsForApproval.length} 个问题将创建为审批单 · 批量编辑修复信息
+              </div>
+            </div>
+          </div>
+        }
         open={createModalVisible}
         onCancel={cancelCreateApproval}
         footer={null}
-        width={600}
-        destroyOnClose
+        width="95%"
+        style={{
+          top: 10,
+          maxWidth: 'none',
+          borderRadius: '12px',
+          overflow: 'hidden'
+        }}
+        bodyStyle={{
+          padding: 0,
+          background: '#fafafa',
+          height: 'calc(100vh - 180px)',
+          minHeight: '700px'
+        }}
       >
-        <Form
-          form={createForm}
-          layout="vertical"
-          onFinish={submitCreateApproval}
-        >
-          <Form.Item
-            name="title"
-            label="审批标题"
-            rules={[{ required: true, message: '请输入审批标题' }]}
+        <div style={{
+          padding: '16px',
+          height: 'calc(100vh - 180px)',
+          overflow: 'auto'
+        }}>
+          <Form
+            form={createForm}
+            layout="vertical"
+            onFinish={submitCreateApproval}
           >
-            <Input placeholder="请输入审批标题" />
-          </Form.Item>
+            {/* 基本信息区域 */}
+            <Card title="审批单基本信息" style={{ marginBottom: 16 }}>
+              <Row gutter={16}>
+                <Col span={6}>
+                  <Form.Item
+                    name="scan_item"
+                    label="扫描项"
+                    rules={[{ required: true, message: '请选择扫描项' }]}
+                  >
+                    <Select placeholder="请选择扫描项">
+                      <Option value="sca">SCA</Option>
+                      <Option value="dast">DAST</Option>
+                      <Option value="sast">SAST</Option>
+                      <Option value="pt">渗透测试</Option>
+                    </Select>
+                  </Form.Item>
+                </Col>
+                <Col span={6}>
+                  <Form.Item
+                    name="is_software"
+                    label="是否软件平台"
+                    rules={[{ required: true, message: '请选择是否软件平台' }]}
+                  >
+                    <Select placeholder="请选择是否软件平台">
+                      <Option value={0}>否</Option>
+                      <Option value={1}>是</Option>
+                    </Select>
+                  </Form.Item>
+                </Col>
+                <Col span={6}>
+                  <Form.Item
+                    name="vulnerability_level"
+                    label="漏洞等级"
+                    rules={[{ required: true, message: '请选择漏洞等级' }]}
+                  >
+                    <Select placeholder="请选择漏洞等级">
+                      <Option value={1}>严重</Option>
+                      <Option value={2}>高危</Option>
+                      <Option value={3}>中危</Option>
+                      <Option value={4}>低危</Option>
+                    </Select>
+                  </Form.Item>
+                </Col>
+                <Col span={6}>
+                  <Form.Item
+                    name="conclusion"
+                    label="结论"
+                    rules={[{ required: true, message: '请选择结论' }]}
+                  >
+                    <Select placeholder="请选择结论">
+                      <Option value={1}>误报</Option>
+                      <Option value={2}>不受影响</Option>
+                      <Option value={3}>版本升级修复</Option>
+                      <Option value={4}>补丁修复</Option>
+                      <Option value={5}>有修复方案接受风险</Option>
+                      <Option value={6}>无修复方案接受风险</Option>
+                      <Option value={7}>其他</Option>
+                    </Select>
+                  </Form.Item>
+                </Col>
+              </Row>
 
-          <Form.Item
-            name="priority"
-            label="优先级"
-            rules={[{ required: true, message: '请选择优先级' }]}
-            initialValue="normal"
-          >
-            <Select placeholder="请选择优先级">
-              <Option value="urgent">紧急</Option>
-              <Option value="normal">普通</Option>
-              <Option value="low">低优先级</Option>
-            </Select>
-          </Form.Item>
+              <Row gutter={16}>
+                <Col span={12}>
+                  <Form.Item
+                    name="approval_person"
+                    label="审批人"
+                    rules={[{ required: true, message: '请输入审批人工号' }]}
+                  >
+                    <Input placeholder="请输入审批人工号" />
+                  </Form.Item>
+                </Col>
+                <Col span={12}>
+                  <Form.Item
+                    name="software_person"
+                    label="软研专家"
+                    rules={[{ required: true, message: '请输入软研专家工号' }]}
+                  >
+                    <Input placeholder="请输入软研专家工号" />
+                  </Form.Item>
+                </Col>
+              </Row>
 
-          <Form.Item
-            name="department"
-            label="负责部门"
-            rules={[{ required: true, message: '请输入负责部门' }]}
-            initialValue="开发部"
-          >
-            <Input placeholder="请输入负责部门" />
-          </Form.Item>
-
-          <Form.Item
-            name="dueDate"
-            label="截止日期"
-            rules={[{ required: true, message: '请选择截止日期' }]}
-          >
-            <DatePicker
-              showTime
-              placeholder="请选择完成截止日期"
-              style={{ width: '100%' }}
-            />
-          </Form.Item>
-
-          <Form.Item
-            name="comments"
-            label="备注说明"
-            rules={[{ required: true, message: '请填写备注说明' }]}
-          >
-            <TextArea
-              rows={4}
-              placeholder="请详细说明审批要求、处理建议等信息..."
-            />
-          </Form.Item>
-
-          <Form.Item>
-            <Space style={{ width: '100%', justifyContent: 'flex-end' }}>
-              <Button onClick={cancelCreateApproval}>
-                取消
-              </Button>
-              <Button
-                type="primary"
-                htmlType="submit"
-                loading={createLoading}
+              <Form.Item
+                name="description_disposal"
+                label="总体处置说明"
+                rules={[{ required: true, message: '请输入总体处置说明' }]}
               >
-                创建审批单
-              </Button>
-            </Space>
-          </Form.Item>
-        </Form>
+                <TextArea
+                  rows={3}
+                  placeholder="请输入总体处置说明..."
+                />
+              </Form.Item>
+            </Card>
+
+            {/* 问题列表编辑区域 */}
+            <Card
+              title={
+                <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                  <span>问题列表</span>
+                  <Tag color="blue">{editingProblemsForApproval.length} 个问题</Tag>
+                </div>
+              }
+            >
+              <div style={{ marginBottom: 16, fontSize: '12px', color: '#666' }}>
+                请为每个问题填写修复地址、修复版本和处置说明。标有 * 的字段为必填项。
+              </div>
+
+              <Table
+                columns={[
+                  {
+                    title: '问题编号',
+                    dataIndex: 'problemNumber',
+                    key: 'problemNumber',
+                    width: 150,
+                    fixed: 'left',
+                    render: (text: string) => (
+                      <span style={{ color: '#1890ff', fontWeight: 600 }}>{text}</span>
+                    )
+                  },
+                  {
+                    title: '修复地址 *',
+                    dataIndex: 'fixAddress',
+                    key: 'fixAddress',
+                    width: 300,
+                    render: (text: string, record: ProblemDocument) => (
+                      <Input
+                        placeholder="请输入修复地址"
+                        value={text}
+                        onChange={(e) => updateProblemForApproval(record.id, 'fixAddress', e.target.value)}
+                      />
+                    )
+                  },
+                  {
+                    title: '修复版本 *',
+                    dataIndex: 'fixVersion',
+                    key: 'fixVersion',
+                    width: 150,
+                    render: (text: string, record: ProblemDocument) => (
+                      <Input
+                        placeholder="请输入修复版本"
+                        value={text}
+                        onChange={(e) => updateProblemForApproval(record.id, 'fixVersion', e.target.value)}
+                      />
+                    )
+                  },
+                  {
+                    title: '处置说明 *',
+                    dataIndex: 'descriptionDisposal',
+                    key: 'descriptionDisposal',
+                    width: 400,
+                    render: (text: string, record: ProblemDocument) => (
+                      <TextArea
+                        placeholder="请输入处置说明"
+                        value={text}
+                        onChange={(e) => updateProblemForApproval(record.id, 'descriptionDisposal', e.target.value)}
+                        rows={2}
+                        maxLength={500}
+                        showCount
+                      />
+                    )
+                  },
+                  {
+                    title: '漏洞名称',
+                    dataIndex: 'descriptionRief',
+                    key: 'descriptionRief',
+                    width: 200,
+                    ellipsis: true
+                  }
+                ]}
+                dataSource={editingProblemsForApproval}
+                rowKey="id"
+                pagination={false}
+                scroll={{ x: 1400, y: 400 }}
+                size="small"
+              />
+            </Card>
+
+            {/* 提交按钮区域 */}
+            <Card style={{ marginTop: 16 }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                <div>
+                  <div style={{ fontSize: '16px', fontWeight: 600, color: '#262626', marginBottom: '4px' }}>
+                    提交审批单
+                  </div>
+                  <div style={{ fontSize: '13px', color: '#666' }}>
+                    确保所有信息填写完整后提交，提交后将生成审批单
+                  </div>
+                </div>
+                <Space size="large">
+                  <Button onClick={cancelCreateApproval} size="large">
+                    取消
+                  </Button>
+                  <Button
+                    type="primary"
+                    htmlType="submit"
+                    loading={createLoading}
+                    size="large"
+                    style={{
+                      background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+                      border: 'none',
+                      boxShadow: '0 4px 15px rgba(102, 126, 234, 0.4)'
+                    }}
+                  >
+                    {createLoading ? '创建中...' : '创建审批单'}
+                  </Button>
+                </Space>
+              </div>
+            </Card>
+          </Form>
+        </div>
       </Modal>
 
       {/* 批量编辑模态框 - 全屏可编辑列表 */}
