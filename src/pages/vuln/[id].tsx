@@ -1,19 +1,65 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, history } from 'umi';
-import { Card, Descriptions, Tag, Button, Space, Spin, Alert, Divider, Modal, Form, Input, Select, DatePicker, message, Popconfirm } from 'antd';
+import { Card, Descriptions, Tag, Button, Space, Spin, Alert, Divider, Form, Input, Select, DatePicker, message, Popconfirm, Modal } from 'antd';
 const { Option } = Select;
-import { ArrowLeftOutlined, EyeOutlined, EditOutlined, SaveOutlined, CloudUploadOutlined } from '@ant-design/icons';
+const { TextArea } = Input;
+const { Item: FormItem } = Form;
+import { ArrowLeftOutlined, EyeOutlined, EditOutlined, SaveOutlined, CloudUploadOutlined, CloseOutlined } from '@ant-design/icons';
 import { ProblemDocument, ENUMS, REVERSE_STRING_ENUMS } from '@/types';
+
+// 可编辑字段组件
+const EditableField: React.FC<{
+  isEditMode: boolean;
+  label: string;
+  value: any;
+  form: any;
+  name: string;
+  type?: 'input' | 'select' | 'textarea';
+  options?: Array<{ label: string; value: any }>;
+  render?: (value: any) => React.ReactNode;
+}> = ({ isEditMode, label, value, form, name, type = 'input', options = [], render }) => {
+  if (isEditMode) {
+    switch (type) {
+      case 'select':
+        return (
+          <FormItem name={name} style={{ margin: 0 }}>
+            <Select placeholder={`请选择${label}`} style={{ width: '100%' }}>
+              {options.map(option => (
+                <Option key={option.value} value={option.value}>
+                  {option.label}
+                </Option>
+              ))}
+            </Select>
+          </FormItem>
+        );
+      case 'textarea':
+        return (
+          <FormItem name={name} style={{ margin: 0 }}>
+            <TextArea placeholder={`请输入${label}`} rows={3} />
+          </FormItem>
+        );
+      default:
+        return (
+          <FormItem name={name} style={{ margin: 0 }}>
+            <Input placeholder={`请输入${label}`} />
+          </FormItem>
+        );
+    }
+  }
+
+  return render ? render(value) : <span>{value || '-'}</span>;
+};
 
 const VulnerabilityDetail: React.FC = () => {
   const { id } = useParams<{ id: string }>();
   const [problem, setProblem] = useState<ProblemDocument | null>(null);
   const [loading, setLoading] = useState(true);
 
-  // 暂存编辑相关状态
-  const [editModalVisible, setEditModalVisible] = useState(false);
+  // 编辑模式相关状态
+  const [isEditMode, setIsEditMode] = useState(false);
   const [editForm] = Form.useForm();
   const [editLoading, setEditLoading] = useState(false);
+  const [originalProblem, setOriginalProblem] = useState<ProblemDocument | null>(null);
 
   // 创建审批单相关状态
   const [createApprovalModalVisible, setCreateApprovalModalVisible] = useState(false);
@@ -29,6 +75,30 @@ const VulnerabilityDetail: React.FC = () => {
 
       if (result.code === 200) {
         setProblem(result.data);
+        setOriginalProblem(result.data);
+        // 更新表单数据
+        editForm.setFieldsValue({
+          problemNumber: result.data.problemNumber,
+          vulnerabilityNum: result.data.vulnerabilityNum,
+          descriptionRief: result.data.descriptionRief,
+          vulnerabilityLevel: result.data.vulnerabilityLevel,
+          scanItem: result.data.scanItem,
+          projectNumber: result.data.projectNumber,
+          expectedDate: result.data.expectedDate,
+          status: result.data.status,
+          descriptionDetailed: result.data.descriptionDetailed,
+          componentName: result.data.componentName,
+          componentVersion: result.data.componentVersion,
+          ip: result.data.ip,
+          api: result.data.api,
+          fixAddress: result.data.fixAddress,
+          fixVersion: result.data.fixVersion,
+          descriptionDisposal: result.data.descriptionDisposal,
+          responsiblePerson: result.data.responsiblePerson,
+          isRedLine: result.data.isRedLine,
+          isSoftware: result.data.isSoftware,
+          conclusion: result.data.conclusion,
+        });
       } else {
         setProblem(null);
       }
@@ -56,113 +126,99 @@ const VulnerabilityDetail: React.FC = () => {
     history.push(`/approval/${approvalId}`);
   };
 
-  // 打开编辑模态框
-  const openEditModal = () => {
+  // 进入编辑模式
+  const enterEditMode = () => {
     if (!problem) return;
-
-    // 填充表单数据
-    const formData = {
-      problemNumber: problem.problemNumber,
-      descriptionRief: problem.descriptionRief,
-      vulnerabilityLevel: problem.vulnerabilityLevel,
-      scanItem: problem.scanItem,
-      projectNumber: problem.projectNumber,
-      expectedDate: problem.expectedDate,
-      status: problem.status,
-      descriptionDetailed: problem.descriptionDetailed,
-      componentName: problem.componentName,
-      componentVersion: problem.componentVersion,
-      ip: problem.ip,
-      api: problem.api,
-      fixAddress: problem.fixAddress,
-      fixVersion: problem.fixVersion,
-      descriptionDisposal: problem.descriptionDisposal,
-      responsiblePerson: problem.responsiblePerson,
-      isRedLine: problem.isRedLine,
-      isSoftware: problem.isSoftware,
-      conclusion: problem.conclusion,
-      vulnerabilityNum: problem.vulnerabilityNum,
-    };
-
-    editForm.setFieldsValue(formData);
-    setEditModalVisible(true);
+    setIsEditMode(true);
   };
 
-  // 暂存编辑
-  const submitStagedEdit = async (values: any) => {
+  // 退出编辑模式
+  const exitEditMode = () => {
+    setIsEditMode(false);
+    if (originalProblem) {
+      // 恢复原始数据
+      setProblem(originalProblem);
+      editForm.setFieldsValue({
+        problemNumber: originalProblem.problemNumber,
+        vulnerabilityNum: originalProblem.vulnerabilityNum,
+        descriptionRief: originalProblem.descriptionRief,
+        vulnerabilityLevel: originalProblem.vulnerabilityLevel,
+        scanItem: originalProblem.scanItem,
+        projectNumber: originalProblem.projectNumber,
+        expectedDate: originalProblem.expectedDate,
+        status: originalProblem.status,
+        descriptionDetailed: originalProblem.descriptionDetailed,
+        componentName: originalProblem.componentName,
+        componentVersion: originalProblem.componentVersion,
+        ip: originalProblem.ip,
+        api: originalProblem.api,
+        fixAddress: originalProblem.fixAddress,
+        fixVersion: originalProblem.fixVersion,
+        descriptionDisposal: originalProblem.descriptionDisposal,
+        responsiblePerson: originalProblem.responsiblePerson,
+        isRedLine: originalProblem.isRedLine,
+        isSoftware: originalProblem.isSoftware,
+        conclusion: originalProblem.conclusion,
+      });
+    }
+  };
+
+  // 保存编辑
+  const saveEdit = async () => {
     if (!problem) return;
 
-    setEditLoading(true);
     try {
+      const values = await editForm.validateFields();
+      console.log('🔧 开始保存，表单数据:', values);
+      setEditLoading(true);
+
+      const requestData = {
+        operations: [{
+          problemId: problem.id,
+          stagedData: values,
+        }],
+      };
+      console.log('📤 发送请求数据:', requestData);
+
       const response = await fetch('/api/problem/stage/batch', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify({
-          operations: [{
-            problemId: problem.id,
-            stagedData: values,
-          }],
-        }),
+        body: JSON.stringify(requestData),
       });
 
       const result = await response.json();
+      console.log('📥 收到响应:', result);
 
       if (result.code === 200) {
-        message.success('暂存成功');
-        setEditModalVisible(false);
-        editForm.resetFields();
+        message.success('保存成功');
+        setIsEditMode(false);
+        // 更新本地状态
+        const updatedProblem = { ...problem, ...values };
+        setProblem(updatedProblem);
+        setOriginalProblem(updatedProblem);
+        console.log('✅ 本地状态已更新:', updatedProblem);
         // 刷新问题单据详情
         fetchProblemDetail(problem.id.toString());
       } else {
-        message.error(result.message || '暂存失败');
+        console.error('❌ 保存失败:', result.message);
+        message.error(result.message || '保存失败');
       }
     } catch (error) {
-      console.error('暂存失败:', error);
+      console.error('❌ 保存异常:', error);
       message.error('网络错误，请重试');
     } finally {
       setEditLoading(false);
     }
   };
 
-  // 更新问题单据
-  const updateProblem = async (values: any) => {
-    if (!problem) return;
-
-    setEditLoading(true);
-    try {
-      const response = await fetch(`/api/problem/${problem.id}`, {
-        method: 'PUT',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(values),
-      });
-
-      const result = await response.json();
-
-      if (result.code === 200) {
-        message.success('更新成功');
-        setEditModalVisible(false);
-        editForm.resetFields();
-        // 刷新问题单据详情
-        fetchProblemDetail(problem.id.toString());
-      } else {
-        message.error(result.message || '更新失败');
-      }
-    } catch (error) {
-      console.error('更新失败:', error);
-      message.error('网络错误，请重试');
-    } finally {
-      setEditLoading(false);
+  // 处理表单值变化
+  const handleFormChange = (changedFields: any, allFields: any) => {
+    if (problem && isEditMode) {
+      // 实时更新本地状态
+      setProblem(prev => prev ? { ...prev, ...changedFields } : null);
     }
-  };
-
-  // 取消编辑
-  const cancelEdit = () => {
-    setEditModalVisible(false);
-    editForm.resetFields();
   };
 
   // 打开创建审批单模态框
@@ -302,99 +358,320 @@ const VulnerabilityDetail: React.FC = () => {
       </Space>
 
       {/* 基本信息 */}
-      <Card title="基本信息" style={{ marginBottom: 16 }}>
-        <Descriptions column={2} bordered>
-          <Descriptions.Item label="问题编号">{problem.problemNumber}</Descriptions.Item>
-          <Descriptions.Item label="漏洞编号">{problem.vulnerabilityNum}</Descriptions.Item>
-          <Descriptions.Item label="项目编号">{problem.projectNumber}</Descriptions.Item>
-          <Descriptions.Item label="扫描项">{problem.scanItem}</Descriptions.Item>
-          <Descriptions.Item label="漏洞等级">
-            {getVulnerabilityLevelTag(problem.vulnerabilityLevel)}
-          </Descriptions.Item>
-          <Descriptions.Item label="当前状态">
-            {getStatusTag(problem.status)}
-          </Descriptions.Item>
-          <Descriptions.Item label="责任人">{problem.responsiblePerson}</Descriptions.Item>
-          <Descriptions.Item label="预期解决时间">{problem.expectedDate}</Descriptions.Item>
-          <Descriptions.Item label="是否红线">
-            {problem.isRedLine ? <Tag color="red">是</Tag> : <Tag color="green">否</Tag>}
-          </Descriptions.Item>
-          <Descriptions.Item label="是否软件平台">
-            {problem.isSoftware ? <Tag color="blue">是</Tag> : <Tag color="default">否</Tag>}
-          </Descriptions.Item>
-          <Descriptions.Item label="组件名称">
-            {problem.componentName || '无'}
-          </Descriptions.Item>
-          <Descriptions.Item label="组件版本">
-            {problem.componentVersion || '无'}
-          </Descriptions.Item>
-          <Descriptions.Item label="IP地址">
-            {problem.ip || '无'}
-          </Descriptions.Item>
-          <Descriptions.Item label="API接口">
-            {problem.api || '无'}
-          </Descriptions.Item>
-          <Descriptions.Item label="结论">
-            {getConclusionTag(problem.conclusion)}
-          </Descriptions.Item>
-          <Descriptions.Item label="审批单" span={2}>
-            {problem.approvalList && problem.approvalList.length > 0 ? (
-              <Space>
-                {problem.approvalList.map((approvalId, index) => (
-                  <Button
-                    key={index}
-                    type="link"
-                    size="small"
-                    onClick={() => viewApproval(approvalId)}
-                  >
-                    {approvalId}
-                  </Button>
-                ))}
-              </Space>
-            ) : (
-              '未关联'
-            )}
-          </Descriptions.Item>
-        </Descriptions>
+      <Card
+        title="基本信息"
+        style={{ marginBottom: 16 }}
+        extra={
+          isEditMode ? (
+            <Space>
+              <Button icon={<CloseOutlined />} onClick={exitEditMode}>
+                取消
+              </Button>
+              <Button
+                type="primary"
+                icon={<SaveOutlined />}
+                onClick={saveEdit}
+                loading={editLoading}
+              >
+                保存
+              </Button>
+            </Space>
+          ) : (
+            <Button
+              icon={<EditOutlined />}
+              onClick={enterEditMode}
+              disabled={!!(problem.approvalList && problem.approvalList.length > 0)}
+            >
+              编辑
+            </Button>
+          )
+        }
+      >
+        <Form
+          form={editForm}
+          onValuesChange={handleFormChange}
+          style={{ width: '100%' }}
+        >
+          <Descriptions column={2} bordered>
+            <Descriptions.Item label="问题编号">
+              <span style={{ color: '#1890ff', fontWeight: 600 }}>{problem.problemNumber}</span>
+            </Descriptions.Item>
+            <Descriptions.Item label="漏洞编号">
+              <EditableField
+                isEditMode={isEditMode}
+                label="漏洞编号"
+                value={problem.vulnerabilityNum}
+                form={editForm}
+                name="vulnerabilityNum"
+              />
+            </Descriptions.Item>
+            <Descriptions.Item label="项目编号">
+              <EditableField
+                isEditMode={isEditMode}
+                label="项目编号"
+                value={problem.projectNumber}
+                form={editForm}
+                name="projectNumber"
+              />
+            </Descriptions.Item>
+            <Descriptions.Item label="扫描项">
+              <EditableField
+                isEditMode={isEditMode}
+                label="扫描项"
+                value={problem.scanItem}
+                form={editForm}
+                name="scanItem"
+              />
+            </Descriptions.Item>
+            <Descriptions.Item label="漏洞等级">
+              <EditableField
+                isEditMode={isEditMode}
+                label="漏洞等级"
+                value={problem.vulnerabilityLevel}
+                form={editForm}
+                name="vulnerabilityLevel"
+                type="select"
+                options={[
+                  { label: '严重', value: 1 },
+                  { label: '高危', value: 2 },
+                  { label: '中危', value: 3 },
+                  { label: '低危', value: 4 }
+                ]}
+                render={getVulnerabilityLevelTag}
+              />
+            </Descriptions.Item>
+            <Descriptions.Item label="当前状态">
+              <EditableField
+                isEditMode={isEditMode}
+                label="当前状态"
+                value={problem.status}
+                form={editForm}
+                name="status"
+                type="select"
+                options={[
+                  { label: '已创建', value: 1 },
+                  { label: '处置中', value: 2 },
+                  { label: '审批中', value: 3 },
+                  { label: '关闭', value: 4 }
+                ]}
+                render={getStatusTag}
+              />
+            </Descriptions.Item>
+            <Descriptions.Item label="责任人">
+              <EditableField
+                isEditMode={isEditMode}
+                label="责任人"
+                value={problem.responsiblePerson}
+                form={editForm}
+                name="responsiblePerson"
+              />
+            </Descriptions.Item>
+            <Descriptions.Item label="预期解决时间">
+              <EditableField
+                isEditMode={isEditMode}
+                label="预期解决时间"
+                value={problem.expectedDate}
+                form={editForm}
+                name="expectedDate"
+              />
+            </Descriptions.Item>
+            <Descriptions.Item label="是否红线">
+              <EditableField
+                isEditMode={isEditMode}
+                label="是否红线"
+                value={problem.isRedLine}
+                form={editForm}
+                name="isRedLine"
+                type="select"
+                options={[
+                  { label: '否', value: 0 },
+                  { label: '是', value: 1 }
+                ]}
+                render={(value) => value ? <Tag color="red">是</Tag> : <Tag color="green">否</Tag>}
+              />
+            </Descriptions.Item>
+            <Descriptions.Item label="是否软件平台">
+              <EditableField
+                isEditMode={isEditMode}
+                label="是否软件平台"
+                value={problem.isSoftware}
+                form={editForm}
+                name="isSoftware"
+                type="select"
+                options={[
+                  { label: '否', value: 0 },
+                  { label: '是', value: 1 }
+                ]}
+                render={(value) => value ? <Tag color="blue">是</Tag> : <Tag color="default">否</Tag>}
+              />
+            </Descriptions.Item>
+            <Descriptions.Item label="组件名称">
+              <EditableField
+                isEditMode={isEditMode}
+                label="组件名称"
+                value={problem.componentName}
+                form={editForm}
+                name="componentName"
+              />
+            </Descriptions.Item>
+            <Descriptions.Item label="组件版本">
+              <EditableField
+                isEditMode={isEditMode}
+                label="组件版本"
+                value={problem.componentVersion}
+                form={editForm}
+                name="componentVersion"
+              />
+            </Descriptions.Item>
+            <Descriptions.Item label="IP地址">
+              <EditableField
+                isEditMode={isEditMode}
+                label="IP地址"
+                value={problem.ip}
+                form={editForm}
+                name="ip"
+              />
+            </Descriptions.Item>
+            <Descriptions.Item label="API接口">
+              <EditableField
+                isEditMode={isEditMode}
+                label="API接口"
+                value={problem.api}
+                form={editForm}
+                name="api"
+              />
+            </Descriptions.Item>
+            <Descriptions.Item label="结论">
+              <EditableField
+                isEditMode={isEditMode}
+                label="结论"
+                value={problem.conclusion}
+                form={editForm}
+                name="conclusion"
+                type="select"
+                options={[
+                  { label: '误报', value: 1 },
+                  { label: '不受影响', value: 2 },
+                  { label: '版本升级修复', value: 3 },
+                  { label: '补丁修复', value: 4 },
+                  { label: '有修复方案接受风险', value: 5 },
+                  { label: '无修复方案接受风险', value: 6 }
+                ]}
+                render={getConclusionTag}
+              />
+            </Descriptions.Item>
+            <Descriptions.Item label="审批单" span={2}>
+              {problem.approvalList && problem.approvalList.length > 0 ? (
+                <Space>
+                  {problem.approvalList.map((approvalId, index) => (
+                    <Button
+                      key={index}
+                      type="link"
+                      size="small"
+                      onClick={() => viewApproval(approvalId)}
+                    >
+                      {approvalId}
+                    </Button>
+                  ))}
+                </Space>
+              ) : (
+                '未关联'
+              )}
+            </Descriptions.Item>
+          </Descriptions>
+        </Form>
       </Card>
 
       {/* 漏洞简要描述 */}
       <Card title="漏洞简要描述" style={{ marginBottom: 16 }}>
-        <div>
-          <p style={{ lineHeight: 1.8, fontSize: 14 }}>
-            {problem.descriptionRief || '暂无简要描述'}
-          </p>
-        </div>
+        {isEditMode ? (
+          <Form form={editForm} onValuesChange={handleFormChange}>
+            <FormItem name="descriptionRief" style={{ margin: 0 }}>
+              <TextArea
+                placeholder="请输入漏洞简要描述"
+                rows={3}
+                showCount
+                maxLength={500}
+              />
+            </FormItem>
+          </Form>
+        ) : (
+          <div>
+            <p style={{ lineHeight: 1.8, fontSize: 14 }}>
+              {problem.descriptionRief || '暂无简要描述'}
+            </p>
+          </div>
+        )}
       </Card>
 
       {/* 漏洞详细描述 */}
       <Card title="详细描述" style={{ marginBottom: 16 }}>
-        <div>
-          <p style={{ lineHeight: 1.8, fontSize: 14 }}>
-            {problem.descriptionDetailed || '暂无详细描述'}
-          </p>
-        </div>
+        {isEditMode ? (
+          <Form form={editForm} onValuesChange={handleFormChange}>
+            <FormItem name="descriptionDetailed" style={{ margin: 0 }}>
+              <TextArea
+                placeholder="请输入详细描述"
+                rows={4}
+                showCount
+                maxLength={1000}
+              />
+            </FormItem>
+          </Form>
+        ) : (
+          <div>
+            <p style={{ lineHeight: 1.8, fontSize: 14 }}>
+              {problem.descriptionDetailed || '暂无详细描述'}
+            </p>
+          </div>
+        )}
       </Card>
 
       {/* 修复信息 */}
       <Card title="修复信息" style={{ marginBottom: 16 }}>
-        <Descriptions column={2} bordered>
-          <Descriptions.Item label="修复地址">
-            {problem.fixAddress ? (
-              <a href={problem.fixAddress} target="_blank" rel="noopener noreferrer">
-                {problem.fixAddress}
-              </a>
-            ) : (
-              '无'
-            )}
-          </Descriptions.Item>
-          <Descriptions.Item label="修复版本">
-            {problem.fixVersion || '无'}
-          </Descriptions.Item>
-          <Descriptions.Item label="处置描述" span={2}>
-            {problem.descriptionDisposal || '暂无处置描述'}
-          </Descriptions.Item>
-        </Descriptions>
+        {isEditMode ? (
+          <Form form={editForm} onValuesChange={handleFormChange}>
+            <Descriptions column={2} bordered>
+              <Descriptions.Item label="修复地址">
+                <FormItem name="fixAddress" style={{ margin: 0 }}>
+                  <Input placeholder="请输入修复地址" />
+                </FormItem>
+              </Descriptions.Item>
+              <Descriptions.Item label="修复版本">
+                <FormItem name="fixVersion" style={{ margin: 0 }}>
+                  <Input placeholder="请输入修复版本" />
+                </FormItem>
+              </Descriptions.Item>
+              <Descriptions.Item label="处置描述" span={2}>
+                <FormItem name="descriptionDisposal" style={{ margin: 0 }}>
+                  <TextArea
+                    placeholder="请输入处置描述"
+                    rows={3}
+                    showCount
+                    maxLength={1000}
+                  />
+                </FormItem>
+              </Descriptions.Item>
+            </Descriptions>
+          </Form>
+        ) : (
+          <Descriptions column={2} bordered>
+            <Descriptions.Item label="修复地址">
+              {problem.fixAddress ? (
+                <a href={problem.fixAddress} target="_blank" rel="noopener noreferrer">
+                  {problem.fixAddress}
+                </a>
+              ) : (
+                '无'
+              )}
+            </Descriptions.Item>
+            <Descriptions.Item label="修复版本">
+              {problem.fixVersion || '无'}
+            </Descriptions.Item>
+            <Descriptions.Item label="处置描述" span={2}>
+              {problem.descriptionDisposal || '暂无处置描述'}
+            </Descriptions.Item>
+          </Descriptions>
+        )}
       </Card>
 
       {/* 状态评估 */}
@@ -425,255 +702,37 @@ const VulnerabilityDetail: React.FC = () => {
       </Card>
 
       {/* 操作按钮区域 */}
-      {(!problem.approvalList || problem.approvalList.length === 0) && (
+      {(!problem.approvalList || problem.approvalList.length === 0) && !isEditMode && (
         <Card style={{ marginTop: 16 }}>
-          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+          <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center' }}>
             <div>
-              <div style={{ fontSize: '16px', fontWeight: 600, color: '#262626', marginBottom: '4px' }}>
+              <div style={{ fontSize: '16px', fontWeight: 600, color: '#262626', marginBottom: '4px', textAlign: 'center' }}>
                 问题单据操作
               </div>
-              <div style={{ fontSize: '13px', color: '#666' }}>
-                修改问题单据信息，或直接创建审批单
+              <div style={{ fontSize: '13px', color: '#666', marginBottom: '16px', textAlign: 'center' }}>
+                可以直接创建审批单，或点击基本信息卡片右上角的"编辑"按钮修改问题信息
+              </div>
+              <div style={{ textAlign: 'center' }}>
+                <Button
+                  type="primary"
+                  icon={<CloudUploadOutlined />}
+                  onClick={openCreateApprovalModal}
+                  size="large"
+                  style={{
+                    background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+                    border: 'none',
+                    boxShadow: '0 4px 15px rgba(102, 126, 234, 0.4)'
+                  }}
+                >
+                  创建审批单
+                </Button>
               </div>
             </div>
-            <Space size="large">
-              <Button
-                icon={<EditOutlined />}
-                onClick={openEditModal}
-                size="large"
-              >
-                编辑问题单据
-              </Button>
-              <Button
-                type="primary"
-                icon={<CloudUploadOutlined />}
-                onClick={openCreateApprovalModal}
-                size="large"
-                style={{
-                  background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
-                  border: 'none',
-                  boxShadow: '0 4px 15px rgba(102, 126, 234, 0.4)'
-                }}
-              >
-                创建审批单
-              </Button>
-            </Space>
           </div>
         </Card>
       )}
 
-      {/* 编辑模态框 */}
-      <Modal
-        title="编辑问题单据"
-        open={editModalVisible}
-        onCancel={cancelEdit}
-        footer={null}
-        width={800}
-        destroyOnClose
-      >
-        <Form
-          form={editForm}
-          layout="vertical"
-          onFinish={updateProblem}
-        >
-          <Form.Item
-            name="problemNumber"
-            label="问题编号"
-            rules={[{ required: true, message: '请输入问题编号' }]}
-          >
-            <Input placeholder="请输入问题编号" />
-          </Form.Item>
-
-          <Form.Item
-            name="vulnerabilityNum"
-            label="漏洞编号"
-            rules={[{ required: true, message: '请输入漏洞编号' }]}
-          >
-            <Input placeholder="请输入漏洞编号" />
-          </Form.Item>
-
-          <Form.Item
-            name="projectNumber"
-            label="项目编号"
-            rules={[{ required: true, message: '请输入项目编号' }]}
-          >
-            <Input placeholder="请输入项目编号" />
-          </Form.Item>
-
-          <Form.Item
-            name="scanItem"
-            label="扫描项"
-            rules={[{ required: true, message: '请输入扫描项' }]}
-          >
-            <Input placeholder="请输入扫描项" />
-          </Form.Item>
-
-          <Form.Item
-            name="vulnerabilityLevel"
-            label="漏洞等级"
-            rules={[{ required: true, message: '请选择漏洞等级' }]}
-          >
-            <Select placeholder="请选择漏洞等级">
-              <Select.Option value={1}>严重</Select.Option>
-              <Select.Option value={2}>高危</Select.Option>
-              <Select.Option value={3}>中危</Select.Option>
-              <Select.Option value={4}>低危</Select.Option>
-            </Select>
-          </Form.Item>
-
-          <Form.Item
-            name="status"
-            label="状态"
-            rules={[{ required: true, message: '请选择状态' }]}
-          >
-            <Select placeholder="请选择状态">
-              <Select.Option value={1}>已创建</Select.Option>
-              <Select.Option value={2}>处置中</Select.Option>
-              <Select.Option value={3}>审批中</Select.Option>
-              <Select.Option value={4}>关闭</Select.Option>
-            </Select>
-          </Form.Item>
-
-          <Form.Item
-            name="responsiblePerson"
-            label="责任人"
-            rules={[{ required: true, message: '请输入责任人' }]}
-          >
-            <Input placeholder="请输入责任人" />
-          </Form.Item>
-
-          <Form.Item
-            name="expectedDate"
-            label="预期解决时间"
-            rules={[{ required: true, message: '请选择预期解决时间' }]}
-          >
-            <Input placeholder="请输入预期解决时间（YYYY-MM-DD）" />
-          </Form.Item>
-
-          <Form.Item
-            name="isRedLine"
-            label="是否红线"
-          >
-            <Select placeholder="请选择是否红线">
-              <Select.Option value={0}>否</Select.Option>
-              <Select.Option value={1}>是</Select.Option>
-            </Select>
-          </Form.Item>
-
-          <Form.Item
-            name="isSoftware"
-            label="是否软件平台"
-          >
-            <Select placeholder="请选择是否软件平台">
-              <Select.Option value={0}>否</Select.Option>
-              <Select.Option value={1}>是</Select.Option>
-            </Select>
-          </Form.Item>
-
-          <Form.Item
-            name="descriptionRief"
-            label="简要描述"
-            rules={[{ required: true, message: '请输入简要描述' }]}
-          >
-            <Input.TextArea
-              rows={3}
-              placeholder="请输入简要描述..."
-            />
-          </Form.Item>
-
-          <Form.Item
-            name="descriptionDetailed"
-            label="详细描述"
-          >
-            <Input.TextArea
-              rows={4}
-              placeholder="请输入详细描述..."
-            />
-          </Form.Item>
-
-          <Form.Item
-            name="componentName"
-            label="组件名称"
-          >
-            <Input placeholder="请输入组件名称" />
-          </Form.Item>
-
-          <Form.Item
-            name="componentVersion"
-            label="组件版本"
-          >
-            <Input placeholder="请输入组件版本" />
-          </Form.Item>
-
-          <Form.Item
-            name="ip"
-            label="IP地址"
-          >
-            <Input placeholder="请输入IP地址" />
-          </Form.Item>
-
-          <Form.Item
-            name="api"
-            label="API接口"
-          >
-            <Input placeholder="请输入API接口" />
-          </Form.Item>
-
-          <Form.Item
-            name="fixAddress"
-            label="修复地址"
-          >
-            <Input placeholder="请输入修复地址" />
-          </Form.Item>
-
-          <Form.Item
-            name="fixVersion"
-            label="修复版本"
-          >
-            <Input placeholder="请输入修复版本" />
-          </Form.Item>
-
-          <Form.Item
-            name="descriptionDisposal"
-            label="处置描述"
-          >
-            <Input.TextArea
-              rows={3}
-              placeholder="请输入处置描述..."
-            />
-          </Form.Item>
-
-          <Form.Item
-            name="conclusion"
-            label="结论"
-          >
-            <Select placeholder="请选择结论" allowClear>
-              <Select.Option value={1}>误报</Select.Option>
-              <Select.Option value={2}>不受影响</Select.Option>
-              <Select.Option value={3}>版本升级修复</Select.Option>
-              <Select.Option value={4}>补丁修复</Select.Option>
-              <Select.Option value={5}>有修复方案接受风险</Select.Option>
-              <Select.Option value={6}>无修复方案接受风险</Select.Option>
-            </Select>
-          </Form.Item>
-
-          <Form.Item>
-            <Space style={{ width: '100%', justifyContent: 'flex-end' }}>
-              <Button onClick={cancelEdit}>
-                取消
-              </Button>
-              <Button
-                type="primary"
-                htmlType="submit"
-                loading={editLoading}
-              >
-                更新
-              </Button>
-            </Space>
-          </Form.Item>
-        </Form>
-      </Modal>
-
+    
       {/* 创建审批单模态框 */}
       <Modal
         title="创建审批单"

@@ -388,13 +388,29 @@ export default {
       });
     }
     try {
-      // 模拟批量处理
-      const processedCount = operations.length;
+      // 实际更新数据
+      operations.forEach((operation: any) => {
+        const { problemId, stagedData } = operation;
+        const problemIndex = mockProblemDocuments.findIndex(p => p.id === problemId);
+
+        if (problemIndex !== -1) {
+          // 更新问题数据
+          mockProblemDocuments[problemIndex] = {
+            ...mockProblemDocuments[problemIndex],
+            ...stagedData,
+            // 标记为已暂存
+            isStaged: true,
+            stagedData: stagedData
+          };
+          console.log(`✅ 更新问题 ${mockProblemDocuments[problemIndex].problemNumber}:`, stagedData);
+        }
+      });
+
       res.json({
         code: 200,
         message: '批量暂存成功',
         data: {
-          processedCount,
+          processedCount: operations.length,
           operations
         }
       });
