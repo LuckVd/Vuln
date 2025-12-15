@@ -1,11 +1,12 @@
 import React, { useState, useEffect } from 'react';
-import { Table, Input, Select, Space, Tag, Button, Card, message, Modal, Form, DatePicker, Popconfirm, Badge, Avatar, Divider, Row, Col } from 'antd';
+import { Table, Input, Select, Space, Tag, Button, Card, message, Modal, Form, DatePicker, Popconfirm, Badge, Avatar, Divider, Row, Col, Upload } from 'antd';
 import { SearchOutlined, ReloadOutlined, PlusOutlined, LinkOutlined, EditOutlined, SaveOutlined, CloseOutlined, WarningOutlined, CheckCircleOutlined } from '@ant-design/icons';
 import { Link, history } from 'umi';
 import type { ColumnsType } from 'antd/es/table';
 import { EditableProTable } from '@ant-design/pro-table';
-import { ProblemDocument, ENUMS, REVERSE_STRING_ENUMS } from '@/types';
+import { ProblemDocument, ENUMS, REVERSE_STRING_ENUMS, Attachment } from '@/types';
 import { renderVulnerabilityLevelTag, renderStatusTag, renderConclusionTag } from '@/utils/tagRenderers';
+import AttachmentEdit from '@/components/AttachmentEdit';
 
 const { Option } = Select;
 const { TextArea } = Input;
@@ -30,6 +31,10 @@ const VulnerabilityList: React.FC = () => {
   const [batchEditLoading, setBatchEditLoading] = useState(false);
   const [selectedProblemsForEdit, setSelectedProblemsForEdit] = useState<ProblemDocument[]>([]);
   const [editingProblemsData, setEditingProblemsData] = useState<Record<number, Partial<ProblemDocument>>>({});
+
+  // 批量上传附件状态
+  const [batchAttachments, setBatchAttachments] = useState<Attachment[]>([]);
+  const [batchAttachmentUploading, setBatchAttachmentUploading] = useState(false);
 
   // 获取漏洞列表
   const fetchProblems = async (page: number = 1, size: number = 10) => {
@@ -256,6 +261,7 @@ const VulnerabilityList: React.FC = () => {
         componentName: problem.componentName,
         responsiblePerson: problem.responsiblePerson,
         expectedDate: problem.expectedDate,
+        attachments: problem.attachments || [],
       };
     });
     setEditingProblemsData(initialEditData);
@@ -281,6 +287,7 @@ const VulnerabilityList: React.FC = () => {
           ...(problem.componentName && { componentName: problem.componentName }),
           ...(problem.responsiblePerson && { responsiblePerson: problem.responsiblePerson }),
           ...(problem.expectedDate && { expectedDate: problem.expectedDate }),
+          ...(problem.attachments && problem.attachments.length > 0 && { attachments: problem.attachments }),
         }
       }));
 
@@ -319,6 +326,8 @@ const VulnerabilityList: React.FC = () => {
     setBatchEditModalVisible(false);
     setSelectedProblemsForEdit([]);
     setEditingProblemsData({});
+    setBatchAttachments([]);
+    setBatchAttachmentUploading(false);
   };
 
   // 数据转换函数
@@ -339,6 +348,80 @@ const VulnerabilityList: React.FC = () => {
       4: '#52c41a'  // 低危
     };
     return colors[level] || '#d9d9d9';
+  };
+
+  // 批量上传附件处理函数
+  const handleBatchAttachmentUpload = async (files: File[]) => {
+    setBatchAttachmentUploading(true);
+
+    try {
+      const newAttachments: Attachment[] = [];
+
+      for (const file of files) {
+        // 创建模拟上传过程
+        await new Promise(resolve => setTimeout(resolve, 300));
+
+        const newAttachment: Attachment = {
+          id: Date.now().toString() + Math.random().toString(36).substr(2, 9),
+          fileName: `batch_${Date.now()}_${file.name}`,
+          originalName: file.name,
+          fileSize: file.size,
+          fileType: file.type,
+          filePath: `/uploads/batch_${Date.now()}_${file.name}`,
+          uploadTime: new Date().toISOString(),
+          uploadedBy: '当前用户',
+          fileUrl: URL.createObjectURL(file),
+          previewUrl: file.type.startsWith('image/') ? URL.createObjectURL(file) : undefined
+        };
+
+        newAttachments.push(newAttachment);
+      }
+
+      setBatchAttachments(prev => [...prev, ...newAttachments]);
+      message.success(`成功上传 ${files.length} 个附件`);
+    } catch (error) {
+      console.error('批量上传失败:', error);
+      message.error('批量上传失败');
+    } finally {
+      setBatchAttachmentUploading(false);
+    }
+  };
+
+  // 将批量附件应用到所有问题
+  const applyBatchAttachmentsToAll = () => {
+    if (batchAttachments.length === 0) {
+      message.warning('请先上传附件');
+      return;
+    }
+
+    // 更新所有选中问题的附件
+    const updatedProblems = selectedProblemsForEdit.map(problem => ({
+      ...problem,
+      attachments: [...(problem.attachments || []), ...batchAttachments]
+    }));
+
+    setSelectedProblemsForEdit(updatedProblems);
+
+    // 更新编辑数据状态
+    updatedProblems.forEach(problem => {
+      setEditingProblemsData(prev => ({
+        ...prev,
+        [problem.id]: {
+          ...prev[problem.id],
+          attachments: [...(problem.attachments || []), ...batchAttachments]
+        }
+      }));
+    });
+
+    // 清空批量附件
+    setBatchAttachments([]);
+    message.success(`已将 ${batchAttachments.length} 个附件应用到所有 ${updatedProblems.length} 个问题`);
+  };
+
+  // 清空批量附件
+  const clearBatchAttachments = () => {
+    setBatchAttachments([]);
+    message.info('已清空批量附件');
   };
 
   // 获取风险等级背景色
@@ -501,6 +584,53 @@ const VulnerabilityList: React.FC = () => {
         placeholder: '请输入详细描述',
         autoSize: { minRows: 3, maxRows: 6 },
         maxLength: 1000,
+      },
+    },
+    {
+      title: '附件管理',
+      dataIndex: 'attachments',
+      width: 350,
+      editable: () => true,
+      renderFormItem: (_, { type, defaultRender, ...rest }, form) => {
+        const problemId = rest.record?.id;
+        return (
+          <AttachmentEdit
+            problemId={problemId}
+            value={rest.record?.attachments || []}
+            onChange={(attachments) => {
+              // 更新表格数据中的附件
+              form.setFieldValue(['attachments', rest.name], attachments);
+              // 同时更新编辑数据状态
+              if (problemId) {
+                setEditingProblemsData(prev => ({
+                  ...prev,
+                  [problemId]: {
+                    ...prev[problemId],
+                    attachments: attachments
+                  }
+                }));
+              }
+            }}
+            placeholder="点击上传附件"
+          />
+        );
+      },
+      render: (_, record: ProblemDocument) => {
+        const attachments = record.attachments || [];
+        if (attachments.length === 0) {
+          return <span style={{ color: '#999' }}>暂无附件</span>;
+        }
+
+        return (
+          <div style={{ maxWidth: '300px' }}>
+            <div style={{ color: '#666', marginBottom: 4 }}>
+              {attachments.length} 个附件
+            </div>
+            <div style={{ fontSize: '12px', color: '#999' }}>
+              {attachments.map(att => att.originalName).join(', ')}
+            </div>
+          </div>
+        );
       },
     },
   ];
@@ -1154,6 +1284,91 @@ const VulnerabilityList: React.FC = () => {
           height: 'calc(100vh - 180px)',
           overflow: 'auto'
         }}>
+          {/* 批量上传附件区域 */}
+          <Card
+            size="small"
+            style={{ marginBottom: 16, background: '#f0f5ff', border: '1px solid #adc6ff' }}
+            title={
+              <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                <span style={{ fontWeight: 600, color: '#1890ff' }}>🔧 批量附件工具</span>
+                <span style={{ fontSize: '12px', color: '#666' }}>
+                  (上传后将应用到所有 {selectedProblemsForEdit.length} 个问题)
+                </span>
+              </div>
+            }
+          >
+            <div style={{ display: 'flex', alignItems: 'flex-start', gap: 16, flexWrap: 'wrap' }}>
+              {/* 批量上传按钮 */}
+              <Upload
+                multiple
+                accept="image/*,.pdf,.doc,.docx,.xls,.xlsx,.txt,.zip,.rar"
+                showUploadList={false}
+                beforeUpload={(file) => {
+                  handleBatchAttachmentUpload([file]);
+                  return false;
+                }}
+              >
+                <Button
+                  icon={<PlusOutlined />}
+                  loading={batchAttachmentUploading}
+                  style={{ marginRight: 8 }}
+                >
+                  批量上传附件
+                </Button>
+              </Upload>
+
+              {/* 批量附件操作按钮 */}
+              {batchAttachments.length > 0 && (
+                <>
+                  <Button
+                    type="primary"
+                    onClick={applyBatchAttachmentsToAll}
+                    style={{ background: '#52c41a', borderColor: '#52c41a' }}
+                  >
+                    应用到所有问题 ({batchAttachments.length} 个附件)
+                  </Button>
+                  <Button
+                    onClick={clearBatchAttachments}
+                    style={{ borderColor: '#ff7875', color: '#ff7875' }}
+                  >
+                    清空批量附件
+                  </Button>
+                </>
+              )}
+
+              {/* 批量附件预览 */}
+              {batchAttachments.length > 0 && (
+                <div style={{
+                  flex: 1,
+                  minWidth: '300px',
+                  padding: '8px 12px',
+                  background: 'white',
+                  borderRadius: '4px',
+                  border: '1px solid #d9d9d9'
+                }}>
+                  <div style={{ fontSize: '12px', color: '#666', marginBottom: 4 }}>
+                    待应用附件 ({batchAttachments.length} 个):
+                  </div>
+                  <div style={{ display: 'flex', flexWrap: 'wrap', gap: '4px' }}>
+                    {batchAttachments.map((attachment, index) => (
+                      <Tag
+                        key={index}
+                        closable
+                        onClose={() => {
+                          const newAttachments = batchAttachments.filter((_, i) => i !== index);
+                          setBatchAttachments(newAttachments);
+                        }}
+                        style={{ marginBottom: 4 }}
+                      >
+                        {attachment.originalName}
+                      </Tag>
+                    ))}
+                  </div>
+                </div>
+              )}
+            </div>
+          </Card>
+
           <EditableProTable
             columns={editableColumns}
             value={selectedProblemsForEdit}
@@ -1180,6 +1395,7 @@ const VulnerabilityList: React.FC = () => {
                     componentVersion: row.componentVersion,
                     ip: row.ip,
                     api: row.api,
+                    attachments: row.attachments || [],
                   }
                 }));
                 return true;

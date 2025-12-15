@@ -11,6 +11,7 @@ import {
   CheckCircleOutlined,
   ProjectOutlined
 } from '@ant-design/icons';
+import { AttachmentProvider } from '@/contexts/AttachmentContext';
 import './index.less';
 
 const { Header, Sider, Content } = Layout;
@@ -87,7 +88,9 @@ const BasicLayout: React.FC = () => {
         </Header>
         <Content className="content">
           <div className="content-wrapper">
-            <Outlet />
+            <AttachmentProvider>
+              <Outlet />
+            </AttachmentProvider>
           </div>
         </Content>
       </Layout>

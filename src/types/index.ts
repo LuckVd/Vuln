@@ -22,6 +22,7 @@ export interface ProblemDocument {
   descriptionDisposal?: string; // 对应 description_disposal
   responsiblePerson: string; // 对应 responsible_person
   approvalList?: string[]; // 对应 approval_list
+  attachments?: Attachment[]; // 附件列表
 }
 
 // 审批单据数据类型 (对应 approval_document 表)
@@ -37,6 +38,7 @@ export interface ApprovalDocument {
   softwarePerson?: string; // 对应 software_person
   createTime: string; // 对应 create_time
   createPerson: string; // 对应 create_person
+  attachments?: Attachment[]; // 附件列表
 }
 
 // 审批记录数据类型 (对应 approval_record 表)
@@ -180,3 +182,19 @@ export const REVERSE_STRING_ENUMS = {
     6: 'accept_risk_without_fix'
   } as const
 };
+
+// 附件数据类型
+export interface Attachment {
+  id: string;
+  fileName: string;
+  originalName: string;
+  fileSize: number;
+  fileType: string;
+  filePath: string;
+  uploadTime: string;
+  uploadedBy: string;
+  problemId?: number; // 关联的问题ID，为空表示审批单共享附件
+  approvalId?: number; // 关联的审批单ID
+  fileUrl?: string; // 文件访问URL
+  previewUrl?: string; // 预览URL（图片）
+}

@@ -1,4 +1,45 @@
-import { ProblemDocument, ApiResponse, PaginatedData, ENUMS } from '../src/types';
+import { ProblemDocument, ApiResponse, PaginatedData, ENUMS, Attachment } from '../src/types';
+// Mock 附件数据
+export let mockAttachments: Attachment[] = [
+  {
+    id: 'att_001',
+    fileName: 'screenshot_20241201.png',
+    originalName: '漏洞截图.png',
+    fileSize: 1024576,
+    fileType: 'image/png',
+    filePath: '/uploads/screenshot_20241201.png',
+    uploadTime: '2024-12-01T10:30:00Z',
+    uploadedBy: '张三',
+    problemId: 2,
+    fileUrl: 'https://via.placeholder.com/400x300.png?text=漏洞截图',
+    previewUrl: 'https://via.placeholder.com/400x300.png?text=漏洞截图'
+  },
+  {
+    id: 'att_002',
+    fileName: 'log_analysis.pdf',
+    originalName: '日志分析报告.pdf',
+    fileSize: 2048576,
+    fileType: 'application/pdf',
+    filePath: '/uploads/log_analysis.pdf',
+    uploadTime: '2024-12-01T14:20:00Z',
+    uploadedBy: '李四',
+    problemId: 2,
+    fileUrl: '#'
+  },
+  {
+    id: 'att_003',
+    fileName: 'patch_files.zip',
+    originalName: '修复补丁.zip',
+    fileSize: 5124576,
+    fileType: 'application/zip',
+    filePath: '/uploads/patch_files.zip',
+    uploadTime: '2024-12-01T16:45:00Z',
+    uploadedBy: '张三',
+    approvalId: 1,
+    fileUrl: '#'
+  }
+];
+
 // Mock 问题单据数据 (使用新的数字类型枚举)
 export let mockProblemDocuments: ProblemDocument[] = [
   {
@@ -23,7 +64,8 @@ export let mockProblemDocuments: ProblemDocument[] = [
     fixVersion: 'v2.1.0',
     descriptionDisposal: '已修复SQL注入漏洞，使用参数化查询替换字符串拼接，并增加了输入验证机制',
     responsiblePerson: '张三',
-    approvalList: ['APP-2024-001']
+    approvalList: ['APP-2024-001'],
+    attachments: []
   },
   {
     id: 2,
@@ -47,7 +89,8 @@ export let mockProblemDocuments: ProblemDocument[] = [
     fixVersion: undefined,
     descriptionDisposal: undefined,
     responsiblePerson: '李四',
-    approvalList: []
+    approvalList: [],
+    attachments: [mockAttachments[0], mockAttachments[1]] // 添加示例附件
   },
   {
     id: 3,
@@ -71,7 +114,8 @@ export let mockProblemDocuments: ProblemDocument[] = [
     fixVersion: 'v1.5.2',
     descriptionDisposal: '已升级前端框架版本，并增加了XSS过滤中间件',
     responsiblePerson: '王五',
-    approvalList: ['APP-2024-002']
+    approvalList: ['APP-2024-002'],
+    attachments: []
   },
   {
     id: 4,
@@ -95,7 +139,8 @@ export let mockProblemDocuments: ProblemDocument[] = [
     fixVersion: 'v1.5.1',
     descriptionDisposal: '经确认该接口为内部测试接口，已在生产环境配置中禁用',
     responsiblePerson: '赵六',
-    approvalList: ['APP-2024-003']
+    approvalList: ['APP-2024-003'],
+    attachments: []
   },
   {
     id: 5,
@@ -119,7 +164,8 @@ export let mockProblemDocuments: ProblemDocument[] = [
     fixVersion: undefined,
     descriptionDisposal: undefined,
     responsiblePerson: '钱七',
-    approvalList: []
+    approvalList: [],
+    attachments: []
   },
   {
     id: 6,
@@ -143,7 +189,8 @@ export let mockProblemDocuments: ProblemDocument[] = [
     fixVersion: undefined,
     descriptionDisposal: undefined,
     responsiblePerson: '孙八',
-    approvalList: []
+    approvalList: [],
+    attachments: []
   },
   {
     id: 7,
@@ -167,7 +214,8 @@ export let mockProblemDocuments: ProblemDocument[] = [
     fixVersion: 'v3.2.1',
     descriptionDisposal: '已修复权限验证逻辑，增加了多层次的权限检查机制',
     responsiblePerson: '周九',
-    approvalList: ['APP-2024-004']
+    approvalList: ['APP-2024-004'],
+    attachments: []
   }
 ];
 // 用于生成新的问题单据ID
@@ -291,7 +339,8 @@ export default {
       fixVersion: undefined,
       descriptionDisposal: undefined,
       responsiblePerson,
-      approvalList: []
+      approvalList: [],
+    attachments: []
     };
     mockProblemDocuments.push(newProblem);
     res.json({
@@ -402,7 +451,24 @@ export default {
             isStaged: true,
             stagedData: stagedData
           };
-          console.log(`✅ 更新问题 ${mockProblemDocuments[problemIndex].problemNumber}:`, stagedData);
+
+          // 如果包含附件，更新全局附件数据
+          if (stagedData.attachments) {
+            stagedData.attachments.forEach((attachment: any) => {
+              // 检查附件是否已存在
+              const existingIndex = mockAttachments.findIndex(a => a.id === attachment.id);
+              if (existingIndex === -1) {
+                mockAttachments.push(attachment);
+              } else {
+                mockAttachments[existingIndex] = attachment;
+              }
+            });
+          }
+
+          console.log(`✅ 更新问题 ${mockProblemDocuments[problemIndex].problemNumber}:`, {
+            ...stagedData,
+            attachmentsCount: stagedData.attachments?.length || 0
+          });
         }
       });
 

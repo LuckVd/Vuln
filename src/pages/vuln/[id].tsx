@@ -5,7 +5,8 @@ const { Option } = Select;
 const { TextArea } = Input;
 const { Item: FormItem } = Form;
 import { ArrowLeftOutlined, EyeOutlined, EditOutlined, SaveOutlined, CloudUploadOutlined, CloseOutlined } from '@ant-design/icons';
-import { ProblemDocument, ENUMS, REVERSE_STRING_ENUMS } from '@/types';
+import { ProblemDocument, ENUMS, REVERSE_STRING_ENUMS, Attachment } from '@/types';
+import AttachmentUpload from '@/components/AttachmentUpload';
 
 // 可编辑字段组件
 const EditableField: React.FC<{
@@ -61,6 +62,9 @@ const VulnerabilityDetail: React.FC = () => {
   const [editLoading, setEditLoading] = useState(false);
   const [originalProblem, setOriginalProblem] = useState<ProblemDocument | null>(null);
 
+  // 附件相关状态
+  const [attachments, setAttachments] = useState<Attachment[]>([]);
+
   // 创建审批单相关状态
   const [createApprovalModalVisible, setCreateApprovalModalVisible] = useState(false);
   const [createApprovalForm] = Form.useForm();
@@ -74,8 +78,14 @@ const VulnerabilityDetail: React.FC = () => {
       const result = await response.json();
 
       if (result.code === 200) {
-        setProblem(result.data);
-        setOriginalProblem(result.data);
+        const problemData = result.data;
+        setProblem(problemData);
+        setOriginalProblem(problemData);
+
+        // 设置附件数据
+        const problemAttachments = problemData.attachments || [];
+        setAttachments(problemAttachments);
+
         // 更新表单数据
         editForm.setFieldsValue({
           problemNumber: result.data.problemNumber,
@@ -170,12 +180,19 @@ const VulnerabilityDetail: React.FC = () => {
     try {
       const values = await editForm.validateFields();
       console.log('🔧 开始保存，表单数据:', values);
+      console.log('📎 附件数据:', attachments);
       setEditLoading(true);
+
+      // 包含附件信息的数据
+      const updatedData = {
+        ...values,
+        attachments: attachments
+      };
 
       const requestData = {
         operations: [{
           problemId: problem.id,
-          stagedData: values,
+          stagedData: updatedData,
         }],
       };
       console.log('📤 发送请求数据:', requestData);
@@ -195,7 +212,7 @@ const VulnerabilityDetail: React.FC = () => {
         message.success('保存成功');
         setIsEditMode(false);
         // 更新本地状态
-        const updatedProblem = { ...problem, ...values };
+        const updatedProblem = { ...problem, ...updatedData };
         setProblem(updatedProblem);
         setOriginalProblem(updatedProblem);
         console.log('✅ 本地状态已更新:', updatedProblem);
@@ -672,6 +689,16 @@ const VulnerabilityDetail: React.FC = () => {
             </Descriptions.Item>
           </Descriptions>
         )}
+      </Card>
+
+      {/* 附件管理 */}
+      <Card title="附件管理" style={{ marginBottom: 16 }}>
+        <AttachmentUpload
+          attachments={attachments}
+          onAttachmentsChange={setAttachments}
+          problemId={problem?.id}
+          disabled={!isEditMode}
+        />
       </Card>
 
       {/* 状态评估 */}
