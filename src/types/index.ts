@@ -61,6 +61,11 @@ export interface Project {
   status: 1 | 2 | 3 | 4; // 对应 status(1已创建,2处置中,3审批中,4关闭)
   createTime: string; // 对应 create_time
   completionTime?: string; // 对应 completion_time
+  parentProjectNumber?: string; // 对应 parent_project_number (父项目编号，支持项目继承)
+  inheritanceType?: 'none' | 'full' | 'config' | 'problems'; // 继承类型：无继承、完全继承、仅配置、仅问题
+  inheritanceStatus?: 'pending' | 'completed' | 'failed'; // 继承状态
+  inheritedFromProject?: string; // 继承源项目编号
+  inheritedAt?: string; // 继承时间
 }
 
 // 项目问题单快照数据类型 (对应 project_problem_snapshot 表)
@@ -70,6 +75,36 @@ export interface ProjectProblemSnapshot {
   tr6Number: string; // 对应 tr6_number
   createTime: string; // 对应 create_time
   snapshotContent: any; // 对应 snapshot_content (JSON)
+}
+
+// 项目继承操作参数
+export interface ProjectInheritanceParams {
+  parentProjectNumber: string; // 父项目编号
+  inheritanceType: 'none' | 'full' | 'config' | 'problems'; // 继承类型
+  copyProblems?: boolean; // 是否复制问题单
+  copyAttachments?: boolean; // 是否复制附件
+  copySnapshots?: boolean; // 是否复制快照
+  problemFilter?: {
+    status?: number[]; // 要继承的问题状态
+    vulnerabilityLevel?: number[]; // 要继承的漏洞等级
+  }; // 问题过滤条件
+}
+
+// 项目继承记录
+export interface ProjectInheritanceRecord {
+  id: number;
+  fromProjectNumber: string;
+  toProjectNumber: string;
+  inheritanceType: 'none' | 'full' | 'config' | 'problems';
+  inheritedItems: {
+    problems?: number;
+    attachments?: number;
+    snapshots?: number;
+  };
+  status: 'pending' | 'completed' | 'failed';
+  createTime: string;
+  completeTime?: string;
+  errorMessage?: string;
 }
 
 

@@ -2,14 +2,14 @@ import React, { useState, useEffect } from 'react';
 import { useParams, history } from 'umi';
 import {
   Card, Descriptions, Tag, Button, Space, Spin, Alert, Tabs, Table, Modal,
-  Form, Input, Select, DatePicker, message, Popconfirm
+  Form, Input, Select, DatePicker, message, Popconfirm, Timeline, Badge, Divider
 } from 'antd';
 import {
   ArrowLeftOutlined, EditOutlined, DeleteOutlined, CheckCircleOutlined,
-  CameraOutlined, DeleteFilled
+  CameraOutlined, DeleteFilled, BranchesOutlined, DisconnectOutlined
 } from '@ant-design/icons';
 import type { ColumnsType } from 'antd/es/table';
-import { Project, ProjectProblemSnapshot, ProblemDocument } from '@/types';
+import { Project, ProjectProblemSnapshot, ProblemDocument, ProjectInheritanceRecord } from '@/types';
 
 const { Option } = Select;
 
@@ -18,6 +18,9 @@ const ProjectDetail: React.FC = () => {
   const [project, setProject] = useState<Project | null>(null);
   const [snapshots, setSnapshots] = useState<ProjectProblemSnapshot[]>([]);
   const [relatedProblems, setRelatedProblems] = useState<ProblemDocument[]>([]);
+  const [inheritanceRecords, setInheritanceRecords] = useState<ProjectInheritanceRecord[]>([]);
+  const [parentProject, setParentProject] = useState<Project | null>(null);
+  const [childProjects, setChildProjects] = useState<Project[]>([]);
   const [loading, setLoading] = useState(true);
   const [editModalVisible, setEditModalVisible] = useState(false);
   const [snapshotModalVisible, setSnapshotModalVisible] = useState(false);
@@ -34,6 +37,15 @@ const ProjectDetail: React.FC = () => {
 
       if (projectResult.code === 200) {
         setProject(projectResult.data);
+
+        // 获取项目继承关系
+        const inheritanceResponse = await fetch(`/api/project/${projectId}/inheritance`);
+        const inheritanceResult = await inheritanceResponse.json();
+        if (inheritanceResult.code === 200) {
+          setParentProject(inheritanceResult.data.parentProject);
+          setChildProjects(inheritanceResult.data.childProjects);
+          setInheritanceRecords(inheritanceResult.data.inheritanceRecords);
+        }
 
         // 获取项目快照
         const snapshotResponse = await fetch(`/api/project/${projectId}/snapshots`);
@@ -56,6 +68,28 @@ const ProjectDetail: React.FC = () => {
       console.error(error);
     } finally {
       setLoading(false);
+    }
+  };
+
+  // 取消项目继承
+  const handleCancelInheritance = async () => {
+    if (!project) return;
+
+    try {
+      const response = await fetch(`/api/project/${project.id}/inheritance`, {
+        method: 'DELETE',
+      });
+      const result = await response.json();
+
+      if (result.code === 200) {
+        message.success('取消继承关系成功');
+        fetchProjectDetail(id);
+      } else {
+        message.error(result.message);
+      }
+    } catch (error) {
+      message.error('取消继承关系失败');
+      console.error(error);
     }
   };
 
@@ -207,6 +241,88 @@ const ProjectDetail: React.FC = () => {
     return <Tag color={config.color}>{config.text}</Tag>;
   };
 
+  // 继承状态标签
+  const getInheritanceStatusTag = (inheritanceStatus?: string) => {
+    if (!inheritanceStatus) return null;
+
+    const statusConfig = {
+      pending: { color: 'orange', text: '继承中' },
+      completed: { color: 'green', text: '已继承' },
+      failed: { color: 'red', text: '继承失败' },
+    };
+
+    const config = statusConfig[inheritanceStatus] || { color: 'default', text: '未知' };
+    return <Tag color={config.color}>{config.text}</Tag>;
+  };
+
+  // 继承记录表格列定义
+  const inheritanceRecordColumns: ColumnsType<ProjectInheritanceRecord> = [
+    {
+      title: '源项目',
+      dataIndex: 'fromProjectNumber',
+      key: 'fromProjectNumber',
+      width: 150,
+    },
+    {
+      title: '目标项目',
+      dataIndex: 'toProjectNumber',
+      key: 'toProjectNumber',
+      width: 150,
+    },
+    {
+      title: '继承类型',
+      dataIndex: 'inheritanceType',
+      key: 'inheritanceType',
+      width: 120,
+      render: (type: string) => {
+        const typeMap = {
+          full: '完全继承',
+          config: '仅配置继承',
+          problems: '仅问题单继承',
+        };
+        return typeMap[type] || type;
+      },
+    },
+    {
+      title: '继承项目数',
+      key: 'inheritedItems',
+      width: 150,
+      render: (_, record) => (
+        <Space size="small">
+          {record.inheritedItems.problems && (
+            <Badge count={record.inheritedItems.problems} style={{ backgroundColor: '#52c41a' }} />
+          )}
+          {record.inheritedItems.attachments && (
+            <Badge count={record.inheritedItems.attachments} style={{ backgroundColor: '#1890ff' }} />
+          )}
+          {record.inheritedItems.snapshots && (
+            <Badge count={record.inheritedItems.snapshots} style={{ backgroundColor: '#722ed1' }} />
+          )}
+        </Space>
+      ),
+    },
+    {
+      title: '状态',
+      dataIndex: 'status',
+      key: 'status',
+      width: 100,
+      render: (status: string) => getInheritanceStatusTag(status),
+    },
+    {
+      title: '创建时间',
+      dataIndex: 'createTime',
+      key: 'createTime',
+      width: 160,
+    },
+    {
+      title: '完成时间',
+      dataIndex: 'completeTime',
+      key: 'completeTime',
+      width: 160,
+      render: (text: string) => text || '-',
+    },
+  ];
+
   // 问题单据表格列
   const problemColumns: ColumnsType<ProblemDocument> = [
     {
@@ -332,8 +448,18 @@ const ProjectDetail: React.FC = () => {
           <Descriptions.Item label="规划版本">{project.planningVersion || '-'}</Descriptions.Item>
           <Descriptions.Item label="项目经理">{project.manager}</Descriptions.Item>
           <Descriptions.Item label="项目状态">{getStatusTag(project.status)}</Descriptions.Item>
+          <Descriptions.Item label="父项目">
+            {parentProject ? (
+              <Button type="link" onClick={() => history.push(`/project/${parentProject.id}`)}>
+                {parentProject.projectNumber}
+              </Button>
+            ) : '-'}
+          </Descriptions.Item>
+          <Descriptions.Item label="继承状态">{getInheritanceStatusTag(project.inheritanceStatus)}</Descriptions.Item>
           <Descriptions.Item label="创建时间">{project.createTime}</Descriptions.Item>
           <Descriptions.Item label="结项时间">{project.completionTime || '-'}</Descriptions.Item>
+          <Descriptions.Item label="继承时间">{project.inheritedAt || '-'}</Descriptions.Item>
+          <Descriptions.Item label="子项目数量">{childProjects.length}</Descriptions.Item>
         </Descriptions>
       ),
     },
@@ -374,6 +500,115 @@ const ProjectDetail: React.FC = () => {
             rowKey="id"
             pagination={false}
           />
+        </div>
+      ),
+    },
+    {
+      key: 'inheritance',
+      label: `继承关系 (${inheritanceRecords.length})`,
+      children: (
+        <div>
+          {/* 父项目信息 */}
+          {parentProject && (
+            <Card
+              title={
+                <Space>
+                  <BranchesOutlined />
+                  父项目
+                </Space>
+              }
+              size="small"
+              style={{ marginBottom: 16 }}
+              extra={
+                <Popconfirm
+                  title="确定要取消继承关系吗？"
+                  description="取消后此项目将不再继承父项目的任何配置"
+                  onConfirm={handleCancelInheritance}
+                  okText="确定"
+                  cancelText="取消"
+                >
+                  <Button danger size="small" icon={<DisconnectOutlined />}>
+                    取消继承
+                  </Button>
+                </Popconfirm>
+              }
+            >
+              <Descriptions column={3} size="small">
+                <Descriptions.Item label="项目编号">{parentProject.projectNumber}</Descriptions.Item>
+                <Descriptions.Item label="项目经理">{parentProject.manager}</Descriptions.Item>
+                <Descriptions.Item label="项目状态">{getStatusTag(parentProject.status)}</Descriptions.Item>
+                <Descriptions.Item label="规划版本">{parentProject.planningVersion || '-'}</Descriptions.Item>
+                <Descriptions.Item label="继承类型">{project.inheritanceType || '-'}</Descriptions.Item>
+                <Descriptions.Item label="继承状态">{getInheritanceStatusTag(project.inheritanceStatus)}</Descriptions.Item>
+              </Descriptions>
+            </Card>
+          )}
+
+          {/* 子项目信息 */}
+          {childProjects.length > 0 && (
+            <Card
+              title={
+                <Space>
+                  <BranchesOutlined />
+                  子项目 ({childProjects.length})
+                </Space>
+              }
+              size="small"
+              style={{ marginBottom: 16 }}
+            >
+              <div>
+                {childProjects.map(childProject => (
+                  <Card.Grid key={childProject.id} style={{ width: '33.33%', textAlign: 'center' }}>
+                    <div>
+                      <Button type="link" onClick={() => history.push(`/project/${childProject.id}`)}>
+                        {childProject.projectNumber}
+                      </Button>
+                      <br />
+                      <small>{childProject.manager}</small>
+                      <br />
+                      {getStatusTag(childProject.status)}
+                      {getInheritanceStatusTag(childProject.inheritanceStatus)}
+                    </div>
+                  </Card.Grid>
+                ))}
+              </div>
+            </Card>
+          )}
+
+          {/* 继承记录 */}
+          {inheritanceRecords.length > 0 && (
+            <Card
+              title={
+                <Space>
+                  <BranchesOutlined />
+                  继承记录
+                </Space>
+              }
+              size="small"
+            >
+              <Table
+                columns={inheritanceRecordColumns}
+                dataSource={inheritanceRecords}
+                rowKey="id"
+                pagination={{
+                  pageSize: 10,
+                  showSizeChanger: true,
+                  pageSizeOptions: ['10', '20', '50'],
+                  showTotal: (total, range) => `第 ${range[0]}-${range[1]} 条，共 ${total} 条`,
+                }}
+                scroll={{ x: 1000 }}
+              />
+            </Card>
+          )}
+
+          {!parentProject && childProjects.length === 0 && inheritanceRecords.length === 0 && (
+            <Alert
+              message="暂无继承关系"
+              description="此项目目前没有设置任何继承关系，可以点击'继承'按钮来继承其他项目的配置"
+              type="info"
+              showIcon
+            />
+          )}
         </div>
       ),
     },

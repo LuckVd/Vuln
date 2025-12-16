@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
-import { Table, Input, Select, Space, Tag, Button, Card, message, Modal, Form, Popconfirm, Badge } from 'antd';
-import { SearchOutlined, ReloadOutlined, PlusOutlined, EditOutlined, DeleteOutlined, CheckCircleOutlined } from '@ant-design/icons';
+import { Table, Input, Select, Space, Tag, Button, Card, message, Modal, Form, Popconfirm, Badge, Tooltip, TreeSelect, Checkbox } from 'antd';
+import { SearchOutlined, ReloadOutlined, PlusOutlined, EditOutlined, DeleteOutlined, CheckCircleOutlined, BranchesOutlined } from '@ant-design/icons';
 import { Link, history } from 'umi';
 import type { ColumnsType } from 'antd/es/table';
 import { Project } from '@/types';
@@ -17,6 +17,9 @@ const ProjectList: React.FC = () => {
   const [statusFilter, setStatusFilter] = useState<number | undefined>();
   const [managerFilter, setManagerFilter] = useState<string>('');
   const [createModalVisible, setCreateModalVisible] = useState(false);
+  const [inheritModalVisible, setInheritModalVisible] = useState(false);
+  const [currentProject, setCurrentProject] = useState<Project | null>(null);
+  const [inheritableProjects, setInheritableProjects] = useState<Project[]>([]);
   const [form] = Form.useForm();
 
   // 获取项目列表
@@ -122,6 +125,65 @@ const ProjectList: React.FC = () => {
     }
   };
 
+  // 打开项目继承弹窗
+  const handleOpenInheritModal = async (project: Project) => {
+    setCurrentProject(project);
+    await fetchInheritableProjects(project.id);
+    setInheritModalVisible(true);
+  };
+
+  // 获取可继承的项目列表
+  const fetchInheritableProjects = async (projectId: number) => {
+    try {
+      const response = await fetch(`/api/project/inheritable/${projectId}`);
+      const result = await response.json();
+
+      if (result.code === 200) {
+        setInheritableProjects(result.data);
+      } else {
+        message.error(result.message);
+      }
+    } catch (error) {
+      message.error('获取可继承项目列表失败');
+      console.error(error);
+    }
+  };
+
+  // 处理项目继承
+  const handleInherit = async (values: any) => {
+    if (!currentProject) return;
+
+    try {
+      const response = await fetch(`/api/project/${currentProject.id}/inherit`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          parentProjectNumber: values.parentProjectNumber,
+          inheritanceType: values.inheritanceType,
+          copyProblems: values.copyProblems,
+          copyAttachments: values.copyAttachments,
+          copySnapshots: values.copySnapshots,
+          problemFilter: values.problemFilter
+        }),
+      });
+      const result = await response.json();
+
+      if (result.code === 200) {
+        message.success(result.message);
+        setInheritModalVisible(false);
+        setCurrentProject(null);
+        fetchProjects({ current, pageSize, status: statusFilter, manager: managerFilter });
+      } else {
+        message.error(result.message);
+      }
+    } catch (error) {
+      message.error('项目继承失败');
+      console.error(error);
+    }
+  };
+
   // 搜索
   const handleSearch = () => {
     fetchProjects({
@@ -152,6 +214,20 @@ const ProjectList: React.FC = () => {
     };
 
     const config = statusConfig[status] || { color: 'default', text: '未知' };
+    return <Tag color={config.color}>{config.text}</Tag>;
+  };
+
+  // 继承状态标签
+  const getInheritanceStatusTag = (inheritanceStatus?: string) => {
+    if (!inheritanceStatus) return null;
+
+    const statusConfig = {
+      pending: { color: 'orange', text: '继承中' },
+      completed: { color: 'green', text: '已继承' },
+      failed: { color: 'red', text: '继承失败' },
+    };
+
+    const config = statusConfig[inheritanceStatus] || { color: 'default', text: '未知' };
     return <Tag color={config.color}>{config.text}</Tag>;
   };
 
@@ -189,6 +265,23 @@ const ProjectList: React.FC = () => {
       render: (status: number) => getStatusTag(status),
     },
     {
+      title: '继承关系',
+      key: 'inheritance',
+      width: 200,
+      render: (_, record: Project) => (
+        <Space size="small">
+          {record.parentProjectNumber && (
+            <Tooltip title={`继承自项目: ${record.parentProjectNumber}`}>
+              <Tag color="cyan" style={{ cursor: 'pointer' }}>
+                {record.parentProjectNumber}
+              </Tag>
+            </Tooltip>
+          )}
+          {getInheritanceStatusTag(record.inheritanceStatus)}
+        </Space>
+      ),
+    },
+    {
       title: '创建时间',
       dataIndex: 'createTime',
       key: 'createTime',
@@ -205,7 +298,7 @@ const ProjectList: React.FC = () => {
     {
       title: '操作',
       key: 'action',
-      width: 200,
+      width: 250,
       fixed: 'right',
       render: (_, record: Project) => (
         <Space size="small">
@@ -215,6 +308,15 @@ const ProjectList: React.FC = () => {
             onClick={() => history.push(`/project/${record.id}`)}
           >
             查看
+          </Button>
+          <Button
+            type="link"
+            icon={<BranchesOutlined />}
+            onClick={() => handleOpenInheritModal(record)}
+            disabled={record.status === 4}
+            title={record.status === 4 ? '已关闭项目不能设置继承' : '设置项目继承'}
+          >
+            继承
           </Button>
           {record.status !== 4 && (
             <Popconfirm
@@ -380,6 +482,108 @@ const ProjectList: React.FC = () => {
               </Button>
               <Button type="primary" htmlType="submit">
                 创建
+              </Button>
+            </Space>
+          </Form.Item>
+        </Form>
+      </Modal>
+
+      {/* 项目继承弹窗 */}
+      <Modal
+        title={`设置项目继承 - ${currentProject?.projectNumber}`}
+        open={inheritModalVisible}
+        onCancel={() => {
+          setInheritModalVisible(false);
+          setCurrentProject(null);
+          form.resetFields();
+        }}
+        footer={null}
+        width={800}
+      >
+        <Form
+          form={form}
+          layout="vertical"
+          onFinish={handleInherit}
+        >
+          <Form.Item
+            name="parentProjectNumber"
+            label="选择父项目"
+            rules={[{ required: true, message: '请选择父项目' }]}
+          >
+            <Select
+              placeholder="请选择要继承的父项目"
+              showSearch
+              filterOption={(input, option) =>
+                (option?.children as unknown as string)?.toLowerCase().includes(input.toLowerCase())
+              }
+            >
+              {inheritableProjects.map(project => (
+                <Option key={project.id} value={project.projectNumber}>
+                  {project.projectNumber} - {project.manager} - {project.planningVersion}
+                </Option>
+              ))}
+            </Select>
+          </Form.Item>
+
+          <Form.Item
+            name="inheritanceType"
+            label="继承类型"
+            initialValue="full"
+            rules={[{ required: true, message: '请选择继承类型' }]}
+          >
+            <Select placeholder="请选择继承类型">
+              <Option value="full">完全继承</Option>
+              <Option value="config">仅配置继承</Option>
+              <Option value="problems">仅问题单继承</Option>
+            </Select>
+          </Form.Item>
+
+          <Form.Item label="继承内容">
+            <Space direction="vertical" style={{ width: '100%' }}>
+              <Form.Item name="copyProblems" valuePropName="checked" noStyle>
+                <Checkbox>继承问题单</Checkbox>
+              </Form.Item>
+              <Form.Item name="copyAttachments" valuePropName="checked" noStyle>
+                <Checkbox>继承附件</Checkbox>
+              </Form.Item>
+              <Form.Item name="copySnapshots" valuePropName="checked" noStyle>
+                <Checkbox>继承快照</Checkbox>
+              </Form.Item>
+            </Space>
+          </Form.Item>
+
+          <Form.Item label="问题单过滤条件（可选）">
+            <Space.Compact style={{ width: '100%' }}>
+              <Form.Item name={['problemFilter', 'status']} noStyle>
+                <Select mode="multiple" placeholder="选择状态" style={{ width: '50%' }} allowClear>
+                  <Option value={1}>已创建</Option>
+                  <Option value={2}>处置中</Option>
+                  <Option value={3}>审批中</Option>
+                  <Option value={4}>关闭</Option>
+                </Select>
+              </Form.Item>
+              <Form.Item name={['problemFilter', 'vulnerabilityLevel']} noStyle>
+                <Select mode="multiple" placeholder="选择漏洞等级" style={{ width: '50%' }} allowClear>
+                  <Option value={1}>严重</Option>
+                  <Option value={2}>高危</Option>
+                  <Option value={3}>中危</Option>
+                  <Option value={4}>低危</Option>
+                </Select>
+              </Form.Item>
+            </Space.Compact>
+          </Form.Item>
+
+          <Form.Item style={{ marginBottom: 0, textAlign: 'right' }}>
+            <Space>
+              <Button onClick={() => {
+                setInheritModalVisible(false);
+                setCurrentProject(null);
+                form.resetFields();
+              }}>
+                取消
+              </Button>
+              <Button type="primary" htmlType="submit">
+                确认继承
               </Button>
             </Space>
           </Form.Item>
